@@ -10,6 +10,8 @@ import subprocess
 import sys
 import tempfile
 import time
+from concurrent.futures import ThreadPoolExecutor
+from contextlib import contextmanager
 from functools import lru_cache
 from pathlib import Path
 
@@ -42,6 +44,10 @@ RUNTIME_STATUS = Path("/sys/bus/i2c/devices/i2c-INT347E:00/power/runtime_status"
 # camera_sensor_rotation, "Strobe Output Enable" (V4L2_CID_FLASH_STROBE_OE) -> strobe_output_enable.
 STROBE = "strobe_output_enable"
 DARK_MAX = 40  # counts at exposure 1704, gain 128: Phase 0 dark ~20, emitter lit ~103
+MODE_VTS = {30: 1724, 60: 860, 90: 572}  # frame length in lines of the three 640x480 modes (ov7251_mode_info_data)
+INTEGRATION_MARGIN = 20  # OV7251_INTEGRATION_MARGIN: exposure max = VTS - 20
+# Sensor registers (OV7251 datasheet, names as in drivers/media/i2c/ov7251.c), read with read_reg() while streaming
+SC_REG5, STROBE_PATTERN, STROBE_SPAN, VTS_REG, EXPO_REG, GAIN_REG = 0x3005, 0x3b81, 0x3b8c, 0x380e, 0x3500, 0x350a
 
 
 def run(*cmd, **kw) -> str:
@@ -132,6 +138,30 @@ def capture(frames: int, *, skip: int = 5, fps: float | None = None) -> np.ndarr
 
 def frame_means(arr: np.ndarray) -> np.ndarray:
     return arr.reshape(arr.shape[0], -1).mean(axis=1)
+
+
+def read_reg(addr: int, n: int = 1) -> int:
+    """n consecutive sensor registers from addr, big-endian, over I2C (bus 3, 0x60; sudo, -f because the driver owns
+    the address). Only meaningful inside streaming(): a suspended sensor is powered off and reads fail or return garbage."""
+    val = 0
+    for a in range(addr, addr + n):
+        out = run("sudo", "-n", "i2ctransfer", "-f", "-y", "3", "w2@0x60", f"0x{a >> 8:02x}", f"0x{a & 0xff:02x}", "r1")
+        val = val << 8 | int(out, 16)
+    return val
+
+
+@contextmanager
+def streaming(seconds: float = 3):
+    """Stream about `seconds` at the current frame rate in a background stream() (fixed frame count, so it always
+    ends), enter the block 1 s in, while the sensor is powered and streaming, and wait for the stream to end after it."""
+    with ThreadPoolExecutor(1) as ex:
+        done = ex.submit(stream, int(seconds * get_fps()), "/dev/null")
+        time.sleep(1)
+        try:
+            assert runtime_status() == "active", f"sensor {runtime_status()} 1 s into a stream"
+            yield
+        finally:
+            done.result()
 
 
 def runtime_status() -> str:
