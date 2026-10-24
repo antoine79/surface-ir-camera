@@ -1,0 +1,5 @@
+# 7.2.12 patched module, strobe on, gain 128, register read-back while streaming (2026-10-25)
+30fps exposure=504: span=504 (0x3005=08, 0x3b81=ff) mean=623.8
+30fps exposure=1704: span=776 (cap 45% of vts 1724) mean=706.3
+90fps exposure=552: span=258 (cap 45% of vts 572) mean=458.8
+Phase 0 reference (stock 26-line span, exposure 1704, gain 128): dark 20.3, lit 103.2
