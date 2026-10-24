@@ -39,3 +39,7 @@ K9 unbinds `i2c-INT347E:00` from the ov7251 driver first (`modprobe -r` alone fa
 ## Safety
 
 Every stream is a `v4l2-ctl --stream-count=N` child with a timeout, so no test leaves a stream (and, on a patched driver, a lit emitter) running. Tests that turn the strobe on reset it to 0 in a `finally`. K7 checks the sensor powers down after streaming. Tests change only runtime state: the sensor -> CSI-2 link stays enabled, exposure/gain stay at the bench values (1704/128). Note that the driver resets exposure and gain to 504/16 on every format or frame-interval change.
+
+## Phase 3b: glow-compare
+
+`tools/glow_compare.py` compares the brightness of the IR emitter (a small bright blob) across phone videos filmed with locked exposure, e.g. our driver against Windows Hello. Per video it reports the median blob brightness (Gaussian blur, threshold max(200, 0.9 x frame max), connected component around the brightest pixel, mean of the raw pixels), the fraction of frames where the blob is present, and the dominant flicker frequency (Windows strobes on alternate frames, so 15 Hz at 30 fps; ours every frame). Run `python3 tools/glow_compare.py linux.mp4 windows1.mp4` to get `name n lit% median p10 p90 flicker_hz` per video plus `ratio <name>/<first> = x.xx` of medians. Unit tests: `pytest -q tests/test_glow_compare.py`.
