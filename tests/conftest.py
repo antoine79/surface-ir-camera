@@ -19,9 +19,20 @@ import pytest
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "tools"))
 import ip3y  # noqa: E402
 
-MEDIA = "/dev/media0"
-VIDEO = "/dev/video2"
 CSI = "ipu3-csi2 2"
+
+
+def _cio2_nodes() -> tuple[str, str]:
+    """(/dev/mediaN of ipu3-cio2, /dev/videoN of "ipu3-cio2 2"): numbering differs between kernels (6.18: media0/video2,
+    7.2: media1/video12), so resolve them from sysfs by name."""
+    for f in Path("/sys/class/video4linux").glob("video*/name"):
+        if f.read_text().strip() == CSI.replace("csi2", "cio2"):
+            media = next((f.parent / "device").resolve().glob("media*"))
+            return f"/dev/{media.name}", f"/dev/{f.parent.name}"
+    raise RuntimeError("no 'ipu3-cio2 2' video node")
+
+
+MEDIA, VIDEO = _cio2_nodes()
 W, H = 640, 480
 FRAME_BYTES = ip3y.bytesperline(W) * H
 RUNTIME_STATUS = Path("/sys/bus/i2c/devices/i2c-INT347E:00/power/runtime_status")
