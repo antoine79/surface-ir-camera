@@ -3,10 +3,12 @@
 One scenario, in the order a camera stack goes through it. On the stock driver it fails at the first step that needs
 a patch; with the whole series it passes and leaves two pictures in $IRCAM_E2E_OUT (default docs/e2e/):
 
-1. the sensor reports the link frequency the firmware asks for (patch 1) and where it sits (patch 5);
+1. the sensor reports the link frequency the firmware asks for (patch 1) and where it sits (patch 5), mounted rotated
+   by 90 degrees (patch 8, ipu-bridge DMI quirk: the ACPI _PLD says 0);
 2. a process can subscribe to control events, as libcamera does at start-up (patch 3);
 3. the stack selects 60 fps (patch 4), sets exposure and analogue gain (patch 2) and switches the emitter on (patch 7);
-4. 60 frames arrive in about one second, lit by the emitter, with a real image in them;
+4. 60 frames arrive in about one second, lit by the emitter, with a real image in them: aim the camera at the room
+   before running, the lit frame is saved as the picture of the room;
 5. afterwards the emitter is off and the sensor powered down (patch 7).
 
 Run: pytest -v tests/test_e2e.py   (red on stock, green with kernel/build/ov7251.ko swapped in).
@@ -53,8 +55,13 @@ def test_firmware_description(graph):
         f"link_frequency is {link and link['label']}: the sensor must run at the {FIRMWARE_LINK_FREQ} Hz the firmware asks for (patch 1)"
     assert ctrl_info("camera_orientation") and ctrl("camera_orientation") == 0, \
         "camera_orientation must exist and read 0 (front), from the ACPI _PLD (patch 5)"
-    assert ctrl_info("camera_sensor_rotation") and ctrl("camera_sensor_rotation") == 0, \
-        "camera_sensor_rotation must exist and read 0 (patch 5)"
+    assert ctrl_info("camera_sensor_rotation"), "camera_sensor_rotation must exist (patch 5)"
+
+
+@pytest.mark.needs_patch("8")
+def test_firmware_rotation(graph):
+    assert ctrl_info("camera_sensor_rotation") and ctrl("camera_sensor_rotation") == 90, \
+        "camera_sensor_rotation must read 90: the sensor is mounted rotated, the ACPI _PLD says 0 (patch 8, ipu-bridge DMI quirk)"
 
 
 def test_control_events(graph):
