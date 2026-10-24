@@ -163,10 +163,11 @@ def dark_mean(graph):
 def pytest_collection_modifyitems(config, items):
     if os.environ.get("IRCAM_DISRUPTIVE") == "1":
         return
-    skip = pytest.mark.skip(reason="disruptive (suspend / module reload): set IRCAM_DISRUPTIVE=1")
     for item in items:
-        if "disruptive" in item.keywords:
-            item.add_marker(skip)
+        m = item.get_closest_marker("disruptive")
+        if m:
+            why = m.kwargs.get("reason", "suspend / module reload")
+            item.add_marker(pytest.mark.skip(reason=f"disruptive ({why}): set IRCAM_DISRUPTIVE=1"))
 
 
 def wait_for(pred, timeout: float, step: float = 0.1) -> bool:

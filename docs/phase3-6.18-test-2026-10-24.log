@@ -1,0 +1,202 @@
+# Phase 3 test on 6.18.8-1.surface.fc43.x86_64, 2026-10-24T20:50:27+09:00
+# module: patches 0001,0003-0006 on the v7.2 backport base (kernel/build/README.md, 6.18 test module), loaded with insmod after sysfs unbind
+
+$ state before swap
+relay: active
+v4l2-ctl: []
+runtime: suspended
+- entity 37: ov5693 2-0036 (1 pad, 1 link, 0 routes)
+- entity 39: ov7251 3-0060 (1 pad, 1 link, 0 routes)
+- entity 41: ov8865 3-0010 (1 pad, 1 link, 0 routes)
+module: ov7251                 36864  1 taint= srcver=
+
+$ state after swap
+relay: active
+v4l2-ctl: []
+runtime: suspended
+- entity 37: ov5693 2-0036 (1 pad, 1 link, 0 routes)
+- entity 41: ov8865 3-0010 (1 pad, 1 link, 0 routes)
+- entity 67: ov7251 3-0060 (1 pad, 1 link, 0 routes)
+module: ov7251                 36864  1 taint=OE srcver=
+
+$ journalctl -k (after insmod)
+[41807.244083] esteban kernel: ov7251 i2c-INT347E:00: supply vdddo not found, using dummy regulator
+[41807.246394] esteban kernel: ov7251 i2c-INT347E:00: supply vddd not found, using dummy regulator
+[41807.247887] esteban kernel: ov7251 i2c-INT347E:00: supply vdda not found, using dummy regulator
+[41807.251042] esteban kernel: ov7251 i2c-INT347E:00: OV7251 revision 7 (1F) detected at address 0x60
+
+$ v4l2-ctl -l
+
+User Controls
+
+                       exposure 0x00980911 (int)    : min=1 max=1704 step=1 default=504 value=504 flags=has-min-max
+                horizontal_flip 0x00980914 (bool)   : default=0 value=0 flags=has-min-max
+                  vertical_flip 0x00980915 (bool)   : default=0 value=0 flags=has-min-max
+
+Camera Controls
+
+             camera_orientation 0x009a0922 (menu)   : min=0 max=2 default=0 value=0 (Front) flags=read-only, has-min-max
+         camera_sensor_rotation 0x009a0923 (int)    : min=0 max=0 step=1 default=0 value=0 flags=read-only, has-min-max
+
+Image Source Controls
+
+              vertical_blanking 0x009e0901 (int)    : min=1 max=65055 step=1 default=1244 value=1244 flags=has-min-max
+            horizontal_blanking 0x009e0902 (int)    : min=288 max=288 step=1 default=288 value=288 flags=read-only, has-min-max
+                  analogue_gain 0x009e0903 (int)    : min=16 max=1023 step=1 default=16 value=16 flags=has-min-max
+
+Image Processing Controls
+
+                 link_frequency 0x009f0901 (intmenu): min=0 max=1 default=1 value=1 (319200000 0x13069b00) flags=read-only, has-min-max
+                     pixel_rate 0x009f0902 (int64)  : min=63840000 max=2147483647 step=63840000 default=63840000 value=63840000 flags=read-only, has-min-max
+                   test_pattern 0x009f0903 (menu)   : min=0 max=1 default=0 value=0 (Disabled) flags=has-min-max
+
+$ pytest -v tests/ --deselect <patch-7 tests>
+============================= test session starts ==============================
+platform linux -- Python 3.14.3, pytest-9.1.1, pluggy-1.6.0 -- /usr/bin/python3
+cachedir: .pytest_cache
+rootdir: /home/antoine/projects/surface-ir-camera
+configfile: pytest.ini
+plugins: timeout-2.4.0, anyio-4.12.1
+collecting ... collected 33 items / 5 deselected / 28 selected
+
+tests/test_helpers.py::test_parse_int_control PASSED                     [  3%]
+tests/test_helpers.py::test_parse_bool_has_no_range PASSED               [  7%]
+tests/test_helpers.py::test_parse_menu_and_intmenu_keep_the_label PASSED [ 10%]
+tests/test_helpers.py::test_parse_int64_and_absent_control PASSED        [ 14%]
+tests/test_helpers.py::test_frame_means PASSED                           [ 17%]
+tests/test_ip3y.py::test_bytesperline_matches_cio2_formula PASSED        [ 21%]
+tests/test_ip3y.py::test_unpack_recovers_known_pixels_in_one_block PASSED [ 25%]
+tests/test_ip3y.py::test_unpack_frame_shape_and_row_order PASSED         [ 28%]
+tests/test_ip3y.py::test_unpack_rejects_short_buffer PASSED              [ 32%]
+tests/test_k10_test_pattern.py::test_frames_identical PASSED             [ 35%]
+tests/test_k10_test_pattern.py::test_only_full_scale_values PASSED       [ 39%]
+tests/test_k10_test_pattern.py::test_rows_repeat_every_two PASSED        [ 42%]
+tests/test_k10_test_pattern.py::test_eight_vertical_bars PASSED          [ 46%]
+tests/test_k1_compliance.py::test_compliance[subdev] PASSED              [ 50%]
+tests/test_k1_compliance.py::test_compliance[media] FAILED               [ 53%]
+tests/test_k1_compliance.py::test_compliance[video] FAILED               [ 57%]
+tests/test_k2_controls.py::test_analogue_gain_not_gain PASSED            [ 60%]
+tests/test_k2_controls.py::test_fwnode_controls_are_front_and_0[camera_orientation] PASSED [ 64%]
+tests/test_k2_controls.py::test_fwnode_controls_are_front_and_0[camera_sensor_rotation] PASSED [ 67%]
+tests/test_k3_timing.py::test_link_frequency_matches_firmware PASSED     [ 71%]
+tests/test_k3_timing.py::test_pixel_rate_follows_link_frequency PASSED   [ 75%]
+tests/test_k3_timing.py::test_90_frames_at_30fps_take_3s PASSED          [ 78%]
+tests/test_k3_timing.py::test_frame_interval_selects_fps[60] PASSED      [ 82%]
+tests/test_k3_timing.py::test_frame_interval_selects_fps[90] PASSED      [ 85%]
+tests/test_k4_dark.py::test_default_is_dark PASSED                       [ 89%]
+tests/test_k7_safety.py::test_suspended_after_capture PASSED             [ 92%]
+tests/test_k8_suspend.py::test_suspend_mid_stream SKIPPED (disruptiv...) [ 96%]
+tests/test_k9_reload.py::test_module_reload_x10 SKIPPED (disruptive ...) [100%]
+
+=================================== FAILURES ===================================
+____________________________ test_compliance[media] ____________________________
+
+graph = 'ov7251 3-0060', target = 'media'
+args = <function <lambda> at 0x7f4b94ae0460>
+
+    @pytest.mark.parametrize("target, args", [
+        ("subdev", lambda: ["-u", sd()]),
+        ("media", lambda: ["-m", MEDIA]),
+        ("video", lambda: ["-d", VIDEO, "-s", "30"]),
+    ], ids=["subdev", "media", "video"])
+    def test_compliance(graph, target, args):
+        before = parse_ctrls(run("v4l2-ctl", "-d", sd(), "-l"))
+        try:
+            p = subprocess.run(["v4l2-compliance", *args()], capture_output=True, text=True, timeout=300)
+        finally:  # v4l2-compliance leaves controls (e.g. test_pattern), formats and the frame interval changed
+            set_fps(30)
+            setup_graph()  # resets exposure and gain, so restore the controls after it
+            for name, c in before.items():
+                if "read-only" not in c["flags"] and ctrl_info(name)["value"] != c["value"]:
+                    set_ctrl(name, c["value"])
+        out = p.stdout + p.stderr
+        log = BASELINE / f"k1-{target}-{os.uname().release}.log"
+        if not log.exists():
+            log.parent.mkdir(exist_ok=True)
+            log.write_text(f"$ v4l2-compliance {' '.join(args())}\n# exit status {p.returncode}\n{out}")
+>       assert p.returncode >= 0, f"v4l2-compliance {target} crashed (signal {-p.returncode}) before finishing, see {log.name}"
+E       AssertionError: v4l2-compliance media crashed (signal 11) before finishing, see k1-media-6.18.8-1.surface.fc43.x86_64.log
+E       assert -11 >= 0
+E        +  where -11 = CompletedProcess(args=['v4l2-compliance', '-m', '/dev/media0'], returncode=-11, stdout="v4l2-compliance 1.32.0, 64 bits, 64-bit time_t\n\nCompliance test for ipu3-cio2 device /dev/media0:\n\nMedia Driver Info:\n\tDriver name      : ipu3-cio2\n\tModel            : Intel IPU3 CIO2\n\tSerial           : \n\tBus info         : PCI:0000:00:14.3\n\tMedia version    : 6.18.8\n\tHardware revision: 0x00000000 (0)\n\tDriver version   : 6.18.8\n\nRequired ioctls:\n\ttest MEDIA_IOC_DEVICE_INFO: OK\n\ttest invalid ioctls: OK\n\nAllow for multiple opens:\n\ttest second /dev/media0 open: OK\n\ttest MEDIA_IOC_DEVICE_INFO: OK\n\ttest for unlimited opens: OK\n\nMedia Controller ioctls:\n\ttest MEDIA_IOC_G_TOPOLOGY: OK\n\tEntities: 12 Interfaces: 12 Pads: 15 Links: 20\n\ttest MEDIA_IOC_ENUM_ENTITIES/LINKS: OK\n\ttest MEDIA_IOC_SETUP_LINK: OK\n\nTotal for ipu3-cio2 device /dev/media0: 8, Succeeded: 8, Failed: 0, Warnings: 0\n--------------------------------------------------------------------------------\nCompliance test for ipu3-cio2 device /dev/video0:\n\nDriver Info:\n\tDriver name      : ipu3-cio2\n\tCard type        : Intel IPU3 CIO2\n\tBus info         : PCI:0000:00:14.3\n\tDriver version   : ...nput/Output configuration ioctls:\n\ttest VIDIOC_ENUM/G/S/QUERY_STD: OK (Not Supported)\n\ttest VIDIOC_ENUM/G/S/QUERY_DV_TIMINGS: OK (Not Supported)\n\ttest VIDIOC_DV_TIMINGS_CAP: OK (Not Supported)\n\ttest VIDIOC_G/S_EDID: OK (Not Supported)\n\nSub-Device ioctls (Sink Pad 0):\n\tTry Stream 0\n\ttest Try VIDIOC_SUBDEV_ENUM_MBUS_CODE/FRAME_SIZE/FRAME_INTERVAL: OK\n\ttest Try VIDIOC_SUBDEV_G/S_FMT: OK\n\ttest Try VIDIOC_SUBDEV_G/S_SELECTION/CROP: OK (Not Supported)\n\tActive Stream 0\n\ttest Active VIDIOC_SUBDEV_ENUM_MBUS_CODE/FRAME_SIZE/FRAME_INTERVAL: OK\n\ttest Active VIDIOC_SUBDEV_G/S_FMT: OK\n\ttest Active VIDIOC_SUBDEV_G/S_SELECTION/CROP: OK (Not Supported)\n\ttest Active VIDIOC_SUBDEV_G/S_FRAME_INTERVAL: OK (Not Supported)\n\nSub-Device ioctls (Source Pad 1):\n\tTry Stream 0\n\ttest Try VIDIOC_SUBDEV_ENUM_MBUS_CODE/FRAME_SIZE/FRAME_INTERVAL: OK\n\ttest Try VIDIOC_SUBDEV_G/S_FMT: OK\n\ttest Try VIDIOC_SUBDEV_G/S_SELECTION/CROP: OK (Not Supported)\n\tActive Stream 0\n\ttest Active VIDIOC_SUBDEV_ENUM_MBUS_CODE/FRAME_SIZE/FRAME_INTERVAL: OK\n\ttest Active VIDIOC_SUBDEV_G/S_FMT: OK\n\ttest Active VIDIOC_SUBDEV_G/S_SELECTION/CROP: OK (Not Supported)\n\ttest Active VIDI", stderr='').returncode
+
+tests/test_k1_compliance.py:38: AssertionError
+____________________________ test_compliance[video] ____________________________
+
+graph = 'ov7251 3-0060', target = 'video'
+args = <function <lambda> at 0x7f4b94ae0510>
+
+    @pytest.mark.parametrize("target, args", [
+        ("subdev", lambda: ["-u", sd()]),
+        ("media", lambda: ["-m", MEDIA]),
+        ("video", lambda: ["-d", VIDEO, "-s", "30"]),
+    ], ids=["subdev", "media", "video"])
+    def test_compliance(graph, target, args):
+        before = parse_ctrls(run("v4l2-ctl", "-d", sd(), "-l"))
+        try:
+            p = subprocess.run(["v4l2-compliance", *args()], capture_output=True, text=True, timeout=300)
+        finally:  # v4l2-compliance leaves controls (e.g. test_pattern), formats and the frame interval changed
+            set_fps(30)
+            setup_graph()  # resets exposure and gain, so restore the controls after it
+            for name, c in before.items():
+                if "read-only" not in c["flags"] and ctrl_info(name)["value"] != c["value"]:
+                    set_ctrl(name, c["value"])
+        out = p.stdout + p.stderr
+        log = BASELINE / f"k1-{target}-{os.uname().release}.log"
+        if not log.exists():
+            log.parent.mkdir(exist_ok=True)
+            log.write_text(f"$ v4l2-compliance {' '.join(args())}\n# exit status {p.returncode}\n{out}")
+        assert p.returncode >= 0, f"v4l2-compliance {target} crashed (signal {-p.returncode}) before finishing, see {log.name}"
+        totals = TOTAL.findall(out)
+        assert totals, f"v4l2-compliance {target} printed no final Total line (exit status {p.returncode}, a negative one is a crash)"
+        failed = [l.strip() for l in out.splitlines() if "FAIL" in l or "fail:" in l]
+>       assert int(totals[-1][2]) == 0, f"v4l2-compliance {target}: {totals[-1]} (total, ok, failed, warn); failures: {failed}"
+E       AssertionError: v4l2-compliance video: ('58', '51', '7', '30') (total, ok, failed, warn); failures: ['fail: v4l2-test-buffers.cpp(901): q.create_bufs(node, 1, &fmt) != EINVAL', 'test VIDIOC_REQBUFS/CREATE_BUFS/QUERYBUF: FAIL', 'fail: v4l2-test-buffers.cpp(1667): buf.g_length(p) < fmt.g_sizeimage(p)', 'test MMAP (no poll, REQBUFS): FAIL', 'fail: v4l2-test-buffers.cpp(1667): buf.g_length(p) < fmt.g_sizeimage(p)', 'test MMAP (select, REQBUFS): FAIL', 'fail: v4l2-test-buffers.cpp(1667): buf.g_length(p) < fmt.g_sizeimage(p)', 'test MMAP (epoll, REQBUFS): FAIL', 'fail: v4l2-test-buffers.cpp(1667): buf.g_length(p) < fmt.g_sizeimage(p)', 'test MMAP (no poll, CREATE_BUFS): FAIL', 'fail: v4l2-test-buffers.cpp(1667): buf.g_length(p) < fmt.g_sizeimage(p)', 'test MMAP (select, CREATE_BUFS): FAIL', 'fail: v4l2-test-buffers.cpp(1667): buf.g_length(p) < fmt.g_sizeimage(p)', 'test MMAP (epoll, CREATE_BUFS): FAIL', 'fail: v4l2-test-buffers.cpp(2065): data at 8 bytes before start of the buffer was touched', 'fail: v4l2-test-buffers.cpp(2065): data at 4 bytes before start of the buffer was touched', 'fail: v4l2-test-buffers.cpp(2065): data at 8 bytes before start of the buffer was touched', 'fail: v4l2-test-buffers.cpp(2065): data at 4 bytes before start of the buffer was touched', 'fail: v4l2-test-buffers.cpp(2065): data at 8 bytes before start of the buffer was touched', 'fail: v4l2-test-buffers.cpp(2065): data at 4 bytes before start of the buffer was touched', 'fail: v4l2-test-buffers.cpp(2065): data at 8 bytes before start of the buffer was touched', 'fail: v4l2-test-buffers.cpp(2065): data at 4 bytes before start of the buffer was touched']
+E       assert 7 == 0
+E        +  where 7 = int('7')
+
+tests/test_k1_compliance.py:42: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_k1_compliance.py::test_compliance[media] - AssertionError: ...
+FAILED tests/test_k1_compliance.py::test_compliance[video] - AssertionError: ...
+============ 2 failed, 24 passed, 2 skipped, 5 deselected in 34.75s ============
+
+$ IRCAM_DISRUPTIVE=1 IRCAM_KO=<6.18 test module> pytest -q tests/test_k9_reload.py   (updated K9: unbind, modprobe -r, insmod)
+1 passed in 13.80s
+
+# note: each K1 media run (v4l2-compliance -m) oopses the kernel in ov5693_set_fmt (divide error), stock and patched alike: 8 Oopses this boot, #1-#7 (20:26-20:36) before the module swap, #8 at 20:50:45 from this run. v4l2-compliance is killed (signal 11), hence K1 media red. Not an ov7251 issue.
+
+# restore stock module
+relay: active
+v4l2-ctl: []
+runtime: suspended
+- entity 37: ov5693 2-0036 (1 pad, 1 link, 0 routes)
+- entity 41: ov8865 3-0010 (1 pad, 1 link, 0 routes)
+- entity 127: ov7251 3-0060 (1 pad, 1 link, 0 routes)
+module: ov7251                 36864  1 taint=OE srcver=
+relay: active
+v4l2-ctl: []
+runtime: suspended
+- entity 37: ov5693 2-0036 (1 pad, 1 link, 0 routes)
+- entity 41: ov8865 3-0010 (1 pad, 1 link, 0 routes)
+- entity 133: ov7251 3-0060 (1 pad, 1 link, 0 routes)
+module: ov7251                 36864  1 taint= srcver=
+/lib/modules/6.18.8-1.surface.fc43.x86_64/kernel/drivers/media/i2c/ov7251.ko.xz
+Oct 24 20:52:18 esteban kernel: ov7251 i2c-INT347E:00: supply vdda not found, using dummy regulator
+Oct 24 20:52:18 esteban kernel: ov7251 i2c-INT347E:00: OV7251 revision 7 (1F) detected at address 0x60
+Oct 24 20:52:29 esteban kernel: ov7251 i2c-INT347E:00: supply vdddo not found, using dummy regulator
+Oct 24 20:52:29 esteban kernel: ov7251 i2c-INT347E:00: supply vddd not found, using dummy regulator
+Oct 24 20:52:29 esteban kernel: ov7251 i2c-INT347E:00: supply vdda not found, using dummy regulator
+Oct 24 20:52:29 esteban kernel: ov7251 i2c-INT347E:00: OV7251 revision 7 (1F) detected at address 0x60
+
+$ pytest -q tests/ -m "not needs_patch" -k "not k1"   (stock module restored)
+E       AssertionError: asked 90 fps, v4l2-ctl measured 30.01
+E       assert (30.01 and (59.989999999999995 / 90) < 0.05)
+E        +  where 59.989999999999995 = abs((30.01 - 90))
+tests/test_k3_timing.py:44: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_k3_timing.py::test_frame_interval_selects_fps[60] - Asserti...
+FAILED tests/test_k3_timing.py::test_frame_interval_selects_fps[90] - Asserti...
+2 failed, 13 passed, 2 skipped, 16 deselected in 16.72s
+                  analogue_gain 0x009e0903 (int)    : min=16 max=1023 step=1 default=16 value=128 flags=has-min-max
+                 link_frequency 0x009f0901 (intmenu): min=0 max=1 default=0 value=0 (240000000 0xe4e1c00) flags=read-only, has-min-max
+relay: active

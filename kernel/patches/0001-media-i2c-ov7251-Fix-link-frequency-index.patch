@@ -1,0 +1,44 @@
+From 34a00fab3568c9e7020afdd0d54b3038044542c3 Mon Sep 17 00:00:00 2001
+From: Antoine Pichot <antoine.pichot@gmail.com>
+Date: Sat, 24 Oct 2026 20:42:31 +0900
+Subject: [PATCH 1/7] media: i2c: ov7251: Fix link frequency index
+
+ov7251_check_hwcfg() looks for the first firmware link frequency the
+driver supports, then stores the loop index into the firmware's
+link_frequencies array (i) in link_freq_idx. That value is used as an
+index into the driver's own link_freq[], pixel_rates[] and PLL1
+configuration tables, so it has to be the index of the matching driver
+entry (j).
+
+The two only agree by chance. On the Microsoft Surface Book 2 the ACPI
+tables (via ipu-bridge) list a single link frequency, 319.2 MHz: i is
+0, so the driver selects link_freq[0], programs the PLL for 240 MHz and
+reports 240 MHz in V4L2_CID_LINK_FREQ and a 48 MHz pixel rate instead
+of 319.2 MHz and 63.84 MHz.
+
+Store j instead. On the Surface Book 2 the sensor then reports 319.2 MHz
+and 63.84 MHz, and still streams at 30 fps through the IPU3 CIO2.
+
+Fixes: cc125aaa5a78 ("media: i2c: Provide ov7251_check_hwcfg()")
+Cc: stable@vger.kernel.org
+Signed-off-by: Antoine Pichot <antoine.pichot@gmail.com>
+---
+ drivers/media/i2c/ov7251.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/media/i2c/ov7251.c b/drivers/media/i2c/ov7251.c
+index fce6344b51..1413f1856e 100644
+--- a/drivers/media/i2c/ov7251.c
++++ b/drivers/media/i2c/ov7251.c
+@@ -1523,7 +1523,7 @@ static int ov7251_check_hwcfg(struct ov7251 *ov7251)
+ 		goto out_free_bus_cfg;
+ 	}
+ 
+-	ov7251->link_freq_idx = i;
++	ov7251->link_freq_idx = j;
+ 
+ out_free_bus_cfg:
+ 	v4l2_fwnode_endpoint_free(&bus_cfg);
+-- 
+2.53.0
+

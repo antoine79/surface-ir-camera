@@ -1,0 +1,66 @@
+From 3ed5621b3558fbd0bce80a8dd35c4072596c1d9c Mon Sep 17 00:00:00 2001
+From: Antoine Pichot <antoine.pichot@gmail.com>
+Date: Sat, 24 Oct 2026 20:43:16 +0900
+Subject: [PATCH 3/7] media: i2c: ov7251: Add control event support
+
+The driver exposes writable controls on its subdev node but does not
+support control events, so VIDIOC_SUBSCRIBE_EVENT fails and
+v4l2-compliance reports:
+
+  fail: v4l2-test-controls.cpp(1128): subscribe event for control
+  'User Controls' failed
+  test VIDIOC_(UN)SUBSCRIBE_EVENT/DQEVENT: FAIL
+
+Set V4L2_SUBDEV_FL_HAS_EVENTS and use the standard control event
+helpers, as other sensor drivers do.
+
+Signed-off-by: Antoine Pichot <antoine.pichot@gmail.com>
+---
+ drivers/media/i2c/ov7251.c | 10 +++++++++-
+ 1 file changed, 9 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/media/i2c/ov7251.c b/drivers/media/i2c/ov7251.c
+index f7b1daa9d4..344a50d312 100644
+--- a/drivers/media/i2c/ov7251.c
++++ b/drivers/media/i2c/ov7251.c
+@@ -19,6 +19,7 @@
+ #include <linux/slab.h>
+ #include <linux/types.h>
+ #include <media/v4l2-ctrls.h>
++#include <media/v4l2-event.h>
+ #include <media/v4l2-fwnode.h>
+ #include <media/v4l2-subdev.h>
+ 
+@@ -1453,6 +1454,11 @@ static int ov7251_set_frame_interval(struct v4l2_subdev *subdev,
+ 	return ret;
+ }
+ 
++static const struct v4l2_subdev_core_ops ov7251_core_ops = {
++	.subscribe_event = v4l2_ctrl_subdev_subscribe_event,
++	.unsubscribe_event = v4l2_event_subdev_unsubscribe,
++};
++
+ static const struct v4l2_subdev_video_ops ov7251_video_ops = {
+ 	.s_stream = ov7251_s_stream,
+ };
+@@ -1469,6 +1475,7 @@ static const struct v4l2_subdev_pad_ops ov7251_subdev_pad_ops = {
+ };
+ 
+ static const struct v4l2_subdev_ops ov7251_subdev_ops = {
++	.core = &ov7251_core_ops,
+ 	.video = &ov7251_video_ops,
+ 	.pad = &ov7251_subdev_pad_ops,
+ };
+@@ -1699,7 +1706,8 @@ static int ov7251_probe(struct i2c_client *client)
+ 
+ 	v4l2_i2c_subdev_init(&ov7251->sd, client, &ov7251_subdev_ops);
+ 	ov7251->sd.internal_ops = &ov7251_internal_ops;
+-	ov7251->sd.flags |= V4L2_SUBDEV_FL_HAS_DEVNODE;
++	ov7251->sd.flags |= V4L2_SUBDEV_FL_HAS_DEVNODE |
++			    V4L2_SUBDEV_FL_HAS_EVENTS;
+ 	ov7251->pad.flags = MEDIA_PAD_FL_SOURCE;
+ 	ov7251->sd.dev = &client->dev;
+ 	ov7251->sd.entity.function = MEDIA_ENT_F_CAM_SENSOR;
+-- 
+2.53.0
+

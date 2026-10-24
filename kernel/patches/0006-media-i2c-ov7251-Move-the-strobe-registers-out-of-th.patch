@@ -1,0 +1,178 @@
+From 30dbca94df432523c8463271131c6e53966b071c Mon Sep 17 00:00:00 2001
+From: Antoine Pichot <antoine.pichot@gmail.com>
+Date: Sat, 24 Oct 2026 20:46:18 +0900
+Subject: [PATCH 6/7] media: i2c: ov7251: Move the strobe registers out of the
+ mode tables
+
+The three mode tables write the same values to the STROBE pad output
+enable bit (0x3005) and to the strobe control block (0x3b80-0x3b96).
+Move these writes to a separate register array written right after the
+mode table at stream start, and name the registers a following patch
+needs: SC_REG5 (0x3005, whose bit 3 enables the STROBE pad output), the
+strobe frame pattern (0x3b81) and the 32-bit strobe frame span (0x3b8c).
+
+The values written are unchanged, only the order of the writes within
+the stream start sequence changes. No functional change intended.
+
+Signed-off-by: Antoine Pichot <antoine.pichot@gmail.com>
+---
+ drivers/media/i2c/ov7251.c | 93 ++++++++++++++------------------------
+ 1 file changed, 33 insertions(+), 60 deletions(-)
+
+diff --git a/drivers/media/i2c/ov7251.c b/drivers/media/i2c/ov7251.c
+index acd4d8dfdc..83fce6ebbc 100644
+--- a/drivers/media/i2c/ov7251.c
++++ b/drivers/media/i2c/ov7251.c
+@@ -53,6 +53,9 @@
+ #define OV7251_PLL2_DIVIDER_REG		0x309d
+ #define OV7251_PLL2_SYS_DIV_REG		0x309a
+ #define OV7251_PLL2_ADC_DIV_REG		0x309b
++#define OV7251_SC_REG5			0x3005
++#define OV7251_STROBE_FRAME_PATTERN	0x3b81
++#define OV7251_STROBE_FRAME_SPAN	0x3b8c
+ 
+ #define OV7251_NATIVE_WIDTH		656
+ #define OV7251_NATIVE_HEIGHT		496
+@@ -240,8 +243,31 @@ static const struct reg_value ov7251_global_init_setting[] = {
+ 	{ 0x303b, 0x02 },
+ };
+ 
++/* Strobe output settings, the same for all modes */
++static const struct reg_value ov7251_strobe_regs[] = {
++	{ OV7251_SC_REG5, 0x00 },
++	{ 0x3b80, 0x00 },
++	{ OV7251_STROBE_FRAME_PATTERN, 0xa5 },
++	{ 0x3b82, 0x10 },
++	{ 0x3b83, 0x00 },
++	{ 0x3b84, 0x08 },
++	{ 0x3b85, 0x00 },
++	{ 0x3b86, 0x01 },
++	{ 0x3b87, 0x00 },
++	{ 0x3b88, 0x00 },
++	{ 0x3b89, 0x00 },
++	{ 0x3b8a, 0x00 },
++	{ 0x3b8b, 0x05 },
++	{ OV7251_STROBE_FRAME_SPAN, 0x00 },
++	{ 0x3b8d, 0x00 },
++	{ 0x3b8e, 0x00 },
++	{ 0x3b8f, 0x1a },
++	{ 0x3b94, 0x05 },
++	{ 0x3b95, 0xf2 },
++	{ 0x3b96, 0x40 },
++};
++
+ static const struct reg_value ov7251_setting_vga_30fps[] = {
+-	{ 0x3005, 0x00 },
+ 	{ 0x3012, 0xc0 },
+ 	{ 0x3013, 0xd2 },
+ 	{ 0x3014, 0x04 },
+@@ -314,25 +340,6 @@ static const struct reg_value ov7251_setting_vga_30fps[] = {
+ 	{ 0x3834, 0x00 },
+ 	{ 0x3835, 0x0c },
+ 	{ 0x3837, 0x00 },
+-	{ 0x3b80, 0x00 },
+-	{ 0x3b81, 0xa5 },
+-	{ 0x3b82, 0x10 },
+-	{ 0x3b83, 0x00 },
+-	{ 0x3b84, 0x08 },
+-	{ 0x3b85, 0x00 },
+-	{ 0x3b86, 0x01 },
+-	{ 0x3b87, 0x00 },
+-	{ 0x3b88, 0x00 },
+-	{ 0x3b89, 0x00 },
+-	{ 0x3b8a, 0x00 },
+-	{ 0x3b8b, 0x05 },
+-	{ 0x3b8c, 0x00 },
+-	{ 0x3b8d, 0x00 },
+-	{ 0x3b8e, 0x00 },
+-	{ 0x3b8f, 0x1a },
+-	{ 0x3b94, 0x05 },
+-	{ 0x3b95, 0xf2 },
+-	{ 0x3b96, 0x40 },
+ 	{ 0x3c00, 0x89 },
+ 	{ 0x3c01, 0x63 },
+ 	{ 0x3c02, 0x01 },
+@@ -369,7 +376,6 @@ static const struct reg_value ov7251_setting_vga_30fps[] = {
+ };
+ 
+ static const struct reg_value ov7251_setting_vga_60fps[] = {
+-	{ 0x3005, 0x00 },
+ 	{ 0x3012, 0xc0 },
+ 	{ 0x3013, 0xd2 },
+ 	{ 0x3014, 0x04 },
+@@ -442,25 +448,6 @@ static const struct reg_value ov7251_setting_vga_60fps[] = {
+ 	{ 0x3834, 0x00 },
+ 	{ 0x3835, 0x0c },
+ 	{ 0x3837, 0x00 },
+-	{ 0x3b80, 0x00 },
+-	{ 0x3b81, 0xa5 },
+-	{ 0x3b82, 0x10 },
+-	{ 0x3b83, 0x00 },
+-	{ 0x3b84, 0x08 },
+-	{ 0x3b85, 0x00 },
+-	{ 0x3b86, 0x01 },
+-	{ 0x3b87, 0x00 },
+-	{ 0x3b88, 0x00 },
+-	{ 0x3b89, 0x00 },
+-	{ 0x3b8a, 0x00 },
+-	{ 0x3b8b, 0x05 },
+-	{ 0x3b8c, 0x00 },
+-	{ 0x3b8d, 0x00 },
+-	{ 0x3b8e, 0x00 },
+-	{ 0x3b8f, 0x1a },
+-	{ 0x3b94, 0x05 },
+-	{ 0x3b95, 0xf2 },
+-	{ 0x3b96, 0x40 },
+ 	{ 0x3c00, 0x89 },
+ 	{ 0x3c01, 0x63 },
+ 	{ 0x3c02, 0x01 },
+@@ -497,7 +484,6 @@ static const struct reg_value ov7251_setting_vga_60fps[] = {
+ };
+ 
+ static const struct reg_value ov7251_setting_vga_90fps[] = {
+-	{ 0x3005, 0x00 },
+ 	{ 0x3012, 0xc0 },
+ 	{ 0x3013, 0xd2 },
+ 	{ 0x3014, 0x04 },
+@@ -570,25 +556,6 @@ static const struct reg_value ov7251_setting_vga_90fps[] = {
+ 	{ 0x3834, 0x00 },
+ 	{ 0x3835, 0x0c },
+ 	{ 0x3837, 0x00 },
+-	{ 0x3b80, 0x00 },
+-	{ 0x3b81, 0xa5 },
+-	{ 0x3b82, 0x10 },
+-	{ 0x3b83, 0x00 },
+-	{ 0x3b84, 0x08 },
+-	{ 0x3b85, 0x00 },
+-	{ 0x3b86, 0x01 },
+-	{ 0x3b87, 0x00 },
+-	{ 0x3b88, 0x00 },
+-	{ 0x3b89, 0x00 },
+-	{ 0x3b8a, 0x00 },
+-	{ 0x3b8b, 0x05 },
+-	{ 0x3b8c, 0x00 },
+-	{ 0x3b8d, 0x00 },
+-	{ 0x3b8e, 0x00 },
+-	{ 0x3b8f, 0x1a },
+-	{ 0x3b94, 0x05 },
+-	{ 0x3b95, 0xf2 },
+-	{ 0x3b96, 0x40 },
+ 	{ 0x3c00, 0x89 },
+ 	{ 0x3c01, 0x63 },
+ 	{ 0x3c02, 0x01 },
+@@ -1369,6 +1336,12 @@ static int ov7251_s_stream(struct v4l2_subdev *subdev, int enable)
+ 				ov7251->current_mode->height);
+ 			goto err_power_down;
+ 		}
++		ret = ov7251_set_register_array(ov7251, ov7251_strobe_regs,
++						ARRAY_SIZE(ov7251_strobe_regs));
++		if (ret < 0) {
++			dev_err(ov7251->dev, "could not set strobe defaults\n");
++			goto err_power_down;
++		}
+ 		ret = __v4l2_ctrl_handler_setup(&ov7251->ctrls);
+ 		if (ret < 0) {
+ 			dev_err(ov7251->dev, "could not sync v4l2 controls\n");
+-- 
+2.53.0
+

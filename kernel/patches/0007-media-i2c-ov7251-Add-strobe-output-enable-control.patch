@@ -1,0 +1,216 @@
+From a6a22e7645ba10d40ac9d4606df3743ca5c9d4b4 Mon Sep 17 00:00:00 2001
+From: Antoine Pichot <antoine.pichot@gmail.com>
+Date: Sat, 24 Oct 2026 20:47:34 +0900
+Subject: [PATCH 7/7] media: i2c: ov7251: Add strobe output enable control
+
+The OV7251 has a STROBE output that pulses during the exposure of
+selected frames, meant to drive an illuminator. On the Microsoft
+Surface Book 2 the front OV7251 is an IR camera (Windows Hello) and its
+850 nm emitter is wired to that pin: ACPI describes no separate LED,
+GPIO or regulator for it, so the sensor is the only way to light it.
+The mode tables leave the pad disabled, so the camera only sees an
+unlit scene.
+
+Add a V4L2_CID_FLASH_STROBE_OE control, off by default. When enabled
+it sets the STROBE pad output enable (SC_REG5 bit 3), strobes every
+frame (frame pattern 0xff instead of the default 0xa5) and sets the
+pulse length (strobe frame span, in lines) to the exposure time,
+clamped between 52 lines and 45% of the frame length. When disabled it
+restores the defaults the mode tables used to write. The span follows
+exposure and vertical blanking changes while the strobe is enabled.
+
+The limits come from the Windows driver on this hardware, which clamps
+the span to 52 to 776 lines: 776 lines is 45% of the 1724 lines frame
+of the 30 fps mode. Expressing the upper limit as a duty cycle keeps
+the emitter within that envelope (eye safety and duty cycle) at 60 and
+90 fps too, where a fixed 776 lines would let the pulse cover up to
+96% of the frame (552 of 572 lines), whatever exposure userspace asks
+for.
+
+The control is applied like the others: only while the sensor is
+powered, and from __v4l2_ctrl_handler_setup() at stream start, after
+the mode and strobe register tables. Setting it while the sensor is
+idle does not power it up, and the emitter goes off with the sensor
+when streaming stops.
+
+On a Surface Book 2 at exposure 1704 and analogue gain 128, enabling
+the STROBE output with every frame strobed raises the mean pixel value
+of the IR image of a room from 20 to 103 (with the default 26 lines
+span).
+
+Signed-off-by: Antoine Pichot <antoine.pichot@gmail.com>
+---
+ drivers/media/i2c/ov7251.c | 83 +++++++++++++++++++++++++++++++++-----
+ 1 file changed, 74 insertions(+), 9 deletions(-)
+
+diff --git a/drivers/media/i2c/ov7251.c b/drivers/media/i2c/ov7251.c
+index 83fce6ebbc..87baf984e9 100644
+--- a/drivers/media/i2c/ov7251.c
++++ b/drivers/media/i2c/ov7251.c
+@@ -18,6 +18,7 @@
+ #include <linux/regulator/consumer.h>
+ #include <linux/slab.h>
+ #include <linux/types.h>
++#include <linux/unaligned.h>
+ #include <media/v4l2-ctrls.h>
+ #include <media/v4l2-event.h>
+ #include <media/v4l2-fwnode.h>
+@@ -54,8 +55,14 @@
+ #define OV7251_PLL2_SYS_DIV_REG		0x309a
+ #define OV7251_PLL2_ADC_DIV_REG		0x309b
+ #define OV7251_SC_REG5			0x3005
++#define OV7251_SC_REG5_STROBE_OE	BIT(3)
+ #define OV7251_STROBE_FRAME_PATTERN	0x3b81
++#define OV7251_STROBE_FRAME_PATTERN_ALL	0xff
++#define OV7251_STROBE_FRAME_PATTERN_DEF	0xa5
+ #define OV7251_STROBE_FRAME_SPAN	0x3b8c
++#define OV7251_STROBE_FRAME_SPAN_DEF	0x1a
++#define OV7251_STROBE_SPAN_MIN		52
++#define OV7251_STROBE_MAX_DUTY_PERCENT	45
+ 
+ #define OV7251_NATIVE_WIDTH		656
+ #define OV7251_NATIVE_HEIGHT		496
+@@ -151,6 +158,7 @@ struct ov7251 {
+ 	struct v4l2_ctrl *gain;
+ 	struct v4l2_ctrl *hblank;
+ 	struct v4l2_ctrl *vblank;
++	struct v4l2_ctrl *strobe;
+ 
+ 	/* Cached register values */
+ 	u8 aec_pk_manual;
+@@ -243,11 +251,12 @@ static const struct reg_value ov7251_global_init_setting[] = {
+ 	{ 0x303b, 0x02 },
+ };
+ 
+-/* Strobe output settings, the same for all modes */
++/*
++ * Strobe output settings, the same for all modes. The STROBE_OE control
++ * writes SC_REG5, the frame pattern and the frame span.
++ */
+ static const struct reg_value ov7251_strobe_regs[] = {
+-	{ OV7251_SC_REG5, 0x00 },
+ 	{ 0x3b80, 0x00 },
+-	{ OV7251_STROBE_FRAME_PATTERN, 0xa5 },
+ 	{ 0x3b82, 0x10 },
+ 	{ 0x3b83, 0x00 },
+ 	{ 0x3b84, 0x08 },
+@@ -258,10 +267,6 @@ static const struct reg_value ov7251_strobe_regs[] = {
+ 	{ 0x3b89, 0x00 },
+ 	{ 0x3b8a, 0x00 },
+ 	{ 0x3b8b, 0x05 },
+-	{ OV7251_STROBE_FRAME_SPAN, 0x00 },
+-	{ 0x3b8d, 0x00 },
+-	{ 0x3b8e, 0x00 },
+-	{ 0x3b8f, 0x1a },
+ 	{ 0x3b94, 0x05 },
+ 	{ 0x3b95, 0xf2 },
+ 	{ 0x3b96, 0x40 },
+@@ -724,7 +729,7 @@ static int ov7251_write_reg(struct ov7251 *ov7251, u16 reg, u8 val)
+ static int ov7251_write_seq_regs(struct ov7251 *ov7251, u16 reg, u8 *val,
+ 				 u8 num)
+ {
+-	u8 regbuf[5];
++	u8 regbuf[6];
+ 	u8 nregbuf = sizeof(reg) + num * sizeof(*val);
+ 	int ret = 0;
+ 
+@@ -976,6 +981,55 @@ static int ov7251_set_test_pattern(struct ov7251 *ov7251, s32 value)
+ 	return ret;
+ }
+ 
++static int ov7251_set_strobe_span(struct ov7251 *ov7251)
++{
++	u32 span = OV7251_STROBE_FRAME_SPAN_DEF;
++	u32 vts, max_span;
++	u8 val[4];
++
++	/*
++	 * The pulse starts with the integration: make it cover the exposure,
++	 * from 52 lines up to 45% of the frame. The vendor driver caps it at
++	 * 776 lines, 45% of the 1724 lines 30 fps frame; a duty cycle limit
++	 * keeps the emitter within that envelope at higher frame rates.
++	 */
++	if (ov7251->strobe->val) {
++		vts = ov7251->current_mode->height + ov7251->vblank->val;
++		max_span = DIV_ROUND_UP(vts * OV7251_STROBE_MAX_DUTY_PERCENT,
++					100);
++		span = clamp_t(u32, ov7251->exposure->val,
++			       OV7251_STROBE_SPAN_MIN,
++			       max(max_span, OV7251_STROBE_SPAN_MIN));
++	}
++
++	put_unaligned_be32(span, val);
++
++	return ov7251_write_seq_regs(ov7251, OV7251_STROBE_FRAME_SPAN, val,
++				     sizeof(val));
++}
++
++static int ov7251_set_strobe(struct ov7251 *ov7251, s32 value)
++{
++	int ret;
++
++	/*
++	 * The other SC_REG5 bits enable other pads, which the mode tables
++	 * have always left disabled (0x00).
++	 */
++	ret = ov7251_write_reg(ov7251, OV7251_SC_REG5,
++			       value ? OV7251_SC_REG5_STROBE_OE : 0);
++	if (ret)
++		return ret;
++
++	ret = ov7251_write_reg(ov7251, OV7251_STROBE_FRAME_PATTERN,
++			       value ? OV7251_STROBE_FRAME_PATTERN_ALL :
++				       OV7251_STROBE_FRAME_PATTERN_DEF);
++	if (ret)
++		return ret;
++
++	return ov7251_set_strobe_span(ov7251);
++}
++
+ static const char * const ov7251_test_pattern_menu[] = {
+ 	"Disabled",
+ 	"Vertical Pattern Bars",
+@@ -1019,6 +1073,8 @@ static int ov7251_s_ctrl(struct v4l2_ctrl *ctrl)
+ 	switch (ctrl->id) {
+ 	case V4L2_CID_EXPOSURE:
+ 		ret = ov7251_set_exposure(ov7251, ctrl->val);
++		if (!ret && ov7251->strobe->val)
++			ret = ov7251_set_strobe_span(ov7251);
+ 		break;
+ 	case V4L2_CID_ANALOGUE_GAIN:
+ 		ret = ov7251_set_gain(ov7251, ctrl->val);
+@@ -1034,6 +1090,11 @@ static int ov7251_s_ctrl(struct v4l2_ctrl *ctrl)
+ 		break;
+ 	case V4L2_CID_VBLANK:
+ 		ret = ov7251_vts_configure(ov7251, ctrl->val);
++		if (!ret && ov7251->strobe->val)
++			ret = ov7251_set_strobe_span(ov7251);
++		break;
++	case V4L2_CID_FLASH_STROBE_OE:
++		ret = ov7251_set_strobe(ov7251, ctrl->val);
+ 		break;
+ 	default:
+ 		ret = -EINVAL;
+@@ -1574,7 +1635,7 @@ static int ov7251_init_ctrls(struct ov7251 *ov7251)
+ 	if (ret)
+ 		return ret;
+ 
+-	v4l2_ctrl_handler_init(&ov7251->ctrls, 11);
++	v4l2_ctrl_handler_init(&ov7251->ctrls, 12);
+ 	ov7251->ctrls.lock = &ov7251->lock;
+ 
+ 	v4l2_ctrl_new_std(&ov7251->ctrls, &ov7251_ctrl_ops,
+@@ -1621,6 +1682,10 @@ static int ov7251_init_ctrls(struct ov7251 *ov7251)
+ 					   OV7251_TIMING_MIN_VTS, vblank_max, 1,
+ 					   vblank_def);
+ 
++	ov7251->strobe = v4l2_ctrl_new_std(&ov7251->ctrls, &ov7251_ctrl_ops,
++					   V4L2_CID_FLASH_STROBE_OE,
++					   0, 1, 1, 0);
++
+ 	v4l2_ctrl_new_fwnode_properties(&ov7251->ctrls, &ov7251_ctrl_ops,
+ 					&props);
+ 
+-- 
+2.53.0
+

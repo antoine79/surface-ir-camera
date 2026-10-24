@@ -12,12 +12,13 @@ import pytest
 from conftest import MEDIA, VIDEO, ctrl_info, parse_ctrls, run, sd, set_ctrl, set_fps, setup_graph
 
 BASELINE = Path(__file__).parent / "baseline"
+MEDIA_OOPS = "v4l2-compliance -m oopses ov5693_set_fmt (divide error), front camera; run only before a reboot"
 TOTAL = re.compile(r"Total.*: (\d+), Succeeded: (\d+), Failed: (\d+), Warnings: (\d+)")
 
 
 @pytest.mark.parametrize("target, args", [
     ("subdev", lambda: ["-u", sd()]),
-    ("media", lambda: ["-m", MEDIA]),
+    pytest.param("media", lambda: ["-m", MEDIA], marks=pytest.mark.disruptive(reason=MEDIA_OOPS)),
     ("video", lambda: ["-d", VIDEO, "-s", "30"]),
 ], ids=["subdev", "media", "video"])
 def test_compliance(graph, target, args):

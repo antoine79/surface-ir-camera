@@ -1,0 +1,58 @@
+From 422437f2acb3fa520cb5a9a5c5bb9e19e5ff6281 Mon Sep 17 00:00:00 2001
+From: Antoine Pichot <antoine.pichot@gmail.com>
+Date: Sat, 24 Oct 2026 20:45:11 +0900
+Subject: [PATCH 5/7] media: i2c: ov7251: Add orientation and rotation controls
+
+Parse the firmware device properties and register the
+V4L2_CID_CAMERA_ORIENTATION and V4L2_CID_CAMERA_SENSOR_ROTATION
+controls, as documented in
+Documentation/driver-api/media/camera-sensor.rst. libcamera uses them to
+place the camera and to correct the image orientation.
+
+While at it, bump the control handler size hint to the number of
+controls the driver now creates.
+
+On the Microsoft Surface Book 2 the ACPI _PLD (via ipu-bridge) reports
+the IR sensor as front facing with no rotation.
+
+Signed-off-by: Antoine Pichot <antoine.pichot@gmail.com>
+---
+ drivers/media/i2c/ov7251.c | 11 ++++++++++-
+ 1 file changed, 10 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/media/i2c/ov7251.c b/drivers/media/i2c/ov7251.c
+index 6ccd5ac53f..acd4d8dfdc 100644
+--- a/drivers/media/i2c/ov7251.c
++++ b/drivers/media/i2c/ov7251.c
+@@ -1591,11 +1591,17 @@ static int ov7251_detect_chip(struct ov7251 *ov7251)
+ 
+ static int ov7251_init_ctrls(struct ov7251 *ov7251)
+ {
++	struct v4l2_fwnode_device_properties props;
+ 	int vblank_max, vblank_def;
+ 	s64 pixel_rate;
+ 	int hblank;
++	int ret;
+ 
+-	v4l2_ctrl_handler_init(&ov7251->ctrls, 7);
++	ret = v4l2_fwnode_device_parse(ov7251->dev, &props);
++	if (ret)
++		return ret;
++
++	v4l2_ctrl_handler_init(&ov7251->ctrls, 11);
+ 	ov7251->ctrls.lock = &ov7251->lock;
+ 
+ 	v4l2_ctrl_new_std(&ov7251->ctrls, &ov7251_ctrl_ops,
+@@ -1642,6 +1648,9 @@ static int ov7251_init_ctrls(struct ov7251 *ov7251)
+ 					   OV7251_TIMING_MIN_VTS, vblank_max, 1,
+ 					   vblank_def);
+ 
++	v4l2_ctrl_new_fwnode_properties(&ov7251->ctrls, &ov7251_ctrl_ops,
++					&props);
++
+ 	ov7251->sd.ctrl_handler = &ov7251->ctrls;
+ 
+ 	if (ov7251->ctrls.error) {
+-- 
+2.53.0
+

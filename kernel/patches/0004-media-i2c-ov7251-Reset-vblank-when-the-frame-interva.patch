@@ -1,0 +1,85 @@
+From f89c581d9903a0edc0e5a351f23f4a1f7ad67a29 Mon Sep 17 00:00:00 2001
+From: Antoine Pichot <antoine.pichot@gmail.com>
+Date: Sat, 24 Oct 2026 20:44:45 +0900
+Subject: [PATCH 4/7] media: i2c: ov7251: Reset vblank when the frame interval
+ changes
+
+Setting a 60 or 90 fps frame interval is accepted and read back, but
+the sensor keeps streaming at 30 fps.
+
+The three modes differ only in their frame length (VTS: 1724, 860 and
+572 lines), which each mode's register table writes to 0x380e/0x380f.
+Since the V4L2_CID_VBLANK control was added, s_stream() applies the
+controls with __v4l2_ctrl_handler_setup() after the mode table, so the
+VBLANK control rewrites VTS. ov7251_set_frame_interval() switches
+current_mode but never updates the VBLANK control, which keeps the 30
+fps value (1244, VTS 1724) and overrides the 60 or 90 fps VTS at every
+stream start.
+
+ov7251_set_format() has the same issue in the other direction: it
+updates the VBLANK range and default for the new mode, but
+__v4l2_ctrl_modify_range() keeps the current value when it is still
+in range, so after a 60 fps frame interval a format change would go
+back to the 30 fps mode with a 60 fps VTS.
+
+Update the VBLANK range and default in ov7251_set_frame_interval() too,
+and set VBLANK to the mode's default in both places, as is already
+done for exposure and gain. The VBLANK handler then also restores the
+exposure range for the new frame length.
+
+Tested on a Microsoft Surface Book 2 (IPU3 CIO2): after
+v4l2-ctl --set-subdev-fps pad=0,fps=60 (90), v4l2-ctl measures 60.15
+(90.45) fps instead of 30.01, with vblank 380 (92).
+
+Fixes: 1b598f413c7a ("media: i2c: Add vblank control to ov7251 driver")
+Signed-off-by: Antoine Pichot <antoine.pichot@gmail.com>
+---
+ drivers/media/i2c/ov7251.c | 18 ++++++++++++++++++
+ 1 file changed, 18 insertions(+)
+
+diff --git a/drivers/media/i2c/ov7251.c b/drivers/media/i2c/ov7251.c
+index 344a50d312..6ccd5ac53f 100644
+--- a/drivers/media/i2c/ov7251.c
++++ b/drivers/media/i2c/ov7251.c
+@@ -1262,6 +1262,10 @@ static int ov7251_set_format(struct v4l2_subdev *sd,
+ 		if (ret < 0)
+ 			goto exit;
+ 
++		ret = __v4l2_ctrl_s_ctrl(ov7251->vblank, vblank_def);
++		if (ret < 0)
++			goto exit;
++
+ 		ov7251->current_mode = new_mode;
+ 	}
+ 
+@@ -1415,6 +1419,7 @@ static int ov7251_set_frame_interval(struct v4l2_subdev *subdev,
+ {
+ 	struct ov7251 *ov7251 = to_ov7251(subdev);
+ 	const struct ov7251_mode_info *new_mode;
++	int vblank_def;
+ 	int ret = 0;
+ 
+ 	/*
+@@ -1443,6 +1448,19 @@ static int ov7251_set_frame_interval(struct v4l2_subdev *subdev,
+ 		if (ret < 0)
+ 			goto exit;
+ 
++		vblank_def = new_mode->vts - new_mode->height;
++		ret = __v4l2_ctrl_modify_range(ov7251->vblank,
++					       OV7251_TIMING_MIN_VTS,
++					       OV7251_TIMING_MAX_VTS -
++					       new_mode->height,
++					       1, vblank_def);
++		if (ret < 0)
++			goto exit;
++
++		ret = __v4l2_ctrl_s_ctrl(ov7251->vblank, vblank_def);
++		if (ret < 0)
++			goto exit;
++
+ 		ov7251->current_mode = new_mode;
+ 	}
+ 
+-- 
+2.53.0
+
