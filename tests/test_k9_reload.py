@@ -9,7 +9,6 @@ new entity id each time (e.g. 39 -> 67); the other sensors' entities must not ch
 import os
 import re
 import subprocess
-import time
 
 import pytest
 
@@ -27,12 +26,18 @@ def other_entities() -> set[str]:
             if re.match(r"- entity \d+: ", l) and "ov7251" not in l}
 
 
+def kernel_log() -> list[str]:
+    """This boot's kernel log. Counted, not filtered by time: the hardware clock runs on local time, so the kernel stamps
+    the first boot messages hours ahead and `journalctl --since now` would include them."""
+    return run("journalctl", "-k", "-b", "-o", "cat").splitlines()
+
+
 def test_module_reload_x10():
     """Run with IRCAM_DISRUPTIVE=1 after `sudo -v`. Loads $IRCAM_KO (e.g. kernel/build/ov7251.ko) with insmod if set,
     else `modprobe ov7251`. Asserts the ov7251 entity re-appears each time, the other entities are unchanged, and the
     kernel log since the start has no WARNING / BUG / Oops / leak.
     """
-    since = time.strftime("%Y-%m-%d %H:%M:%S")
+    seen = len(kernel_log())
     others = other_entities()
     load = ["sudo", "insmod", os.environ["IRCAM_KO"]] if os.environ.get("IRCAM_KO") else ["sudo", "modprobe", "ov7251"]
     for i in range(10):
@@ -44,6 +49,5 @@ def test_module_reload_x10():
         subdev.cache_clear()
         assert wait_for(lambda: subdev() is not None, 5), f"ov7251 entity missing after reload {i + 1}"
         assert other_entities() == others, f"other media entities changed after reload {i + 1}"
-    log = subprocess.run(["journalctl", "-k", "--since", since, "-o", "cat"], capture_output=True, text=True).stdout
-    bad = [l for l in log.splitlines() if any(w in l for w in ("WARNING", "BUG", "Oops", "leak"))]
+    bad = [l for l in kernel_log()[seen:] if any(w in l for w in ("WARNING", "BUG", "Oops", "leak"))]
     assert not bad, f"kernel log after 10 reloads: {bad[:10]}"
