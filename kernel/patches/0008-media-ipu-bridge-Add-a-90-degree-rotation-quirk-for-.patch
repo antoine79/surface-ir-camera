@@ -1,0 +1,76 @@
+From 12751218e9f2e83a6872afe9d7e6dd0e3d43ed79 Mon Sep 17 00:00:00 2001
+From: Antoine Pichot <antoine.pichot@gmail.com>
+Date: Sat, 24 Oct 2026 22:41:03 +0900
+Subject: [PATCH 8/8] media: ipu-bridge: Add a 90 degree rotation quirk for
+ Surface Book 2
+
+The infrared camera of the Microsoft Surface Book 2, an OmniVision
+OV7251 with ACPI ID INT347E, is mounted rotated by 90 degrees. An
+upright scene appears rotated 90 degrees clockwise in its frames, with
+the top of the scene at the right edge of the image, while a frame
+taken at the same moment by the colour camera next to it shows the
+scene upright. The degree field of the sensor's SSDB buffer in the ACPI
+tables is 0, so ipu_bridge_parse_rotation() sets the rotation property
+to 0 and userspace has no way to know that the image needs correcting.
+
+The firmware is wrong here, and ipu-bridge is where the firmware data
+is turned into the rotation property: it already carries DMI (Desktop
+Management Interface) quirks for sensors mounted upside down without
+the firmware saying so. Add a second table for sensors rotated by 90
+degrees, checked the same way, with one entry for the Surface Book 2
+infrared sensor. Following V4L2_CID_CAMERA_SENSOR_ROTATION, 90 is the
+counter-clockwise rotation to apply to correct the image. The 13 and
+15 inch models share the product name and the camera module, so the
+entry matches on the product name. The colour sensors of this machine
+(INT33BE and INT347A) already report 180 degrees and are unchanged.
+
+Tested on a Surface Book 2 (SKU Surface_Book_1832).
+
+Signed-off-by: Antoine Pichot <antoine.pichot@gmail.com>
+---
+ drivers/media/pci/intel/ipu-bridge.c | 22 ++++++++++++++++++++++
+ 1 file changed, 22 insertions(+)
+
+diff --git a/drivers/media/pci/intel/ipu-bridge.c b/drivers/media/pci/intel/ipu-bridge.c
+index 3739c4a2a8..9cce827a0f 100644
+--- a/drivers/media/pci/intel/ipu-bridge.c
++++ b/drivers/media/pci/intel/ipu-bridge.c
+@@ -281,6 +281,23 @@ static const struct dmi_system_id upside_down_sensor_dmi_ids[] = {
+ 	{} /* Terminating entry */
+ };
+ 
++/*
++ * DMI matches for laptops which have their sensor mounted rotated by 90°
++ * without reporting it in the SSDB.
++ */
++static const struct dmi_system_id rotated_90_sensor_dmi_ids[] = {
++	{
++		/* Microsoft Surface Book 2, infrared sensor */
++		.matches = {
++			DMI_EXACT_MATCH(DMI_SYS_VENDOR,
++					"Microsoft Corporation"),
++			DMI_EXACT_MATCH(DMI_PRODUCT_NAME, "Surface Book 2"),
++		},
++		.driver_data = "INT347E",
++	},
++	{} /* Terminating entry */
++};
++
+ static const struct ipu_property_names prop_names = {
+ 	.clock_frequency = "clock-frequency",
+ 	.rotation = "rotation",
+@@ -474,6 +491,11 @@ static u32 ipu_bridge_parse_rotation(struct acpi_device *adev,
+ 		if (acpi_dev_hid_match(adev, dmi_id->driver_data))
+ 			return 180;
+ 
++	for (dmi_id = dmi_first_match(rotated_90_sensor_dmi_ids); dmi_id;
++	     dmi_id = dmi_first_match(dmi_id + 1))
++		if (acpi_dev_hid_match(adev, dmi_id->driver_data))
++			return 90;
++
+ 	switch (ssdb->degree) {
+ 	case IPU_SENSOR_ROTATION_NORMAL:
+ 		return 0;
+-- 
+2.53.0
+

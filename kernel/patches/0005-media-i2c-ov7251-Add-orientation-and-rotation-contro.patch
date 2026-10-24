@@ -1,7 +1,7 @@
 From 422437f2acb3fa520cb5a9a5c5bb9e19e5ff6281 Mon Sep 17 00:00:00 2001
 From: Antoine Pichot <antoine.pichot@gmail.com>
 Date: Sat, 24 Oct 2026 20:45:11 +0900
-Subject: [PATCH 5/7] media: i2c: ov7251: Add orientation and rotation controls
+Subject: [PATCH 5/8] media: i2c: ov7251: Add orientation and rotation controls
 
 Parse the firmware device properties and register the
 V4L2_CID_CAMERA_ORIENTATION and V4L2_CID_CAMERA_SENSOR_ROTATION

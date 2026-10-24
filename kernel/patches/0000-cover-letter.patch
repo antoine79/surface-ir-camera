@@ -1,7 +1,7 @@
 From 574b6ec7584b1212171e2f48bdbe565c31db261b Mon Sep 17 00:00:00 2001
 From: Antoine Pichot <antoine.pichot@gmail.com>
 Date: Sat, 24 Oct 2026 20:57:10 +0900
-Subject: [PATCH 0/7] media: i2c: ov7251: fixes and infrared strobe for Surface Book 2
+Subject: [PATCH 0/8] media: i2c: ov7251: fixes and infrared strobe for Surface Book 2
 
 The Microsoft Surface Book 2 has an OV7251 infrared camera (used by
 Windows Hello) next to its front camera, both on the Intel IPU3 (image
@@ -36,6 +36,12 @@ exposure) to 1.2x (776-line pulse) as bright as during a Windows Hello
 sign-in on the same unit. Windows reportedly strobes alternate frames;
 a 0xaa pattern is a one-line change if preferred.
 
+Patch 8 makes ipu-bridge report a rotation of 90 degrees for the
+infrared sensor, whose frames show an upright scene rotated 90 degrees
+clockwise while the firmware says 0. It adds a DMI (Desktop Management
+Interface) quirk table next to the existing one for sensors mounted
+upside down.
+
 Tested on a Surface Book 2 (i7-8650U) with the series built out of
 tree against linux-surface 7.2.12:
 
@@ -55,19 +61,21 @@ The remaining v4l2-compliance failures are in the ipu3-cio2 capture
 driver (buffer creation and mapping checks) and unchanged by this
 series.
 
-Antoine Pichot (6):
+Antoine Pichot (7):
   media: i2c: ov7251: Fix link frequency index
   media: i2c: ov7251: Add control event support
   media: i2c: ov7251: Reset vblank when the frame interval changes
   media: i2c: ov7251: Add orientation and rotation controls
   media: i2c: ov7251: Move the strobe registers out of the mode tables
   media: i2c: ov7251: Add strobe output enable control
+  media: ipu-bridge: Add a 90 degree rotation quirk for Surface Book 2
 
 Daniel Scally (1):
   media: i2c: Clarify that gain is Analogue gain in OV7251
 
- drivers/media/i2c/ov7251.c | 205 +++++++++++++++++++++++++------------
- 1 file changed, 139 insertions(+), 66 deletions(-)
+ drivers/media/i2c/ov7251.c           | 205 ++++++++++++++++++---------
+ drivers/media/pci/intel/ipu-bridge.c |  22 +++
+ 2 files changed, 161 insertions(+), 66 deletions(-)
 
 -- 
 2.53.0

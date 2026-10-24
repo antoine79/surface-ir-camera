@@ -1,11 +1,11 @@
-# Out-of-tree ov7251.ko
+# Out-of-tree ov7251.ko and ipu-bridge.ko
 
-`ov7251.c` in this folder is a symlink to `../backport/ov7251.c`. Nothing is installed under `/lib/modules`.
+`ov7251.c` and `ipu-bridge.c` in this folder are symlinks to `../backport/`. `make` builds both modules. Nothing is installed under `/lib/modules` except by `tools/test-ipu-bridge-swap.sh install` (see below).
 
 ## Build
 
 ```sh
-make -C kernel/build KDIR=/lib/modules/7.2.12-1.surface.fc43.x86_64/build        # -> kernel/build/ov7251.ko
+make -C kernel/build KDIR=/lib/modules/7.2.12-1.surface.fc43.x86_64/build        # -> kernel/build/ov7251.ko, ipu-bridge.ko
 make -C kernel/build KDIR=... W=1                                                # extra warnings
 make -C kernel/build check                                                       # checkpatch --strict from ~/projects/media-committers
 make -C kernel/build KDIR=... clean
@@ -47,3 +47,11 @@ sudo rmmod ov7251 && sudo modprobe ov7251
 ```
 
 This restores the distro module. A reboot does the same.
+
+## ipu-bridge.ko (patch 8)
+
+`ipu-bridge.ko` is the 7.2.12 kernel-surface ipu-bridge plus patch 8, which makes the bridge report a rotation of 90 degrees for the infrared sensor (INT347E) on the Surface Book 2. Its module name is `ipu_bridge`, the same as the stock one, and it is unsigned. It builds clean with W=1 against the 7.2.12 headers. How the source was put together is in `../backport/README.md`.
+
+It cannot be swapped in without a reboot. ipu3-cio2 calls `ipu_bridge_init()` at probe, and the software nodes it creates (they carry the sensors' `rotation` property) are deliberately never freed. When ipu3-cio2 probes again, `ipu_bridge_init()` finds those nodes still attached to the cio2 device and returns without building new ones, so a reloaded bridge never gets to set a new rotation. The new module has to be the one loaded at boot.
+
+`tools/test-ipu-bridge-swap.sh install` copies it to `/lib/modules/7.2.12-1.surface.fc43.x86_64/updates/` and runs `depmod` (and `dracut -f` if the initramfs carries ipu-bridge). After a reboot into 7.2.12, `tools/test-ipu-bridge-swap.sh check` swaps in the patched `ov7251.ko` (the stock 7.2.12 driver has no rotation control) and prints the orientation and rotation controls of the three sensors: the infrared sensor should read 90 and the two colour sensors 180. `tools/test-ipu-bridge-swap.sh undo` removes the module from `updates/` and runs `depmod` again, and the next reboot loads the stock ipu-bridge. All three steps run as root.
