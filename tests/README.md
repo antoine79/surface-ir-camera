@@ -1,6 +1,6 @@
 # Acceptance tests
 
-pytest + numpy, shelling out to `media-ctl`, `v4l2-ctl` and `v4l2-compliance`. Runs as the normal user (ACLs on `/dev/media0`, the OV7251 subdev and `/dev/video2`); sudo only for K9 and for the sensor register reads (`sudo -n i2ctransfer -f -y 3`, bus 3, address 0x60), so passwordless or cached sudo is needed for the register tests. Registers are read only inside `streaming()` (conftest), which runs a fixed-count stream in the background and reads 1 s in: a suspended sensor is powered off and reads back garbage. The OV7251 subdev is found by name under `/sys/class/video4linux`, hardware tests skip if it is absent.
+pytest + numpy, shelling out to `media-ctl`, `v4l2-ctl` and `v4l2-compliance`. Runs as the normal user (ACLs on `/dev/media0`, the OV7251 subdev and `/dev/video2`); sudo only for K9 and for the sensor register reads (`sudo -n i2ctransfer -f -y 3`, bus 3, address 0x60), so passwordless or cached sudo is needed for the register tests. Registers are read only inside `streaming()` (conftest), which runs a fixed-count stream in the background and reads 1 s in: a suspended sensor is powered off and reads back garbage. The OV7251 subdev is found by name under `/sys/class/video4linux`, hardware tests skip if it is absent. K4, K5 and the end-to-end test need a dark room: daylight carries near-infrared and swamps the emitter (a sunny morning gave 862 counts with the emitter off against ~20 at night), so K5 and E2E skip, naming the measured level, when the room is too bright.
 
 ## Run
 

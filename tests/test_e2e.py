@@ -8,7 +8,7 @@ a patch; with the whole series it passes and leaves two pictures in $IRCAM_E2E_O
 2. a process can subscribe to control events, as libcamera does at start-up (patch 3);
 3. the stack selects 60 fps (patch 4), sets exposure and analogue gain (patch 2) and switches the emitter on (patch 7);
 4. 60 frames arrive in about one second, lit by the emitter, with a real image in them: aim the camera at the room
-   before running, the lit frame is saved as the picture of the room;
+   before running, in the dark (daylight swamps the emitter), the lit frame is saved as the picture of the room;
 5. afterwards the emitter is off and the sensor powered down (patch 7).
 
 Run: pytest -v tests/test_e2e.py   (red on stock, green with kernel/build/ov7251.ko swapped in).
@@ -24,8 +24,8 @@ import numpy as np
 import pytest
 
 import ip3y
-from conftest import (FRAME_BYTES, H, STROBE, W, ctrl, ctrl_info, get_fps, reported_fps, runtime_status, sd, set_ctrl,
-                      set_fps, stream, wait_for)
+from conftest import (FRAME_BYTES, H, STROBE, W, ctrl, ctrl_info, get_fps, need_dark, reported_fps, runtime_status, sd,
+                      set_ctrl, set_fps, stream, wait_for)
 
 pytestmark = pytest.mark.needs_patch("all")
 
@@ -98,6 +98,7 @@ def test_lit_60fps_capture(graph):
         to_png(dark[len(dark) // 2], OUT / f"ir-{FPS}fps-emitter-off.png")  # written before the asserts: a failed run
         to_png(mid, OUT / f"ir-{FPS}fps-emitter-on.png")  # still shows what the camera saw
 
+        need_dark(dark.mean())
         assert fps and fps >= 0.9 * FPS, f"streamed at {fps} fps, asked {FPS}: the frame interval must change the frame length (patch 4)"
         dark_mean, lit_mean = dark.mean(), lit.mean()
         assert lit_mean > 2.5 * dark_mean, \

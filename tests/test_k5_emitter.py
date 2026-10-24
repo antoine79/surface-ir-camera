@@ -1,7 +1,7 @@
 """K5: strobe_output_enable=1 set before streaming lights the emitter on every frame from the start."""
 import pytest
 
-from conftest import DARK_MAX, STROBE, bench_exposure, capture, ctrl_info, frame_means, set_ctrl
+from conftest import DARK_MAX, STROBE, bench_exposure, capture, ctrl_info, frame_means, need_dark, set_ctrl
 
 pytestmark = pytest.mark.needs_patch("7")
 
@@ -14,6 +14,7 @@ def lit(dark_mean):
     """Frame means of 30 frames with the strobe enabled before stream start, or None if the control is absent."""
     if ctrl_info(STROBE) is None:
         return None
+    need_dark(dark_mean)
     bench_exposure()
     set_ctrl(STROBE, 1)
     try:

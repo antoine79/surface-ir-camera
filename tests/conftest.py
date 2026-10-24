@@ -211,6 +211,13 @@ def pytest_collection_modifyitems(config, items):
             item.add_marker(pytest.mark.skip(reason=f"disruptive ({why}): set IRCAM_DISRUPTIVE=1"))
 
 
+def need_dark(dark: float) -> None:
+    """The emitter tests compare lit frames with unlit ones; daylight carries near-infrared and swamps the emitter
+    (a sunny morning: 862 counts with the emitter off at exposure 1704, gain 128, against ~20 at night)."""
+    if dark >= DARK_MAX:
+        pytest.skip(f"room too bright: {dark:.0f} counts with the emitter off (a dark room gives ~20): close the blinds or run at night")
+
+
 def wait_for(pred, timeout: float, step: float = 0.1) -> bool:
     end = time.monotonic() + timeout
     while not pred():
