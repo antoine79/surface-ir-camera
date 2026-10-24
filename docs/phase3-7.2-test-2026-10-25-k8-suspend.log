@@ -1,0 +1,12 @@
+============================= test session starts ==============================
+platform linux -- Python 3.14.3, pytest-9.1.1, pluggy-1.6.0 -- /usr/bin/python3
+cachedir: .pytest_cache
+rootdir: /home/antoine/projects/surface-ir-camera
+configfile: pytest.ini
+plugins: timeout-2.4.0, anyio-4.12.1
+collecting ... collected 1 item
+
+tests/test_k8_suspend.py::test_suspend_mid_stream PASSED                 [100%]
+
+============================== 1 passed in 15.04s ==============================
+exit 0

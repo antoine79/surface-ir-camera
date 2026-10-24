@@ -37,7 +37,7 @@ Markers (registered in `pytest.ini`): `needs_patch("n")` = expected red until ke
 | K5 | `test_k5_emitter.py` | `strobe_output_enable=1` before stream: mean > 2.5 x K4 dark, first 3 frames lit, dark again after reset to 0 | red | patch 7 |
 | K7 | `test_k7_safety.py` | sensor `runtime_status` = suspended within 2 s of a stream ending | green | |
 | K7 | | strobe set to 1 while idle reads back 1 and the sensor stays suspended | red | patch 7 |
-| K8 | `test_k8_suspend.py` | suspend mid-stream: capture completes or exits cleanly, controls unchanged (manual wake) | skipped | |
+| K8 | `test_k8_suspend.py` | suspend mid-stream with the emitter on: capture completes or exits cleanly, controls (strobe included) unchanged (manual wake) | green on patched 7.2.12 (`docs/phase3-7.2-test-2026-10-25-k8-suspend.log`) | 7 for the strobe part |
 | K9 | `test_k9_reload.py` | 10 x unbind/unload/load: ov7251 entity re-appears (new entity id), other entities unchanged, no WARNING/BUG/Oops/leak in `journalctl -k` | skipped | |
 | K11 | `test_k11_strobe_registers.py` | strobe off, at 30, 60 and 90 fps: 0x3005 and 0x3b80-0x3b96 read back while streaming equal the stock mode-table values (0x3005 = 00, 0x3b81 = a5, span 0x3b8c-0x3b8f = 0x1a, ...) | green (on both modules: the patch 6 no-change proof) | |
 | K11 | | strobe off: an exposure or VBLANK change while streaming writes exposure or VTS and leaves the span at 0x1a | green | |
