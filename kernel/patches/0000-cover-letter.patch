@@ -1,12 +1,14 @@
-From a6a22e7645ba10d40ac9d4606df3743ca5c9d4b4 Mon Sep 17 00:00:00 2001
+From 574b6ec7584b1212171e2f48bdbe565c31db261b Mon Sep 17 00:00:00 2001
 From: Antoine Pichot <antoine.pichot@gmail.com>
 Date: Sat, 24 Oct 2026 20:57:10 +0900
-Subject: [PATCH 0/7] media: i2c: ov7251: fixes and IR strobe support for Surface Book 2
+Subject: [PATCH 0/7] media: i2c: ov7251: fixes and infrared strobe for Surface Book 2
 
-The Microsoft Surface Book 2 has an OV7251 IR camera (Windows Hello)
-next to its front camera, on the IPU3 CIO2. Its 850 nm emitter is wired
-to the sensor's STROBE pin: ACPI describes no LED, GPIO or regulator for
-it. With the mainline driver the camera streams, but always unlit.
+The Microsoft Surface Book 2 has an OV7251 infrared camera (used by
+Windows Hello) next to its front camera, both on the Intel IPU3 (image
+processing unit) camera interface. Its 850 nm emitter is wired to the
+sensor's STROBE output pin: the ACPI tables describe no LED, GPIO line
+or regulator for it. With the mainline driver the camera streams, but
+always unlit.
 
 Patches 1 to 5 fix issues found while testing the driver on this
 machine:
@@ -16,42 +18,42 @@ machine:
   firmware asks for 319.2 MHz (Fixes, Cc stable).
 - 2: Daniel Scally's patch switching the gain control to
   V4L2_CID_ANALOGUE_GAIN, carried by linux-surface.
-- 3: control events, the one v4l2-compliance failure on the subdev.
+- 3: control events, the one v4l2-compliance failure on the sensor.
 - 4: the 60 and 90 fps frame intervals are accepted but the sensor
-  keeps streaming at 30 fps, because the VBLANK control is not updated
-  and rewrites the 30 fps frame length at stream start.
+  keeps streaming at 30 fps, because the vertical blanking control is
+  not updated and rewrites the 30 fps frame length at stream start.
 - 5: orientation and rotation controls from firmware.
 
-Patches 6 and 7 add the emitter: 6 moves the strobe registers, which
+Patches 6 and 7 add the emitter. 6 moves the strobe registers, which
 the three mode tables write identically, out of the tables without
-functional change, and 7 adds a V4L2_CID_FLASH_STROBE_OE control that
-enables the STROBE pad, strobes every frame and makes the pulse follow
-the exposure, from 52 lines up to 45% of the frame. The Windows driver
-on this hardware clamps it to 52 to 776 lines, 45% of the 30 fps frame.
-Filmed with a phone at locked exposure, the emitter under this patch is
-1.1x (default exposure, 504-line pulse) to 1.2x (776-line pulse) as
-bright as during a Windows Hello sign-in on the same unit, by the
-integrated brightness of the unsaturated halo around the dot. Windows
-reportedly strobes alternate frames; this patch strobes every frame, so
-the average emitted power is up to twice Windows' at the same peak. A
-0xaa pattern (alternate frames) is a one-line change if preferred.
+functional change. 7 adds a V4L2_CID_FLASH_STROBE_OE control that
+enables the STROBE pin, pulses it on every frame and makes the pulse
+follow the exposure, from 52 lines up to 45% of the frame. The Windows
+driver on this hardware clamps it to 52 to 776 lines, 45% of the 30 fps
+frame.
+Filmed with a phone at locked exposure, the emitter is 1.1x (default
+exposure) to 1.2x (776-line pulse) as bright as during a Windows Hello
+sign-in on the same unit. Windows reportedly strobes alternate frames;
+a 0xaa pattern is a one-line change if preferred.
 
-Measurements on a Surface Book 2 (i7-8650U), linux-surface 6.18.8 with
-patches 1 and 3 to 6 built out of tree (2 was already applied):
+Tested on a Surface Book 2 (i7-8650U) with the series built out of
+tree against linux-surface 7.2.12:
 
 - link frequency 319200000, pixel rate 63840000, 30.01 fps unchanged
-- v4l2-compliance -u on the sensor subdev: 0 failures (was 1)
+- v4l2-compliance -u on the sensor: 0 failures (was 1)
 - --set-subdev-fps 60 / 90: 60.15 / 90.45 fps measured (was 30.01)
 - orientation front, rotation 0
 - dark frames and the sensor test pattern unchanged after patch 6
+- strobe span read back while streaming: 504 lines at exposure 504,
+  776 at exposure 1704 (30 fps), 258 at exposure 552 (90 fps)
+- mean pixel value of an indoor infrared frame at analogue gain 128:
+  20 unlit, 624 with the strobe enabled at exposure 504, 706 at 1704
+- strobe off and sensor suspended within 2 s of the stream stopping
 - 10 unbind/unload/load cycles: no warning in the kernel log
 
-The strobe itself was verified with register writes on the stock
-driver: 0x3005 = 0x08 and 0x3b81 = 0xff while streaming raise the mean
-pixel value of an indoor IR frame from 20 to 103 (exposure 1704,
-analogue gain 128). Patch 7 was build tested against 7.2 and 7.3-rc1
-(W=1, checkpatch --strict) but has not run on hardware yet, since
-V4L2_CID_FLASH_STROBE_OE is not in 6.18.
+The remaining v4l2-compliance failures are in the ipu3-cio2 capture
+driver (buffer creation and mapping checks) and unchanged by this
+series.
 
 Antoine Pichot (6):
   media: i2c: ov7251: Fix link frequency index

@@ -1,15 +1,14 @@
-From a6a22e7645ba10d40ac9d4606df3743ca5c9d4b4 Mon Sep 17 00:00:00 2001
+From 574b6ec7584b1212171e2f48bdbe565c31db261b Mon Sep 17 00:00:00 2001
 From: Antoine Pichot <antoine.pichot@gmail.com>
 Date: Sat, 24 Oct 2026 20:47:34 +0900
 Subject: [PATCH 7/7] media: i2c: ov7251: Add strobe output enable control
 
 The OV7251 has a STROBE output that pulses during the exposure of
 selected frames, meant to drive an illuminator. On the Microsoft
-Surface Book 2 the front OV7251 is an IR camera (Windows Hello) and its
-850 nm emitter is wired to that pin: ACPI describes no separate LED,
-GPIO or regulator for it, so the sensor is the only way to light it.
-The mode tables leave the pad disabled, so the camera only sees an
-unlit scene.
+Surface Book 2 the front OV7251 is an infrared camera (Windows Hello)
+and its 850 nm emitter is wired to that pin: ACPI describes no separate
+LED, GPIO line or regulator for it. The mode tables leave the pad
+disabled, so the camera only sees an unlit scene.
 
 Add a V4L2_CID_FLASH_STROBE_OE control, off by default. When enabled
 it sets the STROBE pad output enable (SC_REG5 bit 3), strobes every
@@ -20,23 +19,22 @@ restores the defaults the mode tables used to write. The span follows
 exposure and vertical blanking changes while the strobe is enabled.
 
 The limits come from the Windows driver on this hardware, which clamps
-the span to 52 to 776 lines: 776 lines is 45% of the 1724 lines frame
+the span to 52 to 776 lines: 776 lines is 45% of the 1724-line frame
 of the 30 fps mode. Expressing the upper limit as a duty cycle keeps
-the emitter within that envelope (eye safety and duty cycle) at 60 and
-90 fps too, where a fixed 776 lines would let the pulse cover up to
-96% of the frame (552 of 572 lines), whatever exposure userspace asks
-for.
+the emitter within that envelope (eye safety) at 60 and 90 fps too,
+where a fixed 776 lines would let the pulse cover up to 96% of the
+frame (552 of 572 lines).
 
-The control is applied like the others: only while the sensor is
-powered, and from __v4l2_ctrl_handler_setup() at stream start, after
-the mode and strobe register tables. Setting it while the sensor is
-idle does not power it up, and the emitter goes off with the sensor
-when streaming stops.
+The control is written only while the sensor is powered, and from
+__v4l2_ctrl_handler_setup() at stream start, after the mode and strobe
+register tables. Setting it while the sensor is idle does not power it
+up, and the emitter goes off with the sensor when streaming stops.
 
-On a Surface Book 2 at exposure 1704 and analogue gain 128, enabling
-the STROBE output with every frame strobed raises the mean pixel value
-of the IR image of a room from 20 to 103 (with the default 26 lines
-span).
+On a Surface Book 2 at analogue gain 128 the mean pixel value of the
+infrared image of a room goes from 20 unlit to 624 with the strobe
+enabled at exposure 504 (span 504) and 706 at exposure 1704 (span 776).
+The span read back while streaming is 258 at 90 fps, 45% of the
+572-line frame.
 
 Signed-off-by: Antoine Pichot <antoine.pichot@gmail.com>
 ---
