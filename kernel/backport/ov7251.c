@@ -998,8 +998,7 @@ static int ov7251_set_strobe_span(struct ov7251 *ov7251)
 		max_span = DIV_ROUND_UP(vts * OV7251_STROBE_MAX_DUTY_PERCENT,
 					100);
 		span = clamp_t(u32, ov7251->exposure->val,
-			       OV7251_STROBE_SPAN_MIN,
-			       max(max_span, OV7251_STROBE_SPAN_MIN));
+			       OV7251_STROBE_SPAN_MIN, max_span);
 	}
 
 	put_unaligned_be32(span, val);

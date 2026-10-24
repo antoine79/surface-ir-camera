@@ -1,4 +1,4 @@
-From 574b6ec7584b1212171e2f48bdbe565c31db261b Mon Sep 17 00:00:00 2001
+From ca1317e5cb2ca75b2680b51f1fb4bfc788b19d86 Mon Sep 17 00:00:00 2001
 From: Antoine Pichot <antoine.pichot@gmail.com>
 Date: Sat, 24 Oct 2026 20:47:34 +0900
 Subject: [PATCH 7/8] media: i2c: ov7251: Add strobe output enable control
@@ -38,11 +38,11 @@ The span read back while streaming is 258 at 90 fps, 45% of the
 
 Signed-off-by: Antoine Pichot <antoine.pichot@gmail.com>
 ---
- drivers/media/i2c/ov7251.c | 83 +++++++++++++++++++++++++++++++++-----
- 1 file changed, 74 insertions(+), 9 deletions(-)
+ drivers/media/i2c/ov7251.c | 82 +++++++++++++++++++++++++++++++++-----
+ 1 file changed, 73 insertions(+), 9 deletions(-)
 
 diff --git a/drivers/media/i2c/ov7251.c b/drivers/media/i2c/ov7251.c
-index 83fce6ebbc..87baf984e9 100644
+index 83fce6ebbc..0558ac21ec 100644
 --- a/drivers/media/i2c/ov7251.c
 +++ b/drivers/media/i2c/ov7251.c
 @@ -18,6 +18,7 @@
@@ -112,7 +112,7 @@ index 83fce6ebbc..87baf984e9 100644
  	u8 nregbuf = sizeof(reg) + num * sizeof(*val);
  	int ret = 0;
  
-@@ -976,6 +981,55 @@ static int ov7251_set_test_pattern(struct ov7251 *ov7251, s32 value)
+@@ -976,6 +981,54 @@ static int ov7251_set_test_pattern(struct ov7251 *ov7251, s32 value)
  	return ret;
  }
  
@@ -133,8 +133,7 @@ index 83fce6ebbc..87baf984e9 100644
 +		max_span = DIV_ROUND_UP(vts * OV7251_STROBE_MAX_DUTY_PERCENT,
 +					100);
 +		span = clamp_t(u32, ov7251->exposure->val,
-+			       OV7251_STROBE_SPAN_MIN,
-+			       max(max_span, OV7251_STROBE_SPAN_MIN));
++			       OV7251_STROBE_SPAN_MIN, max_span);
 +	}
 +
 +	put_unaligned_be32(span, val);
@@ -168,7 +167,7 @@ index 83fce6ebbc..87baf984e9 100644
  static const char * const ov7251_test_pattern_menu[] = {
  	"Disabled",
  	"Vertical Pattern Bars",
-@@ -1019,6 +1073,8 @@ static int ov7251_s_ctrl(struct v4l2_ctrl *ctrl)
+@@ -1019,6 +1072,8 @@ static int ov7251_s_ctrl(struct v4l2_ctrl *ctrl)
  	switch (ctrl->id) {
  	case V4L2_CID_EXPOSURE:
  		ret = ov7251_set_exposure(ov7251, ctrl->val);
@@ -177,7 +176,7 @@ index 83fce6ebbc..87baf984e9 100644
  		break;
  	case V4L2_CID_ANALOGUE_GAIN:
  		ret = ov7251_set_gain(ov7251, ctrl->val);
-@@ -1034,6 +1090,11 @@ static int ov7251_s_ctrl(struct v4l2_ctrl *ctrl)
+@@ -1034,6 +1089,11 @@ static int ov7251_s_ctrl(struct v4l2_ctrl *ctrl)
  		break;
  	case V4L2_CID_VBLANK:
  		ret = ov7251_vts_configure(ov7251, ctrl->val);
@@ -189,7 +188,7 @@ index 83fce6ebbc..87baf984e9 100644
  		break;
  	default:
  		ret = -EINVAL;
-@@ -1574,7 +1635,7 @@ static int ov7251_init_ctrls(struct ov7251 *ov7251)
+@@ -1574,7 +1634,7 @@ static int ov7251_init_ctrls(struct ov7251 *ov7251)
  	if (ret)
  		return ret;
  
@@ -198,7 +197,7 @@ index 83fce6ebbc..87baf984e9 100644
  	ov7251->ctrls.lock = &ov7251->lock;
  
  	v4l2_ctrl_new_std(&ov7251->ctrls, &ov7251_ctrl_ops,
-@@ -1621,6 +1682,10 @@ static int ov7251_init_ctrls(struct ov7251 *ov7251)
+@@ -1621,6 +1681,10 @@ static int ov7251_init_ctrls(struct ov7251 *ov7251)
  					   OV7251_TIMING_MIN_VTS, vblank_max, 1,
  					   vblank_def);
  
