@@ -1,0 +1,150 @@
+# Patched ov7251 module (kernel/build/ov7251.ko, patches 1-7, on kernel-surface 7.2.12-1.surface.fc43.x86_64, taint='OE'), full suite, 2026-10-24T22:44:44+09:00
+# Expected: all green except the needs_patch("8") rotation tests (ipu-bridge quirk not loaded) and K1[video] (ipu3-cio2 buffer checks, not ov7251)
+$ pytest -v tests/
+============================= test session starts ==============================
+platform linux -- Python 3.14.3, pytest-9.1.1, pluggy-1.6.0 -- /usr/bin/python3
+cachedir: .pytest_cache
+rootdir: /home/antoine/projects/surface-ir-camera
+configfile: pytest.ini
+plugins: timeout-2.4.0, anyio-4.12.1
+collecting ... collected 70 items
+
+tests/test_e2e.py::test_firmware_description PASSED                      [  1%]
+tests/test_e2e.py::test_firmware_rotation FAILED                         [  2%]
+tests/test_e2e.py::test_control_events PASSED                            [  4%]
+tests/test_e2e.py::test_lit_60fps_capture PASSED                         [  5%]
+tests/test_glow_compare.py::test_glow_ignores_screen_and_sees_dot PASSED [  7%]
+tests/test_glow_compare.py::test_runs_split_takes PASSED                 [  8%]
+tests/test_glow_compare.py::test_analyse_reports_each_take PASSED        [ 10%]
+tests/test_helpers.py::test_parse_int_control PASSED                     [ 11%]
+tests/test_helpers.py::test_parse_bool_has_no_range PASSED               [ 12%]
+tests/test_helpers.py::test_parse_menu_and_intmenu_keep_the_label PASSED [ 14%]
+tests/test_helpers.py::test_parse_int64_and_absent_control PASSED        [ 15%]
+tests/test_helpers.py::test_frame_means PASSED                           [ 17%]
+tests/test_ip3y.py::test_bytesperline_matches_cio2_formula PASSED        [ 18%]
+tests/test_ip3y.py::test_unpack_recovers_known_pixels_in_one_block PASSED [ 20%]
+tests/test_ip3y.py::test_unpack_frame_shape_and_row_order PASSED         [ 21%]
+tests/test_ip3y.py::test_unpack_rejects_short_buffer PASSED              [ 22%]
+tests/test_k10_test_pattern.py::test_frames_identical PASSED             [ 24%]
+tests/test_k10_test_pattern.py::test_only_full_scale_values PASSED       [ 25%]
+tests/test_k10_test_pattern.py::test_rows_repeat_every_two PASSED        [ 27%]
+tests/test_k10_test_pattern.py::test_eight_vertical_bars PASSED          [ 28%]
+tests/test_k11_strobe_registers.py::test_strobe_block_unchanged_with_strobe_off[30] PASSED [ 30%]
+tests/test_k11_strobe_registers.py::test_strobe_block_unchanged_with_strobe_off[60] PASSED [ 31%]
+tests/test_k11_strobe_registers.py::test_strobe_block_unchanged_with_strobe_off[90] PASSED [ 32%]
+tests/test_k11_strobe_registers.py::test_strobe_on_at_stream_start[30-10] PASSED [ 34%]
+tests/test_k11_strobe_registers.py::test_strobe_on_at_stream_start[30-504] PASSED [ 35%]
+tests/test_k11_strobe_registers.py::test_strobe_on_at_stream_start[30-max] PASSED [ 37%]
+tests/test_k11_strobe_registers.py::test_strobe_on_at_stream_start[60-10] PASSED [ 38%]
+tests/test_k11_strobe_registers.py::test_strobe_on_at_stream_start[60-300] PASSED [ 40%]
+tests/test_k11_strobe_registers.py::test_strobe_on_at_stream_start[60-max] PASSED [ 41%]
+tests/test_k11_strobe_registers.py::test_strobe_on_at_stream_start[90-10] PASSED [ 42%]
+tests/test_k11_strobe_registers.py::test_strobe_on_at_stream_start[90-200] PASSED [ 44%]
+tests/test_k11_strobe_registers.py::test_strobe_on_at_stream_start[90-max] PASSED [ 45%]
+tests/test_k11_strobe_registers.py::test_span_follows_exposure_while_streaming PASSED [ 47%]
+tests/test_k11_strobe_registers.py::test_span_untouched_by_exposure_with_strobe_off PASSED [ 48%]
+tests/test_k11_strobe_registers.py::test_span_follows_vblank_while_streaming PASSED [ 50%]
+tests/test_k11_strobe_registers.py::test_vblank_change_with_strobe_off_keeps_default_span PASSED [ 51%]
+tests/test_k11_strobe_registers.py::test_strobe_toggled_while_streaming PASSED [ 52%]
+tests/test_k11_strobe_registers.py::test_strobe_survives_runtime_suspend PASSED [ 54%]
+tests/test_k1_compliance.py::test_compliance[subdev] PASSED              [ 55%]
+tests/test_k1_compliance.py::test_compliance[media] SKIPPED (disrupt...) [ 57%]
+tests/test_k1_compliance.py::test_compliance[video] FAILED               [ 58%]
+tests/test_k2_controls.py::test_analogue_gain_not_gain PASSED            [ 60%]
+tests/test_k2_controls.py::test_analogue_gain_written_to_sensor PASSED   [ 61%]
+tests/test_k2_controls.py::test_camera_orientation_is_front PASSED       [ 62%]
+tests/test_k2_controls.py::test_camera_sensor_rotation_present PASSED    [ 64%]
+tests/test_k2_controls.py::test_camera_sensor_rotation_is_90 FAILED      [ 65%]
+tests/test_k2_controls.py::test_fwnode_controls_are_read_only[camera_orientation-1] PASSED [ 67%]
+tests/test_k2_controls.py::test_fwnode_controls_are_read_only[camera_sensor_rotation-90] PASSED [ 68%]
+tests/test_k2_controls.py::test_exposure_change_sends_event_with_value PASSED [ 70%]
+tests/test_k2_controls.py::test_strobe_output_enable_is_bool_default_off PASSED [ 71%]
+tests/test_k3_timing.py::test_link_frequency_matches_firmware PASSED     [ 72%]
+tests/test_k3_timing.py::test_pixel_rate_follows_link_frequency PASSED   [ 74%]
+tests/test_k3_timing.py::test_pll1_programmed_for_319_2_mhz PASSED       [ 75%]
+tests/test_k3_timing.py::test_90_frames_at_30fps_take_3s PASSED          [ 77%]
+tests/test_k3_timing.py::test_frame_interval_selects_fps[60] PASSED      [ 78%]
+tests/test_k3_timing.py::test_frame_interval_selects_fps[90] PASSED      [ 80%]
+tests/test_k3_timing.py::test_vblank_and_exposure_range_follow_frame_interval[60] PASSED [ 81%]
+tests/test_k3_timing.py::test_vblank_and_exposure_range_follow_frame_interval[90] PASSED [ 82%]
+tests/test_k3_timing.py::test_vts_register_matches_mode[30] PASSED       [ 84%]
+tests/test_k3_timing.py::test_vts_register_matches_mode[60] PASSED       [ 85%]
+tests/test_k3_timing.py::test_vts_register_matches_mode[90] PASSED       [ 87%]
+tests/test_k3_timing.py::test_set_fmt_after_frame_interval_is_consistent PASSED [ 88%]
+tests/test_k4_dark.py::test_default_is_dark PASSED                       [ 90%]
+tests/test_k5_emitter.py::test_emitter_lights_the_scene PASSED           [ 91%]
+tests/test_k5_emitter.py::test_lit_from_first_frames PASSED              [ 92%]
+tests/test_k5_emitter.py::test_dark_again_after_reset PASSED             [ 94%]
+tests/test_k7_safety.py::test_suspended_after_capture PASSED             [ 95%]
+tests/test_k7_safety.py::test_strobe_set_while_idle_keeps_sensor_off PASSED [ 97%]
+tests/test_k8_suspend.py::test_suspend_mid_stream SKIPPED (disruptiv...) [ 98%]
+tests/test_k9_reload.py::test_module_reload_x10 SKIPPED (disruptive ...) [100%]
+
+=================================== FAILURES ===================================
+____________________________ test_firmware_rotation ____________________________
+
+graph = 'ov7251 3-0060'
+
+    @pytest.mark.needs_patch("8")
+    def test_firmware_rotation(graph):
+>       assert ctrl_info("camera_sensor_rotation") and ctrl("camera_sensor_rotation") == 90, \
+            "camera_sensor_rotation must read 90: the sensor is mounted rotated, the ACPI _PLD says 0 (patch 8, ipu-bridge DMI quirk)"
+E       AssertionError: camera_sensor_rotation must read 90: the sensor is mounted rotated, the ACPI _PLD says 0 (patch 8, ipu-bridge DMI quirk)
+E       assert ({'type': 'int', 'min': 0, 'max': 0, 'step': 1, ...} and 0 == 90)
+E        +  where {'type': 'int', 'min': 0, 'max': 0, 'step': 1, ...} = ctrl_info('camera_sensor_rotation')
+E        +  and   0 = ctrl('camera_sensor_rotation')
+
+tests/test_e2e.py:63: AssertionError
+____________________________ test_compliance[video] ____________________________
+
+graph = 'ov7251 3-0060', target = 'video'
+args = <function <lambda> at 0x7f5d6fca0040>
+
+    @pytest.mark.parametrize("target, args", [
+        ("subdev", lambda: ["-u", sd()]),
+        pytest.param("media", lambda: ["-m", MEDIA], marks=pytest.mark.disruptive(reason=MEDIA_OOPS)),
+        ("video", lambda: ["-d", VIDEO, "-s", "30"]),
+    ], ids=["subdev", "media", "video"])
+    def test_compliance(graph, target, args):
+        before = parse_ctrls(run("v4l2-ctl", "-d", sd(), "-l"))
+        try:
+            p = subprocess.run(["v4l2-compliance", *args()], capture_output=True, text=True, timeout=300)
+        finally:  # v4l2-compliance leaves controls (e.g. test_pattern), formats and the frame interval changed
+            set_fps(30)
+            setup_graph()  # resets exposure and gain, so restore the controls after it
+            for name, c in before.items():
+                if "read-only" not in c["flags"] and ctrl_info(name)["value"] != c["value"]:
+                    set_ctrl(name, c["value"])
+        out = p.stdout + p.stderr
+        log = BASELINE / f"k1-{target}-{os.uname().release}.log"
+        if not log.exists():
+            log.parent.mkdir(exist_ok=True)
+            log.write_text(f"$ v4l2-compliance {' '.join(args())}\n# exit status {p.returncode}\n{out}")
+        assert p.returncode >= 0, f"v4l2-compliance {target} crashed (signal {-p.returncode}) before finishing, see {log.name}"
+        totals = TOTAL.findall(out)
+        assert totals, f"v4l2-compliance {target} printed no final Total line (exit status {p.returncode}, a negative one is a crash)"
+        failed = [l.strip() for l in out.splitlines() if "FAIL" in l or "fail:" in l]
+>       assert int(totals[-1][2]) == 0, f"v4l2-compliance {target}: {totals[-1]} (total, ok, failed, warn); failures: {failed}"
+E       AssertionError: v4l2-compliance video: ('58', '51', '7', '30') (total, ok, failed, warn); failures: ['fail: v4l2-test-buffers.cpp(901): q.create_bufs(node, 1, &fmt) != EINVAL', 'test VIDIOC_REQBUFS/CREATE_BUFS/QUERYBUF: FAIL', 'fail: v4l2-test-buffers.cpp(1667): buf.g_length(p) < fmt.g_sizeimage(p)', 'test MMAP (no poll, REQBUFS): FAIL', 'fail: v4l2-test-buffers.cpp(1667): buf.g_length(p) < fmt.g_sizeimage(p)', 'test MMAP (select, REQBUFS): FAIL', 'fail: v4l2-test-buffers.cpp(1667): buf.g_length(p) < fmt.g_sizeimage(p)', 'test MMAP (epoll, REQBUFS): FAIL', 'fail: v4l2-test-buffers.cpp(1667): buf.g_length(p) < fmt.g_sizeimage(p)', 'test MMAP (no poll, CREATE_BUFS): FAIL', 'fail: v4l2-test-buffers.cpp(1667): buf.g_length(p) < fmt.g_sizeimage(p)', 'test MMAP (select, CREATE_BUFS): FAIL', 'fail: v4l2-test-buffers.cpp(1667): buf.g_length(p) < fmt.g_sizeimage(p)', 'test MMAP (epoll, CREATE_BUFS): FAIL', 'fail: v4l2-test-buffers.cpp(2065): data at 8 bytes before start of the buffer was touched', 'fail: v4l2-test-buffers.cpp(2065): data at 4 bytes before start of the buffer was touched', 'fail: v4l2-test-buffers.cpp(2065): data at 8 bytes before start of the buffer was touched', 'fail: v4l2-test-buffers.cpp(2065): data at 4 bytes before start of the buffer was touched', 'fail: v4l2-test-buffers.cpp(2065): data at 8 bytes before start of the buffer was touched', 'fail: v4l2-test-buffers.cpp(2065): data at 4 bytes before start of the buffer was touched', 'fail: v4l2-test-buffers.cpp(2065): data at 8 bytes before start of the buffer was touched', 'fail: v4l2-test-buffers.cpp(2065): data at 4 bytes before start of the buffer was touched']
+E       assert 7 == 0
+E        +  where 7 = int('7')
+
+tests/test_k1_compliance.py:43: AssertionError
+______________________ test_camera_sensor_rotation_is_90 _______________________
+
+graph = 'ov7251 3-0060'
+
+    @pytest.mark.needs_patch("8")
+    def test_camera_sensor_rotation_is_90(graph):
+        c = ctrl_info("camera_sensor_rotation")
+>       assert c is not None and c["value"] == 90, \
+            f"camera_sensor_rotation {c and c['value']}, expected 90: the sensor is mounted rotated, the ACPI _PLD says 0 (patch 8, ipu-bridge DMI quirk)"
+E       AssertionError: camera_sensor_rotation 0, expected 90: the sensor is mounted rotated, the ACPI _PLD says 0 (patch 8, ipu-bridge DMI quirk)
+E       assert ({'type': 'int', 'min': 0, 'max': 0, 'step': 1, ...} is not None and 0 == 90)
+
+tests/test_k2_controls.py:44: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_e2e.py::test_firmware_rotation - AssertionError: camera_sen...
+FAILED tests/test_k1_compliance.py::test_compliance[video] - AssertionError: ...
+FAILED tests/test_k2_controls.py::test_camera_sensor_rotation_is_90 - Asserti...
+============= 3 failed, 64 passed, 3 skipped in 110.71s (0:01:50) ==============

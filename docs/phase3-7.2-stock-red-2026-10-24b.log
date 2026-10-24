@@ -1,0 +1,803 @@
+# Stock ov7251 module (kernel-surface 7.2.12-1.surface.fc43.x86_64, in-tree, taint=''), full suite, 2026-10-24T22:46:43+09:00
+# Expected: every needs_patch test red, naming the missing patch; the patch 6 strobe-block and strobe-off span tests green (no functional change); same tests green in phase3-7.2-test-2026-10-24b.log
+$ pytest -v tests/
+============================= test session starts ==============================
+platform linux -- Python 3.14.3, pytest-9.1.1, pluggy-1.6.0 -- /usr/bin/python3
+cachedir: .pytest_cache
+rootdir: /home/antoine/projects/surface-ir-camera
+configfile: pytest.ini
+plugins: timeout-2.4.0, anyio-4.12.1
+collecting ... collected 70 items
+
+tests/test_e2e.py::test_firmware_description FAILED                      [  1%]
+tests/test_e2e.py::test_firmware_rotation FAILED                         [  2%]
+tests/test_e2e.py::test_control_events FAILED                            [  4%]
+tests/test_e2e.py::test_lit_60fps_capture FAILED                         [  5%]
+tests/test_glow_compare.py::test_glow_ignores_screen_and_sees_dot PASSED [  7%]
+tests/test_glow_compare.py::test_runs_split_takes PASSED                 [  8%]
+tests/test_glow_compare.py::test_analyse_reports_each_take PASSED        [ 10%]
+tests/test_helpers.py::test_parse_int_control PASSED                     [ 11%]
+tests/test_helpers.py::test_parse_bool_has_no_range PASSED               [ 12%]
+tests/test_helpers.py::test_parse_menu_and_intmenu_keep_the_label PASSED [ 14%]
+tests/test_helpers.py::test_parse_int64_and_absent_control PASSED        [ 15%]
+tests/test_helpers.py::test_frame_means PASSED                           [ 17%]
+tests/test_ip3y.py::test_bytesperline_matches_cio2_formula PASSED        [ 18%]
+tests/test_ip3y.py::test_unpack_recovers_known_pixels_in_one_block PASSED [ 20%]
+tests/test_ip3y.py::test_unpack_frame_shape_and_row_order PASSED         [ 21%]
+tests/test_ip3y.py::test_unpack_rejects_short_buffer PASSED              [ 22%]
+tests/test_k10_test_pattern.py::test_frames_identical PASSED             [ 24%]
+tests/test_k10_test_pattern.py::test_only_full_scale_values PASSED       [ 25%]
+tests/test_k10_test_pattern.py::test_rows_repeat_every_two PASSED        [ 27%]
+tests/test_k10_test_pattern.py::test_eight_vertical_bars PASSED          [ 28%]
+tests/test_k11_strobe_registers.py::test_strobe_block_unchanged_with_strobe_off[30] PASSED [ 30%]
+tests/test_k11_strobe_registers.py::test_strobe_block_unchanged_with_strobe_off[60] PASSED [ 31%]
+tests/test_k11_strobe_registers.py::test_strobe_block_unchanged_with_strobe_off[90] PASSED [ 32%]
+tests/test_k11_strobe_registers.py::test_strobe_on_at_stream_start[30-10] FAILED [ 34%]
+tests/test_k11_strobe_registers.py::test_strobe_on_at_stream_start[30-504] FAILED [ 35%]
+tests/test_k11_strobe_registers.py::test_strobe_on_at_stream_start[30-max] FAILED [ 37%]
+tests/test_k11_strobe_registers.py::test_strobe_on_at_stream_start[60-10] FAILED [ 38%]
+tests/test_k11_strobe_registers.py::test_strobe_on_at_stream_start[60-300] FAILED [ 40%]
+tests/test_k11_strobe_registers.py::test_strobe_on_at_stream_start[60-max] FAILED [ 41%]
+tests/test_k11_strobe_registers.py::test_strobe_on_at_stream_start[90-10] FAILED [ 42%]
+tests/test_k11_strobe_registers.py::test_strobe_on_at_stream_start[90-200] FAILED [ 44%]
+tests/test_k11_strobe_registers.py::test_strobe_on_at_stream_start[90-max] FAILED [ 45%]
+tests/test_k11_strobe_registers.py::test_span_follows_exposure_while_streaming FAILED [ 47%]
+tests/test_k11_strobe_registers.py::test_span_untouched_by_exposure_with_strobe_off PASSED [ 48%]
+tests/test_k11_strobe_registers.py::test_span_follows_vblank_while_streaming FAILED [ 50%]
+tests/test_k11_strobe_registers.py::test_vblank_change_with_strobe_off_keeps_default_span PASSED [ 51%]
+tests/test_k11_strobe_registers.py::test_strobe_toggled_while_streaming FAILED [ 52%]
+tests/test_k11_strobe_registers.py::test_strobe_survives_runtime_suspend FAILED [ 54%]
+tests/test_k1_compliance.py::test_compliance[subdev] FAILED              [ 55%]
+tests/test_k1_compliance.py::test_compliance[media] SKIPPED (disrupt...) [ 57%]
+tests/test_k1_compliance.py::test_compliance[video] FAILED               [ 58%]
+tests/test_k2_controls.py::test_analogue_gain_not_gain PASSED            [ 60%]
+tests/test_k2_controls.py::test_analogue_gain_written_to_sensor PASSED   [ 61%]
+tests/test_k2_controls.py::test_camera_orientation_is_front FAILED       [ 62%]
+tests/test_k2_controls.py::test_camera_sensor_rotation_present FAILED    [ 64%]
+tests/test_k2_controls.py::test_camera_sensor_rotation_is_90 FAILED      [ 65%]
+tests/test_k2_controls.py::test_fwnode_controls_are_read_only[camera_orientation-1] FAILED [ 67%]
+tests/test_k2_controls.py::test_fwnode_controls_are_read_only[camera_sensor_rotation-90] FAILED [ 68%]
+tests/test_k2_controls.py::test_exposure_change_sends_event_with_value FAILED [ 70%]
+tests/test_k2_controls.py::test_strobe_output_enable_is_bool_default_off FAILED [ 71%]
+tests/test_k3_timing.py::test_link_frequency_matches_firmware FAILED     [ 72%]
+tests/test_k3_timing.py::test_pixel_rate_follows_link_frequency FAILED   [ 74%]
+tests/test_k3_timing.py::test_pll1_programmed_for_319_2_mhz FAILED       [ 75%]
+tests/test_k3_timing.py::test_90_frames_at_30fps_take_3s PASSED          [ 77%]
+tests/test_k3_timing.py::test_frame_interval_selects_fps[60] FAILED      [ 78%]
+tests/test_k3_timing.py::test_frame_interval_selects_fps[90] FAILED      [ 80%]
+tests/test_k3_timing.py::test_vblank_and_exposure_range_follow_frame_interval[60] FAILED [ 81%]
+tests/test_k3_timing.py::test_vblank_and_exposure_range_follow_frame_interval[90] FAILED [ 82%]
+tests/test_k3_timing.py::test_vts_register_matches_mode[30] PASSED       [ 84%]
+tests/test_k3_timing.py::test_vts_register_matches_mode[60] FAILED       [ 85%]
+tests/test_k3_timing.py::test_vts_register_matches_mode[90] FAILED       [ 87%]
+tests/test_k3_timing.py::test_set_fmt_after_frame_interval_is_consistent FAILED [ 88%]
+tests/test_k4_dark.py::test_default_is_dark PASSED                       [ 90%]
+tests/test_k5_emitter.py::test_emitter_lights_the_scene FAILED           [ 91%]
+tests/test_k5_emitter.py::test_lit_from_first_frames FAILED              [ 92%]
+tests/test_k5_emitter.py::test_dark_again_after_reset FAILED             [ 94%]
+tests/test_k7_safety.py::test_suspended_after_capture PASSED             [ 95%]
+tests/test_k7_safety.py::test_strobe_set_while_idle_keeps_sensor_off FAILED [ 97%]
+tests/test_k8_suspend.py::test_suspend_mid_stream SKIPPED (disruptiv...) [ 98%]
+tests/test_k9_reload.py::test_module_reload_x10 SKIPPED (disruptive ...) [100%]
+
+=================================== FAILURES ===================================
+__________________________ test_firmware_description ___________________________
+
+graph = 'ov7251 3-0060'
+
+    def test_firmware_description(graph):
+        link = ctrl_info("link_frequency")
+>       assert link and link["label"].split()[0] == str(FIRMWARE_LINK_FREQ), \
+            f"link_frequency is {link and link['label']}: the sensor must run at the {FIRMWARE_LINK_FREQ} Hz the firmware asks for (patch 1)"
+E       AssertionError: link_frequency is 240000000 0xe4e1c00: the sensor must run at the 319200000 Hz the firmware asks for (patch 1)
+E       assert ({'type': 'intmenu', 'min': 0, 'max': 1, 'step': None, ...} and '240000000' == '319200000'
+E         
+E         - 319200000
+E         + 240000000)
+
+tests/test_e2e.py:54: AssertionError
+____________________________ test_firmware_rotation ____________________________
+
+graph = 'ov7251 3-0060'
+
+    @pytest.mark.needs_patch("8")
+    def test_firmware_rotation(graph):
+>       assert ctrl_info("camera_sensor_rotation") and ctrl("camera_sensor_rotation") == 90, \
+            "camera_sensor_rotation must read 90: the sensor is mounted rotated, the ACPI _PLD says 0 (patch 8, ipu-bridge DMI quirk)"
+E       AssertionError: camera_sensor_rotation must read 90: the sensor is mounted rotated, the ACPI _PLD says 0 (patch 8, ipu-bridge DMI quirk)
+E       assert (None)
+E        +  where None = ctrl_info('camera_sensor_rotation')
+
+tests/test_e2e.py:63: AssertionError
+_____________________________ test_control_events ______________________________
+
+graph = 'ov7251 3-0060'
+
+    def test_control_events(graph):
+        """libcamera subscribes to control events on every sensor it opens; the stock driver refuses (patch 3)."""
+        waiter = subprocess.Popen(["v4l2-ctl", "-d", sd(), "--wait-for-event=ctrl=exposure"],
+                                  stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
+        try:
+            time.sleep(0.5)
+            set_ctrl("exposure", EXPOSURE + 100)
+            set_ctrl("exposure", EXPOSURE)
+            out, _ = waiter.communicate(timeout=5)
+        except subprocess.TimeoutExpired:
+            waiter.kill()
+            pytest.fail("no control event arrived within 5 s of changing exposure")
+>       assert waiter.returncode == 0 and "SUBSCRIBE_EVENT: failed" not in out, \
+            f"subscribing to the exposure control event failed (patch 3):\n{out.strip()}"
+E       AssertionError: subscribing to the exposure control event failed (patch 3):
+E         VIDIOC_SUBSCRIBE_EVENT: failed: Inappropriate ioctl for device
+E         VIDIOC_UNSUBSCRIBE_EVENT: failed: Inappropriate ioctl for device
+E       assert (255 == 0)
+E        +  where 255 = <Popen: returncode: 255 args: ['v4l2-ctl', '-d', '/dev/v4l-subdev8', '--wait...>.returncode
+
+tests/test_e2e.py:79: AssertionError
+____________________________ test_lit_60fps_capture ____________________________
+
+graph = 'ov7251 3-0060'
+
+    def test_lit_60fps_capture(graph):
+        """Steps 3 to 5: 60 fps, emitter on, one second of lit frames with an image in them, then everything off."""
+>       assert ctrl_info(STROBE), f"{STROBE} missing: without patch 7 the emitter cannot be switched on"
+E       AssertionError: strobe_output_enable missing: without patch 7 the emitter cannot be switched on
+E       assert None
+E        +  where None = ctrl_info('strobe_output_enable')
+
+tests/test_e2e.py:85: AssertionError
+____________________ test_strobe_on_at_stream_start[30-10] _____________________
+
+graph = 'ov7251 3-0060', clean = None, fps = 30, exposure = 10
+
+    @pytest.mark.needs_patch("7")
+    @pytest.mark.parametrize("fps, exposure", [(fps, e) for fps, mid in ((30, 504), (60, 300), (90, 200))
+                                               for e in (10, mid, "max")])
+    def test_strobe_on_at_stream_start(graph, clean, fps, exposure):
+>       assert ctrl_info(STROBE), MISSING
+E       AssertionError: strobe_output_enable missing: patch 7 adds V4L2_CID_FLASH_STROBE_OE
+E       assert None
+E        +  where None = ctrl_info('strobe_output_enable')
+
+tests/test_k11_strobe_registers.py:57: AssertionError
+____________________ test_strobe_on_at_stream_start[30-504] ____________________
+
+graph = 'ov7251 3-0060', clean = None, fps = 30, exposure = 504
+
+    @pytest.mark.needs_patch("7")
+    @pytest.mark.parametrize("fps, exposure", [(fps, e) for fps, mid in ((30, 504), (60, 300), (90, 200))
+                                               for e in (10, mid, "max")])
+    def test_strobe_on_at_stream_start(graph, clean, fps, exposure):
+>       assert ctrl_info(STROBE), MISSING
+E       AssertionError: strobe_output_enable missing: patch 7 adds V4L2_CID_FLASH_STROBE_OE
+E       assert None
+E        +  where None = ctrl_info('strobe_output_enable')
+
+tests/test_k11_strobe_registers.py:57: AssertionError
+____________________ test_strobe_on_at_stream_start[30-max] ____________________
+
+graph = 'ov7251 3-0060', clean = None, fps = 30, exposure = 'max'
+
+    @pytest.mark.needs_patch("7")
+    @pytest.mark.parametrize("fps, exposure", [(fps, e) for fps, mid in ((30, 504), (60, 300), (90, 200))
+                                               for e in (10, mid, "max")])
+    def test_strobe_on_at_stream_start(graph, clean, fps, exposure):
+>       assert ctrl_info(STROBE), MISSING
+E       AssertionError: strobe_output_enable missing: patch 7 adds V4L2_CID_FLASH_STROBE_OE
+E       assert None
+E        +  where None = ctrl_info('strobe_output_enable')
+
+tests/test_k11_strobe_registers.py:57: AssertionError
+____________________ test_strobe_on_at_stream_start[60-10] _____________________
+
+graph = 'ov7251 3-0060', clean = None, fps = 60, exposure = 10
+
+    @pytest.mark.needs_patch("7")
+    @pytest.mark.parametrize("fps, exposure", [(fps, e) for fps, mid in ((30, 504), (60, 300), (90, 200))
+                                               for e in (10, mid, "max")])
+    def test_strobe_on_at_stream_start(graph, clean, fps, exposure):
+>       assert ctrl_info(STROBE), MISSING
+E       AssertionError: strobe_output_enable missing: patch 7 adds V4L2_CID_FLASH_STROBE_OE
+E       assert None
+E        +  where None = ctrl_info('strobe_output_enable')
+
+tests/test_k11_strobe_registers.py:57: AssertionError
+____________________ test_strobe_on_at_stream_start[60-300] ____________________
+
+graph = 'ov7251 3-0060', clean = None, fps = 60, exposure = 300
+
+    @pytest.mark.needs_patch("7")
+    @pytest.mark.parametrize("fps, exposure", [(fps, e) for fps, mid in ((30, 504), (60, 300), (90, 200))
+                                               for e in (10, mid, "max")])
+    def test_strobe_on_at_stream_start(graph, clean, fps, exposure):
+>       assert ctrl_info(STROBE), MISSING
+E       AssertionError: strobe_output_enable missing: patch 7 adds V4L2_CID_FLASH_STROBE_OE
+E       assert None
+E        +  where None = ctrl_info('strobe_output_enable')
+
+tests/test_k11_strobe_registers.py:57: AssertionError
+____________________ test_strobe_on_at_stream_start[60-max] ____________________
+
+graph = 'ov7251 3-0060', clean = None, fps = 60, exposure = 'max'
+
+    @pytest.mark.needs_patch("7")
+    @pytest.mark.parametrize("fps, exposure", [(fps, e) for fps, mid in ((30, 504), (60, 300), (90, 200))
+                                               for e in (10, mid, "max")])
+    def test_strobe_on_at_stream_start(graph, clean, fps, exposure):
+>       assert ctrl_info(STROBE), MISSING
+E       AssertionError: strobe_output_enable missing: patch 7 adds V4L2_CID_FLASH_STROBE_OE
+E       assert None
+E        +  where None = ctrl_info('strobe_output_enable')
+
+tests/test_k11_strobe_registers.py:57: AssertionError
+____________________ test_strobe_on_at_stream_start[90-10] _____________________
+
+graph = 'ov7251 3-0060', clean = None, fps = 90, exposure = 10
+
+    @pytest.mark.needs_patch("7")
+    @pytest.mark.parametrize("fps, exposure", [(fps, e) for fps, mid in ((30, 504), (60, 300), (90, 200))
+                                               for e in (10, mid, "max")])
+    def test_strobe_on_at_stream_start(graph, clean, fps, exposure):
+>       assert ctrl_info(STROBE), MISSING
+E       AssertionError: strobe_output_enable missing: patch 7 adds V4L2_CID_FLASH_STROBE_OE
+E       assert None
+E        +  where None = ctrl_info('strobe_output_enable')
+
+tests/test_k11_strobe_registers.py:57: AssertionError
+____________________ test_strobe_on_at_stream_start[90-200] ____________________
+
+graph = 'ov7251 3-0060', clean = None, fps = 90, exposure = 200
+
+    @pytest.mark.needs_patch("7")
+    @pytest.mark.parametrize("fps, exposure", [(fps, e) for fps, mid in ((30, 504), (60, 300), (90, 200))
+                                               for e in (10, mid, "max")])
+    def test_strobe_on_at_stream_start(graph, clean, fps, exposure):
+>       assert ctrl_info(STROBE), MISSING
+E       AssertionError: strobe_output_enable missing: patch 7 adds V4L2_CID_FLASH_STROBE_OE
+E       assert None
+E        +  where None = ctrl_info('strobe_output_enable')
+
+tests/test_k11_strobe_registers.py:57: AssertionError
+____________________ test_strobe_on_at_stream_start[90-max] ____________________
+
+graph = 'ov7251 3-0060', clean = None, fps = 90, exposure = 'max'
+
+    @pytest.mark.needs_patch("7")
+    @pytest.mark.parametrize("fps, exposure", [(fps, e) for fps, mid in ((30, 504), (60, 300), (90, 200))
+                                               for e in (10, mid, "max")])
+    def test_strobe_on_at_stream_start(graph, clean, fps, exposure):
+>       assert ctrl_info(STROBE), MISSING
+E       AssertionError: strobe_output_enable missing: patch 7 adds V4L2_CID_FLASH_STROBE_OE
+E       assert None
+E        +  where None = ctrl_info('strobe_output_enable')
+
+tests/test_k11_strobe_registers.py:57: AssertionError
+__________________ test_span_follows_exposure_while_streaming __________________
+
+graph = 'ov7251 3-0060', clean = None
+
+    @pytest.mark.needs_patch("7")
+    def test_span_follows_exposure_while_streaming(graph, clean):
+>       assert ctrl_info(STROBE), MISSING
+E       AssertionError: strobe_output_enable missing: patch 7 adds V4L2_CID_FLASH_STROBE_OE
+E       assert None
+E        +  where None = ctrl_info('strobe_output_enable')
+
+tests/test_k11_strobe_registers.py:71: AssertionError
+___________________ test_span_follows_vblank_while_streaming ___________________
+
+graph = 'ov7251 3-0060', clean = None
+
+    @pytest.mark.needs_patch("7")
+    def test_span_follows_vblank_while_streaming(graph, clean):
+>       assert ctrl_info(STROBE), MISSING
+E       AssertionError: strobe_output_enable missing: patch 7 adds V4L2_CID_FLASH_STROBE_OE
+E       assert None
+E        +  where None = ctrl_info('strobe_output_enable')
+
+tests/test_k11_strobe_registers.py:93: AssertionError
+_____________________ test_strobe_toggled_while_streaming ______________________
+
+graph = 'ov7251 3-0060', clean = None
+
+    @pytest.mark.needs_patch("7")
+    def test_strobe_toggled_while_streaming(graph, clean):
+>       assert ctrl_info(STROBE), MISSING
+E       AssertionError: strobe_output_enable missing: patch 7 adds V4L2_CID_FLASH_STROBE_OE
+E       assert None
+E        +  where None = ctrl_info('strobe_output_enable')
+
+tests/test_k11_strobe_registers.py:117: AssertionError
+_____________________ test_strobe_survives_runtime_suspend _____________________
+
+graph = 'ov7251 3-0060', clean = None
+
+    @pytest.mark.needs_patch("7")
+    def test_strobe_survives_runtime_suspend(graph, clean):
+        """Set while idle, the control is applied at each stream start by __v4l2_ctrl_handler_setup(), also after the
+        sensor was powered off in between."""
+>       assert ctrl_info(STROBE), MISSING
+E       AssertionError: strobe_output_enable missing: patch 7 adds V4L2_CID_FLASH_STROBE_OE
+E       assert None
+E        +  where None = ctrl_info('strobe_output_enable')
+
+tests/test_k11_strobe_registers.py:135: AssertionError
+___________________________ test_compliance[subdev] ____________________________
+
+graph = 'ov7251 3-0060', target = 'subdev'
+args = <function <lambda> at 0x7fe723553e20>
+
+    @pytest.mark.parametrize("target, args", [
+        ("subdev", lambda: ["-u", sd()]),
+        pytest.param("media", lambda: ["-m", MEDIA], marks=pytest.mark.disruptive(reason=MEDIA_OOPS)),
+        ("video", lambda: ["-d", VIDEO, "-s", "30"]),
+    ], ids=["subdev", "media", "video"])
+    def test_compliance(graph, target, args):
+        before = parse_ctrls(run("v4l2-ctl", "-d", sd(), "-l"))
+        try:
+            p = subprocess.run(["v4l2-compliance", *args()], capture_output=True, text=True, timeout=300)
+        finally:  # v4l2-compliance leaves controls (e.g. test_pattern), formats and the frame interval changed
+            set_fps(30)
+            setup_graph()  # resets exposure and gain, so restore the controls after it
+            for name, c in before.items():
+                if "read-only" not in c["flags"] and ctrl_info(name)["value"] != c["value"]:
+                    set_ctrl(name, c["value"])
+        out = p.stdout + p.stderr
+        log = BASELINE / f"k1-{target}-{os.uname().release}.log"
+        if not log.exists():
+            log.parent.mkdir(exist_ok=True)
+            log.write_text(f"$ v4l2-compliance {' '.join(args())}\n# exit status {p.returncode}\n{out}")
+        assert p.returncode >= 0, f"v4l2-compliance {target} crashed (signal {-p.returncode}) before finishing, see {log.name}"
+        totals = TOTAL.findall(out)
+        assert totals, f"v4l2-compliance {target} printed no final Total line (exit status {p.returncode}, a negative one is a crash)"
+        failed = [l.strip() for l in out.splitlines() if "FAIL" in l or "fail:" in l]
+>       assert int(totals[-1][2]) == 0, f"v4l2-compliance {target}: {totals[-1]} (total, ok, failed, warn); failures: {failed}"
+E       AssertionError: v4l2-compliance subdev: ('46', '45', '1', '1') (total, ok, failed, warn); failures: ["fail: v4l2-test-controls.cpp(1128): subscribe event for control 'User Controls' failed", 'test VIDIOC_(UN)SUBSCRIBE_EVENT/DQEVENT: FAIL']
+E       assert 1 == 0
+E        +  where 1 = int('1')
+
+tests/test_k1_compliance.py:43: AssertionError
+____________________________ test_compliance[video] ____________________________
+
+graph = 'ov7251 3-0060', target = 'video'
+args = <function <lambda> at 0x7fe723584040>
+
+    @pytest.mark.parametrize("target, args", [
+        ("subdev", lambda: ["-u", sd()]),
+        pytest.param("media", lambda: ["-m", MEDIA], marks=pytest.mark.disruptive(reason=MEDIA_OOPS)),
+        ("video", lambda: ["-d", VIDEO, "-s", "30"]),
+    ], ids=["subdev", "media", "video"])
+    def test_compliance(graph, target, args):
+        before = parse_ctrls(run("v4l2-ctl", "-d", sd(), "-l"))
+        try:
+            p = subprocess.run(["v4l2-compliance", *args()], capture_output=True, text=True, timeout=300)
+        finally:  # v4l2-compliance leaves controls (e.g. test_pattern), formats and the frame interval changed
+            set_fps(30)
+            setup_graph()  # resets exposure and gain, so restore the controls after it
+            for name, c in before.items():
+                if "read-only" not in c["flags"] and ctrl_info(name)["value"] != c["value"]:
+                    set_ctrl(name, c["value"])
+        out = p.stdout + p.stderr
+        log = BASELINE / f"k1-{target}-{os.uname().release}.log"
+        if not log.exists():
+            log.parent.mkdir(exist_ok=True)
+            log.write_text(f"$ v4l2-compliance {' '.join(args())}\n# exit status {p.returncode}\n{out}")
+        assert p.returncode >= 0, f"v4l2-compliance {target} crashed (signal {-p.returncode}) before finishing, see {log.name}"
+        totals = TOTAL.findall(out)
+        assert totals, f"v4l2-compliance {target} printed no final Total line (exit status {p.returncode}, a negative one is a crash)"
+        failed = [l.strip() for l in out.splitlines() if "FAIL" in l or "fail:" in l]
+>       assert int(totals[-1][2]) == 0, f"v4l2-compliance {target}: {totals[-1]} (total, ok, failed, warn); failures: {failed}"
+E       AssertionError: v4l2-compliance video: ('58', '51', '7', '30') (total, ok, failed, warn); failures: ['fail: v4l2-test-buffers.cpp(901): q.create_bufs(node, 1, &fmt) != EINVAL', 'test VIDIOC_REQBUFS/CREATE_BUFS/QUERYBUF: FAIL', 'fail: v4l2-test-buffers.cpp(1667): buf.g_length(p) < fmt.g_sizeimage(p)', 'test MMAP (no poll, REQBUFS): FAIL', 'fail: v4l2-test-buffers.cpp(1667): buf.g_length(p) < fmt.g_sizeimage(p)', 'test MMAP (select, REQBUFS): FAIL', 'fail: v4l2-test-buffers.cpp(1667): buf.g_length(p) < fmt.g_sizeimage(p)', 'test MMAP (epoll, REQBUFS): FAIL', 'fail: v4l2-test-buffers.cpp(1667): buf.g_length(p) < fmt.g_sizeimage(p)', 'test MMAP (no poll, CREATE_BUFS): FAIL', 'fail: v4l2-test-buffers.cpp(1667): buf.g_length(p) < fmt.g_sizeimage(p)', 'test MMAP (select, CREATE_BUFS): FAIL', 'fail: v4l2-test-buffers.cpp(1667): buf.g_length(p) < fmt.g_sizeimage(p)', 'test MMAP (epoll, CREATE_BUFS): FAIL', 'fail: v4l2-test-buffers.cpp(2065): data at 8 bytes before start of the buffer was touched', 'fail: v4l2-test-buffers.cpp(2065): data at 4 bytes before start of the buffer was touched', 'fail: v4l2-test-buffers.cpp(2065): data at 8 bytes before start of the buffer was touched', 'fail: v4l2-test-buffers.cpp(2065): data at 4 bytes before start of the buffer was touched', 'fail: v4l2-test-buffers.cpp(2065): data at 8 bytes before start of the buffer was touched', 'fail: v4l2-test-buffers.cpp(2065): data at 4 bytes before start of the buffer was touched', 'fail: v4l2-test-buffers.cpp(2065): data at 8 bytes before start of the buffer was touched', 'fail: v4l2-test-buffers.cpp(2065): data at 4 bytes before start of the buffer was touched']
+E       assert 7 == 0
+E        +  where 7 = int('7')
+
+tests/test_k1_compliance.py:43: AssertionError
+_______________________ test_camera_orientation_is_front _______________________
+
+graph = 'ov7251 3-0060'
+
+    @pytest.mark.needs_patch("5")
+    def test_camera_orientation_is_front(graph):
+        c = ctrl_info("camera_orientation")
+>       assert c is not None, f"camera_orientation missing: {FWNODE}"
+E       AssertionError: camera_orientation missing: patch 5 registers the fwnode controls (v4l2_ctrl_new_fwnode_properties)
+E       assert None is not None
+
+tests/test_k2_controls.py:32: AssertionError
+_____________________ test_camera_sensor_rotation_present ______________________
+
+graph = 'ov7251 3-0060'
+
+    @pytest.mark.needs_patch("5")
+    def test_camera_sensor_rotation_present(graph):
+>       assert ctrl_info("camera_sensor_rotation") is not None, f"camera_sensor_rotation missing: {FWNODE}"
+E       AssertionError: camera_sensor_rotation missing: patch 5 registers the fwnode controls (v4l2_ctrl_new_fwnode_properties)
+E       assert None is not None
+E        +  where None = ctrl_info('camera_sensor_rotation')
+
+tests/test_k2_controls.py:38: AssertionError
+______________________ test_camera_sensor_rotation_is_90 _______________________
+
+graph = 'ov7251 3-0060'
+
+    @pytest.mark.needs_patch("8")
+    def test_camera_sensor_rotation_is_90(graph):
+        c = ctrl_info("camera_sensor_rotation")
+>       assert c is not None and c["value"] == 90, \
+            f"camera_sensor_rotation {c and c['value']}, expected 90: the sensor is mounted rotated, the ACPI _PLD says 0 (patch 8, ipu-bridge DMI quirk)"
+E       AssertionError: camera_sensor_rotation None, expected 90: the sensor is mounted rotated, the ACPI _PLD says 0 (patch 8, ipu-bridge DMI quirk)
+E       assert (None is not None)
+
+tests/test_k2_controls.py:44: AssertionError
+___________ test_fwnode_controls_are_read_only[camera_orientation-1] ___________
+
+graph = 'ov7251 3-0060', name = 'camera_orientation', value = 1
+
+    @pytest.mark.needs_patch("5")
+    @pytest.mark.parametrize("name, value", [("camera_orientation", 1), ("camera_sensor_rotation", 90)])
+    def test_fwnode_controls_are_read_only(graph, name, value):
+        c = ctrl_info(name)
+>       assert c is not None, f"{name} missing: {FWNODE}"
+E       AssertionError: camera_orientation missing: patch 5 registers the fwnode controls (v4l2_ctrl_new_fwnode_properties)
+E       assert None is not None
+
+tests/test_k2_controls.py:52: AssertionError
+________ test_fwnode_controls_are_read_only[camera_sensor_rotation-90] _________
+
+graph = 'ov7251 3-0060', name = 'camera_sensor_rotation', value = 90
+
+    @pytest.mark.needs_patch("5")
+    @pytest.mark.parametrize("name, value", [("camera_orientation", 1), ("camera_sensor_rotation", 90)])
+    def test_fwnode_controls_are_read_only(graph, name, value):
+        c = ctrl_info(name)
+>       assert c is not None, f"{name} missing: {FWNODE}"
+E       AssertionError: camera_sensor_rotation missing: patch 5 registers the fwnode controls (v4l2_ctrl_new_fwnode_properties)
+E       assert None is not None
+
+tests/test_k2_controls.py:52: AssertionError
+_________________ test_exposure_change_sends_event_with_value __________________
+
+graph = 'ov7251 3-0060'
+
+    @pytest.mark.needs_patch("3")
+    def test_exposure_change_sends_event_with_value(graph):
+        old = ctrl("exposure")
+        new = 432 if old != 432 else 433
+        waiter = subprocess.Popen(["v4l2-ctl", "-d", sd(), "--wait-for-event=ctrl=exposure"],
+                                  stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
+        try:
+            time.sleep(0.5)
+            set_ctrl("exposure", new)
+            out, _ = waiter.communicate(timeout=5)
+        except subprocess.TimeoutExpired:
+            waiter.kill()
+            pytest.fail("no control event within 5 s of changing exposure (patch 3)")
+        finally:
+            set_ctrl("exposure", old)
+        got = re.search(r"value: (-?\d+)", out)
+>       assert waiter.returncode == 0 and got, f"no exposure control event (patch 3 adds subscribe_event):\n{out.strip()}"
+E       AssertionError: no exposure control event (patch 3 adds subscribe_event):
+E         VIDIOC_SUBSCRIBE_EVENT: failed: Inappropriate ioctl for device
+E         VIDIOC_UNSUBSCRIBE_EVENT: failed: Inappropriate ioctl for device
+E       assert (255 == 0)
+E        +  where 255 = <Popen: returncode: 255 args: ['v4l2-ctl', '-d', '/dev/v4l-subdev8', '--wait...>.returncode
+
+tests/test_k2_controls.py:76: AssertionError
+________________ test_strobe_output_enable_is_bool_default_off _________________
+
+graph = 'ov7251 3-0060'
+
+    @pytest.mark.needs_patch("7")
+    def test_strobe_output_enable_is_bool_default_off(graph):
+        c = ctrl_info(STROBE)
+>       assert c is not None, f"{STROBE} (V4L2_CID_FLASH_STROBE_OE) missing: patch 7 adds it to drive the IR emitter"
+E       AssertionError: strobe_output_enable (V4L2_CID_FLASH_STROBE_OE) missing: patch 7 adds it to drive the IR emitter
+E       assert None is not None
+
+tests/test_k2_controls.py:83: AssertionError
+_____________________ test_link_frequency_matches_firmware _____________________
+
+graph = 'ov7251 3-0060'
+
+    @pytest.mark.needs_patch("1")
+    def test_link_frequency_matches_firmware(graph):
+        c = ctrl_info("link_frequency")
+>       assert c["label"].split()[0] == "319200000", \
+            f"link_frequency is {c['label']}; patch 1 must select the 319.2 MHz the ACPI SSDB/_DSD asks for"
+E       AssertionError: link_frequency is 240000000 0xe4e1c00; patch 1 must select the 319.2 MHz the ACPI SSDB/_DSD asks for
+E       assert '240000000' == '319200000'
+E         
+E         - 319200000
+E         + 240000000
+
+tests/test_k3_timing.py:24: AssertionError
+____________________ test_pixel_rate_follows_link_frequency ____________________
+
+graph = 'ov7251 3-0060'
+
+    @pytest.mark.needs_patch("1")
+    def test_pixel_rate_follows_link_frequency(graph):
+        rate = ctrl_info("pixel_rate")["value"]
+>       assert rate == 63840000, f"pixel_rate is {rate}; at 319.2 MHz (x2 DDR / 10 bpp) it must be 63840000"
+E       AssertionError: pixel_rate is 48000000; at 319.2 MHz (x2 DDR / 10 bpp) it must be 63840000
+E       assert 48000000 == 63840000
+
+tests/test_k3_timing.py:31: AssertionError
+______________________ test_pll1_programmed_for_319_2_mhz ______________________
+
+graph = 'ov7251 3-0060'
+
+    @pytest.mark.needs_patch("1")
+    def test_pll1_programmed_for_319_2_mhz(graph):
+        with streaming():
+            got = {name: read_reg(int(name.split()[1], 16)) for name in PLL1_319_2}
+>       assert got == PLL1_319_2, f"PLL1 registers {got}, expected the 19.2 MHz -> 319.2 MHz table {PLL1_319_2} (patch 1 index fix)"
+E       AssertionError: PLL1 registers {'pre_div 0x30b4': 3, 'mult 0x30b3': 75, 'div 0x30b1': 1, 'pix_div 0x30b0': 10, 'mipi_div 0x30b5': 5}, expected the 19.2 MHz -> 319.2 MHz table {'pre_div 0x30b4': 1, 'mult 0x30b3': 133, 'div 0x30b1': 4, 'pix_div 0x30b0': 10, 'mipi_div 0x30b5': 5} (patch 1 index fix)
+E       assert {'pre_div 0x3...0b0': 10, ...} == {'pre_div 0x3...0b0': 10, ...}
+E         
+E         Omitting 2 identical items, use -vv to show
+E         Differing items:
+E         {'pre_div 0x30b4': 3} != {'pre_div 0x30b4': 1}
+E         {'div 0x30b1': 1} != {'div 0x30b1': 4}
+E         {'mult 0x30b3': 75} != {'mult 0x30b3': 133}
+E         ...
+E         
+E         ...Full output truncated (17 lines hidden), use '-vv' to show
+
+tests/test_k3_timing.py:38: AssertionError
+_____________________ test_frame_interval_selects_fps[60] ______________________
+
+graph = 'ov7251 3-0060', fps = 60
+
+    @pytest.mark.needs_patch("4")
+    @pytest.mark.parametrize("fps", [60, 90])
+    def test_frame_interval_selects_fps(graph, fps):
+        try:
+            set_fps(fps)
+            got = get_fps()
+            with tempfile.TemporaryDirectory() as d:
+                measured = reported_fps(stream(2 * fps, f"{d}/f.raw"))
+        finally:
+            set_fps(30)
+        assert abs(got - fps) < 1, f"--set-subdev-fps fps={fps} read back {got}"
+>       assert measured and abs(measured - fps) / fps < 0.05, f"asked {fps} fps, v4l2-ctl measured {measured}"
+E       AssertionError: asked 60 fps, v4l2-ctl measured 30.01
+E       assert (30.01 and (29.99 / 60) < 0.05)
+E        +  where 29.99 = abs((30.01 - 60))
+
+tests/test_k3_timing.py:63: AssertionError
+_____________________ test_frame_interval_selects_fps[90] ______________________
+
+graph = 'ov7251 3-0060', fps = 90
+
+    @pytest.mark.needs_patch("4")
+    @pytest.mark.parametrize("fps", [60, 90])
+    def test_frame_interval_selects_fps(graph, fps):
+        try:
+            set_fps(fps)
+            got = get_fps()
+            with tempfile.TemporaryDirectory() as d:
+                measured = reported_fps(stream(2 * fps, f"{d}/f.raw"))
+        finally:
+            set_fps(30)
+        assert abs(got - fps) < 1, f"--set-subdev-fps fps={fps} read back {got}"
+>       assert measured and abs(measured - fps) / fps < 0.05, f"asked {fps} fps, v4l2-ctl measured {measured}"
+E       AssertionError: asked 90 fps, v4l2-ctl measured 30.0
+E       assert (30.0 and (60.0 / 90) < 0.05)
+E        +  where 60.0 = abs((30.0 - 90))
+
+tests/test_k3_timing.py:63: AssertionError
+___________ test_vblank_and_exposure_range_follow_frame_interval[60] ___________
+
+graph = 'ov7251 3-0060', fps = 60
+
+    @pytest.mark.needs_patch("4")
+    @pytest.mark.parametrize("fps", [60, 90])
+    def test_vblank_and_exposure_range_follow_frame_interval(graph, fps):
+        try:
+            set_fps(fps)
+>           check_mode_controls(fps)
+
+tests/test_k3_timing.py:81: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+fps = 60
+
+    def check_mode_controls(fps):
+        vts = MODE_VTS[fps]
+        vb, ex = ctrl_info("vertical_blanking"), ctrl_info("exposure")
+        want = {"min": 1, "max": 0xffff - H, "default": vts - H, "value": vts - H}
+>       assert {k: vb[k] for k in want} == want, \
+            f"vertical_blanking at {fps} fps {vb}, expected {want} (VTS {vts}): patch 4 resets VBLANK on a frame interval change"
+E       AssertionError: vertical_blanking at 60 fps {'type': 'int', 'min': 1, 'max': 65055, 'step': 1, 'default': 1244, 'value': 1244, 'label': None, 'flags': ['has-min-max']}, expected {'min': 1, 'max': 65055, 'default': 380, 'value': 380} (VTS 860): patch 4 resets VBLANK on a frame interval change
+E       assert {'min': 1, 'm...'value': 1244} == {'min': 1, 'm... 'value': 380}
+E         
+E         Omitting 2 identical items, use -vv to show
+E         Differing items:
+E         {'default': 1244} != {'default': 380}
+E         {'value': 1244} != {'value': 380}
+E         
+E         Full diff:...
+E         
+E         ...Full output truncated (12 lines hidden), use '-vv' to show
+
+tests/test_k3_timing.py:70: AssertionError
+___________ test_vblank_and_exposure_range_follow_frame_interval[90] ___________
+
+graph = 'ov7251 3-0060', fps = 90
+
+    @pytest.mark.needs_patch("4")
+    @pytest.mark.parametrize("fps", [60, 90])
+    def test_vblank_and_exposure_range_follow_frame_interval(graph, fps):
+        try:
+            set_fps(fps)
+>           check_mode_controls(fps)
+
+tests/test_k3_timing.py:81: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+fps = 90
+
+    def check_mode_controls(fps):
+        vts = MODE_VTS[fps]
+        vb, ex = ctrl_info("vertical_blanking"), ctrl_info("exposure")
+        want = {"min": 1, "max": 0xffff - H, "default": vts - H, "value": vts - H}
+>       assert {k: vb[k] for k in want} == want, \
+            f"vertical_blanking at {fps} fps {vb}, expected {want} (VTS {vts}): patch 4 resets VBLANK on a frame interval change"
+E       AssertionError: vertical_blanking at 90 fps {'type': 'int', 'min': 1, 'max': 65055, 'step': 1, 'default': 1244, 'value': 1244, 'label': None, 'flags': ['has-min-max']}, expected {'min': 1, 'max': 65055, 'default': 92, 'value': 92} (VTS 572): patch 4 resets VBLANK on a frame interval change
+E       assert {'min': 1, 'm...'value': 1244} == {'min': 1, 'm..., 'value': 92}
+E         
+E         Omitting 2 identical items, use -vv to show
+E         Differing items:
+E         {'default': 1244} != {'default': 92}
+E         {'value': 1244} != {'value': 92}
+E         
+E         Full diff:...
+E         
+E         ...Full output truncated (12 lines hidden), use '-vv' to show
+
+tests/test_k3_timing.py:70: AssertionError
+______________________ test_vts_register_matches_mode[60] ______________________
+
+graph = 'ov7251 3-0060', fps = 60
+
+    @pytest.mark.parametrize("fps", [30, pytest.param(60, marks=pytest.mark.needs_patch("4")),
+                                     pytest.param(90, marks=pytest.mark.needs_patch("4"))])
+    def test_vts_register_matches_mode(graph, fps):
+        try:
+            set_fps(fps)
+            with streaming():
+                vts = read_reg(VTS_REG, 2)
+        finally:
+            restore_30fps_vblank()
+>       assert vts == MODE_VTS[fps], f"0x380e/0x380f = {vts} streaming at {fps} fps, expected the mode's VTS {MODE_VTS[fps]} (patch 4)"
+E       AssertionError: 0x380e/0x380f = 1724 streaming at 60 fps, expected the mode's VTS 860 (patch 4)
+E       assert 1724 == 860
+
+tests/test_k3_timing.py:97: AssertionError
+______________________ test_vts_register_matches_mode[90] ______________________
+
+graph = 'ov7251 3-0060', fps = 90
+
+    @pytest.mark.parametrize("fps", [30, pytest.param(60, marks=pytest.mark.needs_patch("4")),
+                                     pytest.param(90, marks=pytest.mark.needs_patch("4"))])
+    def test_vts_register_matches_mode(graph, fps):
+        try:
+            set_fps(fps)
+            with streaming():
+                vts = read_reg(VTS_REG, 2)
+        finally:
+            restore_30fps_vblank()
+>       assert vts == MODE_VTS[fps], f"0x380e/0x380f = {vts} streaming at {fps} fps, expected the mode's VTS {MODE_VTS[fps]} (patch 4)"
+E       AssertionError: 0x380e/0x380f = 1724 streaming at 90 fps, expected the mode's VTS 572 (patch 4)
+E       assert 1724 == 572
+
+tests/test_k3_timing.py:97: AssertionError
+_______________ test_set_fmt_after_frame_interval_is_consistent ________________
+
+graph = 'ov7251 3-0060'
+
+    @pytest.mark.needs_patch("4")
+    def test_set_fmt_after_frame_interval_is_consistent(graph):
+        """The other direction of patch 4: an active set_fmt after a 60 fps interval must not keep the 60 fps VBLANK
+        (set_fmt picks the first 640x480 mode, 30 fps). VBLANK is also set by hand so the stock driver reaches the same state."""
+        try:
+            set_fps(60)
+            set_ctrl("vertical_blanking", MODE_VTS[60] - H)
+            setup_graph()
+            fps = round(get_fps())
+            vb = ctrl_info("vertical_blanking")["value"]
+            with streaming():
+                vts = read_reg(VTS_REG, 2)
+        finally:
+            restore_30fps_vblank()
+>       assert vb == MODE_VTS[fps] - H, \
+            f"after set_fmt the interval reads {fps} fps but vertical_blanking is {vb}, expected {MODE_VTS[fps] - H} (patch 4)"
+E       AssertionError: after set_fmt the interval reads 30 fps but vertical_blanking is 380, expected 1244 (patch 4)
+E       assert 380 == (1724 - 480)
+
+tests/test_k3_timing.py:114: AssertionError
+________________________ test_emitter_lights_the_scene _________________________
+
+lit = None, dark_mean = 19.485226236979166
+
+    def test_emitter_lights_the_scene(lit, dark_mean):
+>       assert lit is not None, MISSING
+E       AssertionError: strobe_output_enable missing: patch 7 adds V4L2_CID_FLASH_STROBE_OE to light the emitter
+E       assert None is not None
+
+tests/test_k5_emitter.py:26: AssertionError
+__________________________ test_lit_from_first_frames __________________________
+
+lit = None, dark_mean = 19.485226236979166
+
+    def test_lit_from_first_frames(lit, dark_mean):
+>       assert lit is not None, MISSING
+E       AssertionError: strobe_output_enable missing: patch 7 adds V4L2_CID_FLASH_STROBE_OE to light the emitter
+E       assert None is not None
+
+tests/test_k5_emitter.py:32: AssertionError
+_________________________ test_dark_again_after_reset __________________________
+
+lit = None
+
+    def test_dark_again_after_reset(lit):
+>       assert lit is not None, MISSING
+E       AssertionError: strobe_output_enable missing: patch 7 adds V4L2_CID_FLASH_STROBE_OE to light the emitter
+E       assert None is not None
+
+tests/test_k5_emitter.py:38: AssertionError
+_________________ test_strobe_set_while_idle_keeps_sensor_off __________________
+
+graph = 'ov7251 3-0060'
+
+    @pytest.mark.needs_patch("7")
+    def test_strobe_set_while_idle_keeps_sensor_off(graph):
+>       assert ctrl_info(STROBE) is not None, f"{STROBE} missing: patch 7 adds V4L2_CID_FLASH_STROBE_OE"
+E       AssertionError: strobe_output_enable missing: patch 7 adds V4L2_CID_FLASH_STROBE_OE
+E       assert None is not None
+E        +  where None = ctrl_info('strobe_output_enable')
+
+tests/test_k7_safety.py:17: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_e2e.py::test_firmware_description - AssertionError: link_fr...
+FAILED tests/test_e2e.py::test_firmware_rotation - AssertionError: camera_sen...
+FAILED tests/test_e2e.py::test_control_events - AssertionError: subscribing t...
+FAILED tests/test_e2e.py::test_lit_60fps_capture - AssertionError: strobe_out...
+FAILED tests/test_k11_strobe_registers.py::test_strobe_on_at_stream_start[30-10]
+FAILED tests/test_k11_strobe_registers.py::test_strobe_on_at_stream_start[30-504]
+FAILED tests/test_k11_strobe_registers.py::test_strobe_on_at_stream_start[30-max]
+FAILED tests/test_k11_strobe_registers.py::test_strobe_on_at_stream_start[60-10]
+FAILED tests/test_k11_strobe_registers.py::test_strobe_on_at_stream_start[60-300]
+FAILED tests/test_k11_strobe_registers.py::test_strobe_on_at_stream_start[60-max]
+FAILED tests/test_k11_strobe_registers.py::test_strobe_on_at_stream_start[90-10]
+FAILED tests/test_k11_strobe_registers.py::test_strobe_on_at_stream_start[90-200]
+FAILED tests/test_k11_strobe_registers.py::test_strobe_on_at_stream_start[90-max]
+FAILED tests/test_k11_strobe_registers.py::test_span_follows_exposure_while_streaming
+FAILED tests/test_k11_strobe_registers.py::test_span_follows_vblank_while_streaming
+FAILED tests/test_k11_strobe_registers.py::test_strobe_toggled_while_streaming
+FAILED tests/test_k11_strobe_registers.py::test_strobe_survives_runtime_suspend
+FAILED tests/test_k1_compliance.py::test_compliance[subdev] - AssertionError:...
+FAILED tests/test_k1_compliance.py::test_compliance[video] - AssertionError: ...
+FAILED tests/test_k2_controls.py::test_camera_orientation_is_front - Assertio...
+FAILED tests/test_k2_controls.py::test_camera_sensor_rotation_present - Asser...
+FAILED tests/test_k2_controls.py::test_camera_sensor_rotation_is_90 - Asserti...
+FAILED tests/test_k2_controls.py::test_fwnode_controls_are_read_only[camera_orientation-1]
+FAILED tests/test_k2_controls.py::test_fwnode_controls_are_read_only[camera_sensor_rotation-90]
+FAILED tests/test_k2_controls.py::test_exposure_change_sends_event_with_value
+FAILED tests/test_k2_controls.py::test_strobe_output_enable_is_bool_default_off
+FAILED tests/test_k3_timing.py::test_link_frequency_matches_firmware - Assert...
+FAILED tests/test_k3_timing.py::test_pixel_rate_follows_link_frequency - Asse...
+FAILED tests/test_k3_timing.py::test_pll1_programmed_for_319_2_mhz - Assertio...
+FAILED tests/test_k3_timing.py::test_frame_interval_selects_fps[60] - Asserti...
+FAILED tests/test_k3_timing.py::test_frame_interval_selects_fps[90] - Asserti...
+FAILED tests/test_k3_timing.py::test_vblank_and_exposure_range_follow_frame_interval[60]
+FAILED tests/test_k3_timing.py::test_vblank_and_exposure_range_follow_frame_interval[90]
+FAILED tests/test_k3_timing.py::test_vts_register_matches_mode[60] - Assertio...
+FAILED tests/test_k3_timing.py::test_vts_register_matches_mode[90] - Assertio...
+FAILED tests/test_k3_timing.py::test_set_fmt_after_frame_interval_is_consistent
+FAILED tests/test_k5_emitter.py::test_emitter_lights_the_scene - AssertionErr...
+FAILED tests/test_k5_emitter.py::test_lit_from_first_frames - AssertionError:...
+FAILED tests/test_k5_emitter.py::test_dark_again_after_reset - AssertionError...
+FAILED tests/test_k7_safety.py::test_strobe_set_while_idle_keeps_sensor_off
+============= 40 failed, 27 passed, 3 skipped in 77.97s (0:01:17) ==============
