@@ -2,3 +2,10 @@
 __pycache__/
 *.pyc
 .pytest_cache/
+kernel/build/*.ko
+kernel/build/*.o
+kernel/build/*.mod*
+kernel/build/.*.cmd
+kernel/build/*.cmd
+kernel/build/Module.symvers
+kernel/build/modules.order
