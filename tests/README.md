@@ -11,7 +11,7 @@ IRCAM_DISRUPTIVE=1 pytest -q tests/test_k8_suspend.py tests/test_k9_reload.py   
 IRCAM_DISRUPTIVE=1 pytest -q "tests/test_k1_compliance.py::test_compliance[media]"   # oopses ov5693, only before a reboot
 ```
 
-Markers (registered in `pytest.ini`): `needs_patch("n")` = expected red until kernel patch n lands, numbered as in `kernel/patches/` (1 link frequency, 2 analogue gain, 3 control events, 4 frame interval, 5 fwnode controls, 6 strobe refactor, 7 strobe control); `disruptive` = suspends the machine, reloads modules or oopses the kernel, skipped unless `IRCAM_DISRUPTIVE=1`.
+Markers (registered in `pytest.ini`): `needs_patch("n")` = expected red until kernel patch n lands, numbered as in `kernel/patches/` (1 link frequency, 2 analogue gain, 3 control events, 4 frame interval, 5 fwnode controls, 6 strobe refactor, 7 strobe control, `all` for the end-to-end scenario); `disruptive` = suspends the machine, reloads modules or oopses the kernel, skipped unless `IRCAM_DISRUPTIVE=1`.
 
 ## Matrix
 
@@ -25,7 +25,7 @@ Markers (registered in `pytest.ini`): `needs_patch("n")` = expected red until ke
 | K2 | | `strobe_output_enable` is bool, default 0 | red | patch 7 |
 | K3 | `test_k3_timing.py` | `link_frequency` = 319200000, `pixel_rate` = 63840000 | red | patch 1 |
 | K3 | | 90 frames at 30 fps take 2.6-3.6 s | green | |
-| K3 | | `--set-subdev-fps` 60 / 90 reads back and the stream really runs at that rate | red (reads back, streams at 30) | patch 4 (not marked `needs_patch`) |
+| K3 | | `--set-subdev-fps` 60 / 90 reads back and the stream really runs at that rate | red (reads back, streams at 30) | patch 4 |
 | K4 | `test_k4_dark.py` | emitter off, exposure 1704, gain 128: 30-frame mean < 40 | green | |
 | K5 | `test_k5_emitter.py` | `strobe_output_enable=1` before stream: mean > 2.5 x K4 dark, first 3 frames lit, dark again after reset to 0 | red | patch 7 |
 | K7 | `test_k7_safety.py` | sensor `runtime_status` = suspended within 2 s of a stream ending | green | |
@@ -33,6 +33,7 @@ Markers (registered in `pytest.ini`): `needs_patch("n")` = expected red until ke
 | K8 | `test_k8_suspend.py` | suspend mid-stream: capture completes or exits cleanly, controls unchanged (manual wake) | skipped | |
 | K9 | `test_k9_reload.py` | 10 x unbind/unload/load: ov7251 entity re-appears (new entity id), other entities unchanged, no WARNING/BUG/Oops/leak in `journalctl -k` | skipped | |
 | K10 | `test_k10_test_pattern.py` | test pattern decodes to the exact 8 colour bars on a Bayer mosaic (only 0/1023, rows period 2, bar means 1023 x k/4) | green | |
+| E2E | `test_e2e.py` | One scenario in stack order: firmware link frequency and placement (1, 5), control events (3), 60 fps (4), analogue gain (2), emitter on (7), 60 lit frames in 1 s with a real picture, emitter off and sensor suspended after. Writes `docs/e2e/ir-60fps-emitter-{on,off}.png` (or `$IRCAM_E2E_OUT`) | red (3 failures, each naming its patch) | all; green log `docs/phase3-7.2-test-2026-10-24-e2e.log`, red `docs/phase3-7.2-stock-red-2026-10-24.log` |
 
 K9 unbinds `i2c-INT347E:00` from the ov7251 driver first (`modprobe -r` alone fails: the ipu3-cio2 v4l2_device holds a reference on the sensor module), then runs `sudo modprobe -r ov7251` and loads `$IRCAM_KO` with `sudo insmod` if set (e.g. `kernel/build/ov7251.ko`), else `sudo modprobe ov7251`.
 

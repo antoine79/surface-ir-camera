@@ -31,6 +31,7 @@ def test_90_frames_at_30fps_take_3s(graph):
     assert 2.6 <= t <= 3.6, f"90 frames took {t:.2f} s (v4l2-ctl fps {fps}, wall {wall:.2f} s), expected ~3 s at 30 fps"
 
 
+@pytest.mark.needs_patch("4")
 @pytest.mark.parametrize("fps", [60, 90])
 def test_frame_interval_selects_fps(graph, fps):
     try:

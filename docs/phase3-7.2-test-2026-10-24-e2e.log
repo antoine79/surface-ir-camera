@@ -1,0 +1,174 @@
+# Patched ov7251.ko (kernel/build, series 574b6ec7584b tip) on kernel-surface 7.2.12-1.surface.fc43.x86_64, insmod after sysfs unbind, 2026-10-24T22:22:12+09:00
+# Pairs with docs/phase3-7.2-stock-red-2026-10-24.log (stock module, same kernel, same day)
+$ pytest -v tests/
+============================= test session starts ==============================
+platform linux -- Python 3.14.3, pytest-9.1.1, pluggy-1.6.0 -- /usr/bin/python3
+cachedir: .pytest_cache
+rootdir: /home/antoine/projects/surface-ir-camera
+configfile: pytest.ini
+plugins: timeout-2.4.0, anyio-4.12.1
+collecting ... collected 39 items
+
+tests/test_e2e.py::test_firmware_description PASSED                      [  2%]
+tests/test_e2e.py::test_control_events PASSED                            [  5%]
+tests/test_e2e.py::test_lit_60fps_capture FAILED                         [  7%]
+tests/test_glow_compare.py::test_glow_ignores_screen_and_sees_dot PASSED [ 10%]
+tests/test_glow_compare.py::test_runs_split_takes PASSED                 [ 12%]
+tests/test_glow_compare.py::test_analyse_reports_each_take PASSED        [ 15%]
+tests/test_helpers.py::test_parse_int_control PASSED                     [ 17%]
+tests/test_helpers.py::test_parse_bool_has_no_range PASSED               [ 20%]
+tests/test_helpers.py::test_parse_menu_and_intmenu_keep_the_label PASSED [ 23%]
+tests/test_helpers.py::test_parse_int64_and_absent_control PASSED        [ 25%]
+tests/test_helpers.py::test_frame_means PASSED                           [ 28%]
+tests/test_ip3y.py::test_bytesperline_matches_cio2_formula PASSED        [ 30%]
+tests/test_ip3y.py::test_unpack_recovers_known_pixels_in_one_block PASSED [ 33%]
+tests/test_ip3y.py::test_unpack_frame_shape_and_row_order PASSED         [ 35%]
+tests/test_ip3y.py::test_unpack_rejects_short_buffer PASSED              [ 38%]
+tests/test_k10_test_pattern.py::test_frames_identical PASSED             [ 41%]
+tests/test_k10_test_pattern.py::test_only_full_scale_values PASSED       [ 43%]
+tests/test_k10_test_pattern.py::test_rows_repeat_every_two PASSED        [ 46%]
+tests/test_k10_test_pattern.py::test_eight_vertical_bars PASSED          [ 48%]
+tests/test_k1_compliance.py::test_compliance[subdev] PASSED              [ 51%]
+tests/test_k1_compliance.py::test_compliance[media] SKIPPED (disrupt...) [ 53%]
+tests/test_k1_compliance.py::test_compliance[video] FAILED               [ 56%]
+tests/test_k2_controls.py::test_analogue_gain_not_gain PASSED            [ 58%]
+tests/test_k2_controls.py::test_fwnode_controls_are_front_and_0[camera_orientation] PASSED [ 61%]
+tests/test_k2_controls.py::test_fwnode_controls_are_front_and_0[camera_sensor_rotation] PASSED [ 64%]
+tests/test_k2_controls.py::test_strobe_output_enable_is_bool_default_off PASSED [ 66%]
+tests/test_k3_timing.py::test_link_frequency_matches_firmware PASSED     [ 69%]
+tests/test_k3_timing.py::test_pixel_rate_follows_link_frequency PASSED   [ 71%]
+tests/test_k3_timing.py::test_90_frames_at_30fps_take_3s PASSED          [ 74%]
+tests/test_k3_timing.py::test_frame_interval_selects_fps[60] PASSED      [ 76%]
+tests/test_k3_timing.py::test_frame_interval_selects_fps[90] PASSED      [ 79%]
+tests/test_k4_dark.py::test_default_is_dark PASSED                       [ 82%]
+tests/test_k5_emitter.py::test_emitter_lights_the_scene PASSED           [ 84%]
+tests/test_k5_emitter.py::test_lit_from_first_frames PASSED              [ 87%]
+tests/test_k5_emitter.py::test_dark_again_after_reset PASSED             [ 89%]
+tests/test_k7_safety.py::test_suspended_after_capture PASSED             [ 92%]
+tests/test_k7_safety.py::test_strobe_set_while_idle_keeps_sensor_off PASSED [ 94%]
+tests/test_k8_suspend.py::test_suspend_mid_stream SKIPPED (disruptiv...) [ 97%]
+tests/test_k9_reload.py::test_module_reload_x10 SKIPPED (disruptive ...) [100%]
+
+=================================== FAILURES ===================================
+____________________________ test_lit_60fps_capture ____________________________
+
+graph = 'ov7251 3-0060'
+
+    def test_lit_60fps_capture(graph):
+        """Steps 3 to 5: 60 fps, emitter on, one second of lit frames with an image in them, then everything off."""
+        assert ctrl_info(STROBE), f"{STROBE} missing: without patch 7 the emitter cannot be switched on"
+        try:
+            set_fps(FPS)
+>           assert get_fps() == FPS, f"frame interval read back {get_fps()} fps, asked {FPS}"
+E           AssertionError: frame interval read back 60.14 fps, asked 60
+E           assert 60.14 == 60
+E            +  where 60.14 = get_fps()
+
+tests/test_e2e.py:81: AssertionError
+____________________________ test_compliance[video] ____________________________
+
+graph = 'ov7251 3-0060', target = 'video'
+args = <function <lambda> at 0x7f7dced680f0>
+
+    @pytest.mark.parametrize("target, args", [
+        ("subdev", lambda: ["-u", sd()]),
+        pytest.param("media", lambda: ["-m", MEDIA], marks=pytest.mark.disruptive(reason=MEDIA_OOPS)),
+        ("video", lambda: ["-d", VIDEO, "-s", "30"]),
+    ], ids=["subdev", "media", "video"])
+    def test_compliance(graph, target, args):
+        before = parse_ctrls(run("v4l2-ctl", "-d", sd(), "-l"))
+        try:
+            p = subprocess.run(["v4l2-compliance", *args()], capture_output=True, text=True, timeout=300)
+        finally:  # v4l2-compliance leaves controls (e.g. test_pattern), formats and the frame interval changed
+            set_fps(30)
+            setup_graph()  # resets exposure and gain, so restore the controls after it
+            for name, c in before.items():
+                if "read-only" not in c["flags"] and ctrl_info(name)["value"] != c["value"]:
+                    set_ctrl(name, c["value"])
+        out = p.stdout + p.stderr
+        log = BASELINE / f"k1-{target}-{os.uname().release}.log"
+        if not log.exists():
+            log.parent.mkdir(exist_ok=True)
+            log.write_text(f"$ v4l2-compliance {' '.join(args())}\n# exit status {p.returncode}\n{out}")
+        assert p.returncode >= 0, f"v4l2-compliance {target} crashed (signal {-p.returncode}) before finishing, see {log.name}"
+        totals = TOTAL.findall(out)
+        assert totals, f"v4l2-compliance {target} printed no final Total line (exit status {p.returncode}, a negative one is a crash)"
+        failed = [l.strip() for l in out.splitlines() if "FAIL" in l or "fail:" in l]
+>       assert int(totals[-1][2]) == 0, f"v4l2-compliance {target}: {totals[-1]} (total, ok, failed, warn); failures: {failed}"
+E       AssertionError: v4l2-compliance video: ('58', '51', '7', '30') (total, ok, failed, warn); failures: ['fail: v4l2-test-buffers.cpp(901): q.create_bufs(node, 1, &fmt) != EINVAL', 'test VIDIOC_REQBUFS/CREATE_BUFS/QUERYBUF: FAIL', 'fail: v4l2-test-buffers.cpp(1667): buf.g_length(p) < fmt.g_sizeimage(p)', 'test MMAP (no poll, REQBUFS): FAIL', 'fail: v4l2-test-buffers.cpp(1667): buf.g_length(p) < fmt.g_sizeimage(p)', 'test MMAP (select, REQBUFS): FAIL', 'fail: v4l2-test-buffers.cpp(1667): buf.g_length(p) < fmt.g_sizeimage(p)', 'test MMAP (epoll, REQBUFS): FAIL', 'fail: v4l2-test-buffers.cpp(1667): buf.g_length(p) < fmt.g_sizeimage(p)', 'test MMAP (no poll, CREATE_BUFS): FAIL', 'fail: v4l2-test-buffers.cpp(1667): buf.g_length(p) < fmt.g_sizeimage(p)', 'test MMAP (select, CREATE_BUFS): FAIL', 'fail: v4l2-test-buffers.cpp(1667): buf.g_length(p) < fmt.g_sizeimage(p)', 'test MMAP (epoll, CREATE_BUFS): FAIL', 'fail: v4l2-test-buffers.cpp(2065): data at 8 bytes before start of the buffer was touched', 'fail: v4l2-test-buffers.cpp(2065): data at 4 bytes before start of the buffer was touched', 'fail: v4l2-test-buffers.cpp(2065): data at 8 bytes before start of the buffer was touched', 'fail: v4l2-test-buffers.cpp(2065): data at 4 bytes before start of the buffer was touched', 'fail: v4l2-test-buffers.cpp(2065): data at 8 bytes before start of the buffer was touched', 'fail: v4l2-test-buffers.cpp(2065): data at 4 bytes before start of the buffer was touched', 'fail: v4l2-test-buffers.cpp(2065): data at 8 bytes before start of the buffer was touched', 'fail: v4l2-test-buffers.cpp(2065): data at 4 bytes before start of the buffer was touched']
+E       assert 7 == 0
+E        +  where 7 = int('7')
+
+tests/test_k1_compliance.py:43: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_e2e.py::test_lit_60fps_capture - AssertionError: frame inte...
+FAILED tests/test_k1_compliance.py::test_compliance[video] - AssertionError: ...
+=================== 2 failed, 34 passed, 3 skipped in 22.78s ===================
+
+$ pytest -v tests/test_e2e.py   (rerun after fixing the test: the driver reports the exact 60.14 fps, the test asked for == 60)
+============================= test session starts ==============================
+platform linux -- Python 3.14.3, pytest-9.1.1, pluggy-1.6.0 -- /usr/bin/python3
+cachedir: .pytest_cache
+rootdir: /home/antoine/projects/surface-ir-camera
+configfile: pytest.ini
+plugins: timeout-2.4.0, anyio-4.12.1
+collecting ... collected 3 items
+
+tests/test_e2e.py::test_firmware_description PASSED                      [ 33%]
+tests/test_e2e.py::test_control_events PASSED                            [ 66%]
+tests/test_e2e.py::test_lit_60fps_capture FAILED                         [100%]
+
+=================================== FAILURES ===================================
+____________________________ test_lit_60fps_capture ____________________________
+
+graph = 'ov7251 3-0060'
+
+    def test_lit_60fps_capture(graph):
+        """Steps 3 to 5: 60 fps, emitter on, one second of lit frames with an image in them, then everything off."""
+        assert ctrl_info(STROBE), f"{STROBE} missing: without patch 7 the emitter cannot be switched on"
+        try:
+            set_fps(FPS)
+            assert abs(get_fps() - FPS) < 0.02 * FPS, f"frame interval read back {get_fps()} fps, asked {FPS}"  # driver reports the exact rate
+            set_ctrl("exposure", EXPOSURE)
+            set_ctrl("analogue_gain", GAIN)  # patch 2: the control is ANALOGUE_GAIN, the one libcamera drives
+    
+            set_ctrl(STROBE, 0)
+            dark, _ = grab(30)
+            set_ctrl(STROBE, 1)
+            lit, fps = grab(FPS)
+            set_ctrl(STROBE, 0)
+    
+            assert fps and fps >= 0.9 * FPS, f"streamed at {fps} fps, asked {FPS}: the frame interval must change the frame length (patch 4)"
+            dark_mean, lit_mean = dark.mean(), lit.mean()
+            assert lit_mean > 2.5 * dark_mean, \
+                f"lit mean {lit_mean:.1f} vs dark {dark_mean:.1f}: the emitter must light the scene on every frame (patch 7)"
+            per_frame = lit.reshape(FPS, -1).mean(axis=1)
+            assert (per_frame > 2.5 * dark_mean).all(), f"some frames unlit: {per_frame.round(0)}"
+            mid = lit[FPS // 2]
+            p10, p90 = np.percentile(mid, [10, 90])
+            assert p90 - p10 > 40, f"lit frame has no texture (p10 {p10:.0f}, p90 {p90:.0f}): not a picture of a scene"
+>           assert (mid >= 1020).mean() < 0.10, f"{(mid >= 1020).mean():.0%} of the lit frame saturated"
+E           AssertionError: 29% of the lit frame saturated
+E           assert np.float64(0.28619791666666666) < 0.1
+E            +  where np.float64(0.28619791666666666) = <built-in method mean of numpy.ndarray object at 0x7f345de5a070>()
+E            +    where <built-in method mean of numpy.ndarray object at 0x7f345de5a070> = array([[23, 23, 19, ..., 17, 20, 21],\n       [24, 18, 17, ..., 20, 20, 20],\n       [19, 25, 22, ..., 27, 23, 21],\n       ...,\n       [36, 31, 22, ..., 42, 23, 22],\n       [25, 28, 22, ..., 27, 22, 27],\n       [26, 22, 26, ..., 26, 22, 23]], shape=(480, 640), dtype=uint16) >= 1020.mean
+
+tests/test_e2e.py:100: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_e2e.py::test_lit_60fps_capture - AssertionError: 29% of the...
+========================= 1 failed, 2 passed in 2.90s ==========================
+
+$ pytest -v tests/test_e2e.py   (rerun at the driver default gain 16: gain 128 saturated 29% of the frame)
+============================= test session starts ==============================
+platform linux -- Python 3.14.3, pytest-9.1.1, pluggy-1.6.0 -- /usr/bin/python3
+cachedir: .pytest_cache
+rootdir: /home/antoine/projects/surface-ir-camera
+configfile: pytest.ini
+plugins: timeout-2.4.0, anyio-4.12.1
+collecting ... collected 3 items
+
+tests/test_e2e.py::test_firmware_description PASSED                      [ 33%]
+tests/test_e2e.py::test_control_events PASSED                            [ 66%]
+tests/test_e2e.py::test_lit_60fps_capture PASSED                         [100%]
+
+============================== 3 passed in 2.85s ===============================
