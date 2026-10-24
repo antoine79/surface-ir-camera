@@ -28,6 +28,13 @@ functional change, and 7 adds a V4L2_CID_FLASH_STROBE_OE control that
 enables the STROBE pad, strobes every frame and makes the pulse follow
 the exposure, from 52 lines up to 45% of the frame. The Windows driver
 on this hardware clamps it to 52 to 776 lines, 45% of the 30 fps frame.
+Filmed with a phone at locked exposure, the emitter under this patch is
+1.1x (default exposure, 504-line pulse) to 1.2x (776-line pulse) as
+bright as during a Windows Hello sign-in on the same unit, by the
+integrated brightness of the unsaturated halo around the dot. Windows
+reportedly strobes alternate frames; this patch strobes every frame, so
+the average emitted power is up to twice Windows' at the same peak. A
+0xaa pattern (alternate frames) is a one-line change if preferred.
 
 Measurements on a Surface Book 2 (i7-8650U), linux-surface 6.18.8 with
 patches 1 and 3 to 6 built out of tree (2 was already applied):

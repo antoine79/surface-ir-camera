@@ -1,37 +1,56 @@
-"""Compare an IR emitter's blob brightness and flicker across locked-exposure videos."""
+"""Compare an IR emitter's glow across phone videos shot with locked exposure (Phase 3b).
+
+A phone sensor renders the 850 nm emitter as a magenta dot whose centre saturates to white, so the
+brightest region of a frame is useless (it is the screen) and the dot's peak is clipped. The metric is
+the integrated brightness of the magenta pixels ("glow"): the unsaturated halo, whose area and
+intensity grow with the emitter's output. Lit runs (>= 1 s) are reported separately so one video can
+hold several takes.
+
+    python3 tools/glow_compare.py VIDEO...   # per run: start-end, frames, median glow, p10, p90
+"""
 import sys
 from pathlib import Path
 
 import cv2
 import numpy as np
 
+MIN_AREA = 20  # magenta pixels: below this the dot is off (noise gives a handful)
 
-def blob_mean(gray):
-    """Mean of the unblurred pixels of the bright blob around the frame maximum, or None."""
-    blur = cv2.GaussianBlur(gray, (5, 5), 0)
-    mask = (blur >= max(200, 0.9 * blur.max())).astype(np.uint8)
-    if not mask.any():
-        return None
-    _, lab, stats, _ = cv2.connectedComponentsWithStats(mask)
-    k = lab[np.unravel_index(blur.argmax(), blur.shape)]
-    if k == 0 or not 4 <= stats[k, cv2.CC_STAT_AREA] <= 0.05 * gray.size:
-        return None
-    return float(gray[lab == k].mean())
+
+def glow(bgr):
+    """Integrated grey level of the magenta pixels (r >> g, b > g), or 0.0 when the dot is off."""
+    b, g, r = (bgr[:, :, i].astype(np.int16) for i in range(3))
+    mask = (r - g > 40) & (b - g > 20)
+    if mask.sum() < MIN_AREA:
+        return 0.0
+    return float(cv2.cvtColor(bgr, cv2.COLOR_BGR2GRAY)[mask].sum())
+
+
+def runs(series, fps, min_len=1.0, max_gap=0.5):
+    """[(first, last)] frame indices of lit runs >= min_len s, bridging gaps < max_gap s."""
+    out, start, last = [], None, None
+    for i, v in enumerate(series):
+        if v <= 0:
+            continue
+        if start is not None and i - last > max_gap * fps:
+            out.append((start, last))
+            start = None
+        start = i if start is None else start
+        last = i
+    if start is not None:
+        out.append((start, last))
+    return [(a, b) for a, b in out if b - a + 1 >= min_len * fps]
 
 
 def analyse(frames, fps):
-    series = [blob_mean(f) for f in frames]
-    n = len(series)
-    lit = np.array([v for v in series if v is not None])
-    q = np.percentile(lit, [10, 50, 90]) if len(lit) else [None] * 3
-    hz = None
-    if n >= 16:
-        x = np.array([v or 0.0 for v in series])
-        spec = np.abs(np.fft.rfft(x - x.mean()))
-        spec[0] = 0
-        hz = float(np.fft.rfftfreq(n, 1 / fps)[spec.argmax()])
-    return {"n": n, "lit_fraction": len(lit) / n if n else 0.0, "median": q[1],
-            "p10": q[0], "p90": q[2], "flicker_hz": hz, "series": series}
+    series = np.array([glow(f) for f in frames])
+    out = []
+    for a, b in runs(series, fps):
+        lit = series[a:b + 1]
+        lit = lit[lit > 0]
+        p10, med, p90 = np.percentile(lit, [10, 50, 90])
+        out.append({"start": a / fps, "end": (b + 1) / fps, "n": b - a + 1, "median": med, "p10": p10, "p90": p90})
+    return out
 
 
 def read_video(path):
@@ -43,25 +62,17 @@ def read_video(path):
             ok, f = cap.read()
             if not ok:
                 return cap.release()
-            yield cv2.cvtColor(f, cv2.COLOR_BGR2GRAY)
+            yield f
     return gen(), fps
 
 
-def _f(v, spec=".1f"):
-    return "-" if v is None else format(v, spec)
-
-
 def main(paths):
-    first = None
+    print("video run start end frames median p10 p90")
     for p in paths:
         frames, fps = read_video(p)
-        r = analyse(frames, fps)
-        print(Path(p).name, r["n"], _f(100 * r["lit_fraction"]), _f(r["median"]),
-              _f(r["p10"]), _f(r["p90"]), _f(r["flicker_hz"], ".2f"))
-        if first is None:
-            first = (Path(p).name, r["median"])
-        elif r["median"] and first[1]:
-            print(f"ratio {Path(p).name}/{first[0]} = {r['median'] / first[1]:.2f}")
+        for i, r in enumerate(analyse(frames, fps), 1):
+            print(Path(p).name, i, f"{r['start']:.1f}", f"{r['end']:.1f}", r["n"],
+                  f"{r['median']:.0f}", f"{r['p10']:.0f}", f"{r['p90']:.0f}")
 
 
 if __name__ == "__main__":
