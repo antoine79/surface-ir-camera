@@ -34,7 +34,10 @@ def _cio2_nodes() -> tuple[str, str]:
     raise RuntimeError("no 'ipu3-cio2 2' video node")
 
 
-MEDIA, VIDEO = _cio2_nodes()
+try:
+    MEDIA, VIDEO = _cio2_nodes()
+except (RuntimeError, StopIteration):  # no camera on this machine: the graph fixture skips
+    MEDIA = VIDEO = None
 W, H = 640, 480
 FRAME_BYTES = ip3y.bytesperline(W) * H
 RUNTIME_STATUS = Path("/sys/bus/i2c/devices/i2c-INT347E:00/power/runtime_status")
@@ -51,7 +54,10 @@ SC_REG5, STROBE_PATTERN, STROBE_SPAN, VTS_REG, EXPO_REG, GAIN_REG = 0x3005, 0x3b
 
 
 def run(*cmd, **kw) -> str:
-    return subprocess.run(cmd, check=True, capture_output=True, text=True, **kw).stdout
+    try:
+        return subprocess.run(cmd, check=True, capture_output=True, text=True, **kw).stdout
+    except subprocess.CalledProcessError as e:
+        raise RuntimeError(f"{' '.join(cmd)} failed ({e.returncode}): {e.stderr.strip()}") from e
 
 
 @lru_cache(maxsize=None)
@@ -120,17 +126,11 @@ def reported_fps(output: str) -> float | None:
     return float(fps[-1]) if fps else None
 
 
-def capture(frames: int, *, skip: int = 5, fps: float | None = None) -> np.ndarray:
-    """(frames, 480, 640) uint16 frames from /dev/video2; restores 30 fps if fps is given."""
+def capture(frames: int, *, skip: int = 5) -> np.ndarray:
+    """(frames, 480, 640) uint16 frames from the cio2 video node."""
     with tempfile.TemporaryDirectory() as d:
         path = f"{d}/frames.raw"
-        try:
-            if fps:
-                set_fps(fps)
-            stream(frames, path, skip=skip)
-        finally:
-            if fps:
-                set_fps(30)
+        stream(frames, path, skip=skip)
         raw = np.fromfile(path, np.uint8)
     assert raw.size == frames * FRAME_BYTES, f"got {raw.size} bytes, expected {frames} frames of {FRAME_BYTES}"
     return np.stack([ip3y.unpack(raw[i:i + FRAME_BYTES], W, H) for i in range(0, raw.size, FRAME_BYTES)])
@@ -141,11 +141,13 @@ def frame_means(arr: np.ndarray) -> np.ndarray:
 
 
 def read_reg(addr: int, n: int = 1) -> int:
-    """n consecutive sensor registers from addr, big-endian, over I2C (bus 3, 0x60; sudo, -f because the driver owns
-    the address). Only meaningful inside streaming(): a suspended sensor is powered off and reads fail or return garbage."""
+    """n consecutive sensor registers from addr, big-endian, over I2C (bus and address from the entity name, e.g.
+    "ov7251 3-0060"; sudo, -f because the driver owns the address). Only meaningful inside streaming(): a suspended
+    sensor is powered off and reads fail or return garbage."""
+    bus, dev = re.fullmatch(r"ov7251 (\d+)-([0-9a-f]{4})", subdev()[0]).groups()
     val = 0
     for a in range(addr, addr + n):
-        out = run("sudo", "-n", "i2ctransfer", "-f", "-y", "3", "w2@0x60", f"0x{a >> 8:02x}", f"0x{a & 0xff:02x}", "r1")
+        out = run("sudo", "-n", "i2ctransfer", "-f", "-y", bus, f"w2@0x{int(dev, 16):02x}", f"0x{a >> 8:02x}", f"0x{a & 0xff:02x}", "r1")
         val = val << 8 | int(out, 16)
     return val
 
@@ -161,7 +163,15 @@ def streaming(seconds: float = 3):
             assert runtime_status() == "active", f"sensor {runtime_status()} 1 s into a stream"
             yield
         finally:
+            assert runtime_status() == "active", \
+                f"sensor {runtime_status()}: stream ended before the block finished, register reads after this point are not the driver's values"
             done.result()
+
+
+def restore_30fps_vblank() -> None:
+    """Back to the 30 fps mode and its frame length: set_fps(30) alone keeps a VBLANK set by hand in the same mode."""
+    set_fps(30)
+    set_ctrl("vertical_blanking", ctrl_info("vertical_blanking")["default"])
 
 
 def runtime_status() -> str:
@@ -180,8 +190,8 @@ def setup_graph() -> str:
 
 @pytest.fixture(scope="session")
 def graph():
-    if subdev() is None:
-        pytest.skip("no ov7251 subdev under /sys/class/video4linux")
+    if subdev() is None or MEDIA is None:
+        pytest.skip("no ov7251 subdev or no 'ipu3-cio2 2' video node under /sys/class/video4linux")
     return setup_graph()
 
 

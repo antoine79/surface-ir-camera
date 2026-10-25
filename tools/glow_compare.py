@@ -55,6 +55,8 @@ def analyse(frames, fps):
 
 def read_video(path):
     cap = cv2.VideoCapture(str(path))
+    if not cap.isOpened():
+        sys.exit(f"cannot open {path}")
     fps = cap.get(cv2.CAP_PROP_FPS) or 30.0
 
     def gen():

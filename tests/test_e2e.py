@@ -1,7 +1,8 @@
 """End to end: the IR camera works as a camera, the way the firmware describes it.
 
 One scenario, in the order a camera stack goes through it. On the stock driver it fails at the first step that needs
-a patch; with the whole series it passes and leaves two pictures in $IRCAM_E2E_OUT (default docs/e2e/):
+a patch; with the whole series it passes and leaves two pictures in $IRCAM_E2E_OUT/ircam-e2e (default under the system
+temp dir; the committed pair in docs/e2e/ is copied in by hand):
 
 1. the sensor reports the link frequency the firmware asks for (patch 1) and where it sits (patch 4), mounted rotated
    by 90 degrees (patch 7, ipu-bridge DMI quirk: the ACPI _PLD says 0);
@@ -32,7 +33,7 @@ pytestmark = pytest.mark.needs_patch("all")
 FIRMWARE_LINK_FREQ = 319_200_000  # what ipu-bridge hands every INT347E (drivers/media/pci/intel/ipu-bridge.c)
 FPS = 60
 EXPOSURE, GAIN = 504, 16  # the driver defaults; at gain 128 the emitter saturates a third of a desk scene
-OUT = Path(os.environ.get("IRCAM_E2E_OUT", Path(__file__).resolve().parents[1] / "docs" / "e2e"))
+OUT = Path(os.environ.get("IRCAM_E2E_OUT", tempfile.gettempdir())) / "ircam-e2e"  # docs/e2e/ holds a hand-copied pair
 
 
 def grab(frames: int) -> tuple[np.ndarray, float]:
@@ -99,6 +100,7 @@ def test_lit_60fps_capture(graph):
         to_png(mid, OUT / f"ir-{FPS}fps-emitter-on.png")  # still shows what the camera saw
 
         need_dark(dark.mean())
+        # judgement: 10 % covers v4l2-ctl's once-a-second fps estimate; the stock 30 fps is off by 50 %
         assert fps and fps >= 0.9 * FPS, f"streamed at {fps} fps, asked {FPS}: the frame interval must change the frame length (patch 2)"
         dark_mean, lit_mean = dark.mean(), lit.mean()
         assert lit_mean > 2.5 * dark_mean, \
@@ -106,6 +108,7 @@ def test_lit_60fps_capture(graph):
         per_frame = lit.reshape(FPS, -1).mean(axis=1)
         assert (per_frame > 2.5 * dark_mean).all(), f"some frames unlit: {per_frame.round(0)}"
         p10, p90 = np.percentile(mid, [10, 90])
+        # judgement: a 10-bit scene with no texture has p90-p10 below ~10, saturated frames exceed 50%
         assert p90 - p10 > 40, f"lit frame has no texture (p10 {p10:.0f}, p90 {p90:.0f}): not a picture of a scene"
         assert (mid >= 1020).mean() < 0.25, f"{(mid >= 1020).mean():.0%} of the lit frame saturated: a white frame, not a picture"
     finally:

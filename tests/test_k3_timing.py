@@ -4,18 +4,12 @@ import time
 
 import pytest
 
-from conftest import (H, INTEGRATION_MARGIN, MODE_VTS, VTS_REG, ctrl_info, get_fps, read_reg, reported_fps, set_ctrl, set_fps,
-                      setup_graph, stream, streaming)
+from conftest import (H, INTEGRATION_MARGIN, MODE_VTS, VTS_REG, ctrl_info, get_fps, read_reg, reported_fps, restore_30fps_vblank,
+                      set_ctrl, set_fps, setup_graph, stream, streaming)
 
 # PLL1 for a 19.2 MHz xclk (what ipu-bridge/INT3472 gives the sensor here; stock reads back 03 4b 01 0a 05, the 240 MHz
 # entry) and a 319.2 MHz link: ov7251_pll1_cfg_19_2_mhz_319_2_mhz in drivers/media/i2c/ov7251.c
 PLL1_319_2 = {"pre_div 0x30b4": 0x01, "mult 0x30b3": 0x85, "div 0x30b1": 0x04, "pix_div 0x30b0": 0x0a, "mipi_div 0x30b5": 0x05}
-
-
-def restore_30fps_vblank():
-    """Back to the 30 fps mode and its frame length: set_fps(30) alone keeps a VBLANK set by hand in the same mode."""
-    set_fps(30)
-    set_ctrl("vertical_blanking", ctrl_info("vertical_blanking")["default"])
 
 
 @pytest.mark.needs_patch("1")
@@ -46,6 +40,7 @@ def test_90_frames_at_30fps_take_3s(graph):
         wall = time.monotonic() - t0
     fps = reported_fps(out)
     t = 90 / fps if fps else wall
+    # judgement: +-0.5 s around 3 s absorbs v4l2-ctl start-up and the once-a-second fps print rounding
     assert 2.6 <= t <= 3.6, f"90 frames took {t:.2f} s (v4l2-ctl fps {fps}, wall {wall:.2f} s), expected ~3 s at 30 fps"
 
 
@@ -56,10 +51,11 @@ def test_frame_interval_selects_fps(graph, fps):
         set_fps(fps)
         got = get_fps()
         with tempfile.TemporaryDirectory() as d:
-            measured = reported_fps(stream(2 * fps, f"{d}/f.raw"))
+            measured = reported_fps(stream(3 * fps, f"{d}/f.raw"))  # v4l2-ctl prints "x fps" once a second: 2 s may end before it
     finally:
         set_fps(30)
     assert abs(got - fps) < 1, f"--set-subdev-fps fps={fps} read back {got}"
+    # judgement: 5 % covers v4l2-ctl's once-a-second fps estimate; a stuck 30 fps mode is off by 50 % or more
     assert measured and abs(measured - fps) / fps < 0.05, f"asked {fps} fps, v4l2-ctl measured {measured}"
 
 
@@ -106,6 +102,7 @@ def test_set_fmt_after_frame_interval_is_consistent(graph):
         set_ctrl("vertical_blanking", MODE_VTS[60] - H)
         setup_graph()
         fps = round(get_fps())
+        assert fps in MODE_VTS, f"after set_fmt the interval reads {fps} fps, not one of the 640x480 modes {sorted(MODE_VTS)}"
         vb = ctrl_info("vertical_blanking")["value"]
         with streaming():
             vts = read_reg(VTS_REG, 2)

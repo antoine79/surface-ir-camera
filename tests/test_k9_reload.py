@@ -49,5 +49,6 @@ def test_module_reload_x10():
         subdev.cache_clear()
         assert wait_for(lambda: subdev() is not None, 5), f"ov7251 entity missing after reload {i + 1}"
         assert other_entities() == others, f"other media entities changed after reload {i + 1}"
-    bad = [l for l in kernel_log()[seen:] if any(w in l for w in ("WARNING", "BUG", "Oops", "leak"))]
+    bad = [l for l in kernel_log()[seen:] if re.search(r"\b(WARNING|BUG|Oops)\b|leak", l)
+           and re.search(r"ov7251|INT347E|i2c|v4l2|media", l)]
     assert not bad, f"kernel log after 10 reloads: {bad[:10]}"

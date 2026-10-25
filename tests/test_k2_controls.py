@@ -46,7 +46,7 @@ def test_camera_sensor_rotation_is_90(graph):
 
 
 @pytest.mark.needs_patch("4")
-@pytest.mark.parametrize("name, value", [("camera_orientation", 1), ("camera_sensor_rotation", 90)])
+@pytest.mark.parametrize("name, value", [("camera_orientation", 1), ("camera_sensor_rotation", 180)])  # not the values they hold
 def test_fwnode_controls_are_read_only(graph, name, value):
     c = ctrl_info(name)
     assert c is not None, f"{name} missing: {FWNODE}"
