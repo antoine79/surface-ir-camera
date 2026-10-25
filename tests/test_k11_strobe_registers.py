@@ -2,7 +2,7 @@
 
 Patch 5 moves the strobe block out of the three mode tables without changing a value, so with the strobe off every
 register reads back what the stock tables wrote, on both modules. Patch 6 then drives SC_REG5 bit 3, the frame
-pattern and the 32-bit frame span from STROBE_OE: span = clamp(exposure, 52, ceil(VTS * 45 / 100)) lines.
+pattern and the 32-bit frame span from STROBE_OE: span = clamp(exposure, 52, min(ceil(VTS * 45 / 100), 776)) lines.
 """
 import pytest
 
@@ -14,12 +14,12 @@ STOCK_STROBE_REGS = {0x3005: 0x00, 0x3b80: 0x00, 0x3b81: 0xa5, 0x3b82: 0x10, 0x3
                      0x3b86: 0x01, 0x3b87: 0x00, 0x3b88: 0x00, 0x3b89: 0x00, 0x3b8a: 0x00, 0x3b8b: 0x05, 0x3b8c: 0x00,
                      0x3b8d: 0x00, 0x3b8e: 0x00, 0x3b8f: 0x1a, 0x3b94: 0x05, 0x3b95: 0xf2, 0x3b96: 0x40}
 OFF = (0x00, 0xa5, 0x1a)  # SC_REG5, frame pattern, span with the strobe off
-SPAN_MIN, DUTY = 52, 45
+SPAN_MIN, SPAN_MAX, DUTY = 52, 776, 45
 MISSING = f"{STROBE} missing: patch 6 adds V4L2_CID_FLASH_STROBE_OE"
 
 
 def span_for(exposure: int, vts: int) -> int:
-    return min(max(exposure, SPAN_MIN), -(-vts * DUTY // 100))
+    return min(max(exposure, SPAN_MIN), -(-vts * DUTY // 100), SPAN_MAX)
 
 
 def strobe_state() -> tuple[int, int, int]:
@@ -95,12 +95,12 @@ def test_span_follows_vblank_while_streaming(graph, clean):
     set_ctrl(STROBE, 1)
     seen = []
     with streaming(5):
-        for vts in (MODE_VTS[30], 1100, MODE_VTS[30]):
+        for vts in (MODE_VTS[30], 1100, 3000, MODE_VTS[30]):
             set_ctrl("vertical_blanking", vts - H)
             seen.append((vts, read_reg(VTS_REG, 2), ctrl("exposure"), read_reg(STROBE_SPAN, 4)))
-    # 1100 lines clamp exposure to 1080 (VTS - margin), which then stays: span 776, 495, 776
+    # 1100 lines clamp exposure to 1080 (VTS - margin), which then stays: span 776, 495, 776 (3000 x 45% = 1350 capped), 776
     want = [(v, v, e, span_for(e, v)) for v, _, e, _ in seen]
-    assert [s[2] for s in seen] == [1704, 1080, 1080], f"exposure did not follow the frame length: {seen}"
+    assert [s[2] for s in seen] == [1704, 1080, 1080, 1080], f"exposure did not follow the frame length: {seen}"
     assert seen == want, f"(VTS, 0x380e/f, exposure, span) {seen}, expected {want}: the span must follow VBLANK"
 
 

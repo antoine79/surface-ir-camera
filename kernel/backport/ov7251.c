@@ -62,6 +62,7 @@
 #define OV7251_STROBE_FRAME_SPAN	0x3b8c
 #define OV7251_STROBE_FRAME_SPAN_DEF	0x1a
 #define OV7251_STROBE_SPAN_MIN		52
+#define OV7251_STROBE_SPAN_MAX		776
 #define OV7251_STROBE_MAX_DUTY_PERCENT	45
 
 #define OV7251_NATIVE_WIDTH		656
@@ -989,14 +990,16 @@ static int ov7251_set_strobe_span(struct ov7251 *ov7251)
 
 	/*
 	 * The pulse starts with the integration: make it cover the exposure,
-	 * from 52 lines up to 45% of the frame. The vendor driver caps it at
-	 * 776 lines, 45% of the 1724 lines 30 fps frame; a duty cycle limit
-	 * keeps the emitter within that envelope at higher frame rates.
+	 * from 52 lines up to 45% of the frame and never more than 776 lines.
+	 * The vendor driver caps it at 776 lines, 45% of the 1724 lines 30 fps
+	 * frame; the duty cycle limit keeps the emitter within that envelope
+	 * at higher frame rates, the absolute one with long vertical blanking.
 	 */
 	if (ov7251->strobe->val) {
 		vts = ov7251->current_mode->height + ov7251->vblank->val;
 		max_span = DIV_ROUND_UP(vts * OV7251_STROBE_MAX_DUTY_PERCENT,
 					100);
+		max_span = min(max_span, OV7251_STROBE_SPAN_MAX);
 		span = clamp_t(u32, ov7251->exposure->val,
 			       OV7251_STROBE_SPAN_MIN, max_span);
 	}

@@ -1,4 +1,4 @@
-From b6c6f515e62696fce5f35f0d9c40ec90cd4a422a Mon Sep 17 00:00:00 2001
+From 9d8f0eed22c04265caa7d59661894204d3ca15ea Mon Sep 17 00:00:00 2001
 From: Antoine Pichot <antoine.pichot@gmail.com>
 Date: Sat, 24 Oct 2026 20:57:10 +0900
 Subject: [PATCH 0/7] media: i2c: ov7251: fixes and infrared strobe for Surface Book 2
@@ -27,8 +27,9 @@ Patches 5 and 6 add the emitter. 5 moves the strobe registers, which
 the three mode tables write identically, out of the tables without
 functional change. 6 adds a V4L2_CID_FLASH_STROBE_OE control that
 enables the STROBE pin, pulses it on every frame and makes the pulse
-follow the exposure, from 52 lines up to 45% of the frame. Those are
-the limits the Windows driver applies, read from its binary [1]; a
+follow the exposure, from 52 lines up to 45% of the frame and never
+more than 776 lines. Those are the limits the Windows driver applies,
+read from its binary [1]; a
 register dump taken on a Surface Book 2 during a Windows Hello sign-in
 shows a 331-line pulse [1]. Windows uses more than one frame pattern:
 that dump shows alternate frames (0xaa), while the driver binary for a
@@ -86,9 +87,9 @@ Antoine Pichot (7):
   media: i2c: ov7251: Add strobe output enable control
   media: ipu-bridge: Add a 90 degree rotation quirk for Surface Book 2
 
- drivers/media/i2c/ov7251.c           | 200 ++++++++++++++++++++++++-----------
+ drivers/media/i2c/ov7251.c           | 203 ++++++++++++++++++++++++-----------
  drivers/media/pci/intel/ipu-bridge.c |  22 ++++
- 2 files changed, 158 insertions(+), 64 deletions(-)
+ 2 files changed, 161 insertions(+), 64 deletions(-)
 
 -- 
 2.53.0
