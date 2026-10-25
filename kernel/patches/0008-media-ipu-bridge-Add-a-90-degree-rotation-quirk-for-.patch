@@ -1,4 +1,4 @@
-From daa3332bdbabc9e98d156ced29f462d87e786db8 Mon Sep 17 00:00:00 2001
+From 5d939342d3eb96ef3698b341e158a8dfcd15242b Mon Sep 17 00:00:00 2001
 From: Antoine Pichot <antoine.pichot@gmail.com>
 Date: Sat, 24 Oct 2026 22:41:03 +0900
 Subject: [PATCH 8/8] media: ipu-bridge: Add a 90 degree rotation quirk for

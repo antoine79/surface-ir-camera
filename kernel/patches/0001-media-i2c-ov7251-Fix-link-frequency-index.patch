@@ -1,4 +1,4 @@
-From 1e98d3ff338b2b5ca61382642625d297d8e1bd97 Mon Sep 17 00:00:00 2001
+From 0ce9f525bf125ec669e74e7d6b69691758701f61 Mon Sep 17 00:00:00 2001
 From: Antoine Pichot <antoine.pichot@gmail.com>
 Date: Sat, 24 Oct 2026 20:42:31 +0900
 Subject: [PATCH 1/8] media: i2c: ov7251: Fix link frequency index
@@ -8,9 +8,11 @@ link_frequencies array, in link_freq_idx, which the driver then uses to
 index its own link_freq[], pixel_rates[] and pll1[] tables. The matching
 driver entry is j. Store j.
 
-On the Surface Book 2 ipu-bridge lists one link frequency, 319.2 MHz,
-which is link_freq[1]: with i = 0 the driver programmed the PLL for
-240 MHz and reported 240 MHz and a 48 MHz pixel rate.
+Observed on a Surface Book 2, where ipu-bridge lists one link frequency,
+319.2 MHz, which is link_freq[1]: V4L2_CID_LINK_FREQ reads 240000000 and
+V4L2_CID_PIXEL_RATE 48000000 (v4l2-ctl -l on the subdev), and the PLL1
+registers 0x30b4/0x30b3/0x30b1 read back 03/4b/01 while streaming, the
+240 MHz table. With the fix they read 319200000, 63840000 and 01/85/04.
 
 Fixes: cc125aaa5a78 ("media: i2c: Provide ov7251_check_hwcfg()")
 Cc: stable@vger.kernel.org

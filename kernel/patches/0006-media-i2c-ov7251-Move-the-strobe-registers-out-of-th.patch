@@ -1,4 +1,4 @@
-From 89e8ba3b25ae4815f151bf2e7f5af8e01e0042fc Mon Sep 17 00:00:00 2001
+From adecff9a60f8880949bba400b9e9dae8f247dca0 Mon Sep 17 00:00:00 2001
 From: Antoine Pichot <antoine.pichot@gmail.com>
 Date: Sat, 24 Oct 2026 20:46:18 +0900
 Subject: [PATCH 6/8] media: i2c: ov7251: Move the strobe registers out of the
