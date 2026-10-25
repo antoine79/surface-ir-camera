@@ -1,4 +1,4 @@
-From c235c659bb93a3a09289139727a5d7f34abe0a0b Mon Sep 17 00:00:00 2001
+From d490569ec2085364f214d663ca3dce44220a5662 Mon Sep 17 00:00:00 2001
 From: Antoine Pichot <antoine.pichot@gmail.com>
 Date: Sat, 24 Oct 2026 20:57:10 +0900
 Subject: [PATCH 0/8] media: i2c: ov7251: fixes and infrared strobe for Surface Book 2
@@ -14,8 +14,8 @@ Patches 1 to 5 fix issues found while testing the driver on this
 machine:
 
 - 1: the link frequency index is taken from the firmware list instead
-  of the driver's table, so the sensor runs at 240 MHz while the
-  firmware asks for 319.2 MHz (Fixes, Cc stable).
+  of the driver's table, so the sensor runs at 240 MHz while
+  ipu-bridge asks for 319.2 MHz (Fixes, Cc stable).
 - 2: Daniel Scally's patch switching the gain control to
   V4L2_CID_ANALOGUE_GAIN, carried by linux-surface.
 - 3: control events, the one v4l2-compliance failure on the sensor.

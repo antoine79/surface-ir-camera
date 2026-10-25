@@ -1,4 +1,4 @@
-From 34a00fab3568c9e7020afdd0d54b3038044542c3 Mon Sep 17 00:00:00 2001
+From 0cda8e600c4a3d8067a6c4b42d2a679843f4646f Mon Sep 17 00:00:00 2001
 From: Antoine Pichot <antoine.pichot@gmail.com>
 Date: Sat, 24 Oct 2026 20:42:31 +0900
 Subject: [PATCH 1/8] media: i2c: ov7251: Fix link frequency index
@@ -10,9 +10,11 @@ index into the driver's own link_freq[], pixel_rates[] and PLL1
 configuration tables, so it has to be the index of the matching driver
 entry (j).
 
-The two only agree by chance. On the Microsoft Surface Book 2 the ACPI
-tables (via ipu-bridge) list a single link frequency, 319.2 MHz: i is
-0, so the driver selects link_freq[0], programs the PLL for 240 MHz and
+The two only agree by chance. On the Microsoft Surface Book 2 the
+endpoint built by ipu-bridge for the INT347E sensor lists a single link
+frequency, 319.2 MHz (from the bridge's own per-sensor table, the ACPI
+tables carry none): i is 0, so the driver selects link_freq[0],
+programs the PLL for 240 MHz and
 reports 240 MHz in V4L2_CID_LINK_FREQ and a 48 MHz pixel rate instead
 of 319.2 MHz and 63.84 MHz.
 

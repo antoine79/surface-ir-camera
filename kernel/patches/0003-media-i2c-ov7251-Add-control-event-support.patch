@@ -1,4 +1,4 @@
-From 3ed5621b3558fbd0bce80a8dd35c4072596c1d9c Mon Sep 17 00:00:00 2001
+From 2106443a7ec3cf3ee0a79a4d8d9b47617fcedcd9 Mon Sep 17 00:00:00 2001
 From: Antoine Pichot <antoine.pichot@gmail.com>
 Date: Sat, 24 Oct 2026 20:43:16 +0900
 Subject: [PATCH 3/8] media: i2c: ov7251: Add control event support
