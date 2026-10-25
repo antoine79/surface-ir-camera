@@ -30,6 +30,8 @@ sudo -n sh -c "echo 1 > $gcov_fs/reset"
 echo i2c-INT347E:00 | sudo -n tee /sys/bus/i2c/drivers/ov7251/unbind >/dev/null
 echo i2c-INT347E:00 | sudo -n tee /sys/bus/i2c/drivers/ov7251/bind >/dev/null
 sleep 2
+# the reload recreates the subdev node and logind does not always put the seat ACL back (seen on 7.2.12-gcov)
+for n in /sys/class/video4linux/v4l-subdev*; do grep -q '^ov7251' "$n/name" && sudo -n setfacl -m "u:$(id -un):rw" "/dev/$(basename "$n")"; done
 set +e
 # shellcheck disable=SC2086
 (cd "$root" && python3 -m pytest -q tests/ ${PYTEST_ARGS:-} 2>&1 | tail -3)
@@ -39,7 +41,7 @@ tmp=$(mktemp -d)
 sudo -n cat "$gcov_fs$build/ov7251.gcda" > "$tmp/ov7251.gcda"
 cp "$build/ov7251.gcno" "$tmp/"
 mkdir -p "$out"
-(cd "$tmp" && gcov -o . "$build/ov7251.c" | grep -A1 "ov7251.c'" ) | tee "$out/summary.txt"
-mv "$tmp"/ov7251.c.gcov "$out/ov7251.c.gcov"
+(cd "$build" && gcov -o "$tmp" ov7251.c | grep -A1 "ov7251.c'") | tee "$out/summary.txt"   # gcc recorded the source as ov7251.c relative to the build dir
+mv "$build/ov7251.c.gcov" "$out/ov7251.c.gcov"
 rm -rf "$tmp"
 echo "never executed lines: $(grep -c '#####' "$out/ov7251.c.gcov")  (see $out/ov7251.c.gcov)"
