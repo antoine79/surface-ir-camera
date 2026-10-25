@@ -1,4 +1,4 @@
-From be249106aaafa46c43d41e7f98c277208f6f0024 Mon Sep 17 00:00:00 2001
+From a8888ff1087a1340f15c82580b5d85657aa4053a Mon Sep 17 00:00:00 2001
 From: Antoine Pichot <antoine.pichot@gmail.com>
 Date: Sat, 24 Oct 2026 20:44:45 +0900
 Subject: [PATCH 4/8] media: i2c: ov7251: Reset vblank when the frame interval
