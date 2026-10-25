@@ -1,0 +1,12 @@
+...........................................sF........................... [ 97%]
+ss                                                                       [100%]
+=================================== FAILURES ===================================
+____________________________ test_compliance[video] ____________________________
+tests/test_k1_compliance.py:43: in test_compliance
+    assert int(totals[-1][2]) == 0, f"v4l2-compliance {target}: {totals[-1]} (total, ok, failed, warn); failures: {failed}"
+E   AssertionError: v4l2-compliance video: ('58', '51', '7', '30') (total, ok, failed, warn); failures: ['fail: v4l2-test-buffers.cpp(901): q.create_bufs(node, 1, &fmt) != EINVAL', 'test VIDIOC_REQBUFS/CREATE_BUFS/QUERYBUF: FAIL', 'fail: v4l2-test-buffers.cpp(1667): buf.g_length(p) < fmt.g_sizeimage(p)', 'test MMAP (no poll, REQBUFS): FAIL', 'fail: v4l2-test-buffers.cpp(1667): buf.g_length(p) < fmt.g_sizeimage(p)', 'test MMAP (select, REQBUFS): FAIL', 'fail: v4l2-test-buffers.cpp(1667): buf.g_length(p) < fmt.g_sizeimage(p)', 'test MMAP (epoll, REQBUFS): FAIL', 'fail: v4l2-test-buffers.cpp(1667): buf.g_length(p) < fmt.g_sizeimage(p)', 'test MMAP (no poll, CREATE_BUFS): FAIL', 'fail: v4l2-test-buffers.cpp(1667): buf.g_length(p) < fmt.g_sizeimage(p)', 'test MMAP (select, CREATE_BUFS): FAIL', 'fail: v4l2-test-buffers.cpp(1667): buf.g_length(p) < fmt.g_sizeimage(p)', 'test MMAP (epoll, CREATE_BUFS): FAIL', 'fail: v4l2-test-buffers.cpp(2065): data at 8 bytes before start of the buffer was touched', 'fail: v4l2-test-buffers.cpp(2065): data at 4 bytes before start of the buffer was touched', 'fail: v4l2-test-buffers.cpp(2065): data at 8 bytes before start of the buffer was touched', 'fail: v4l2-test-buffers.cpp(2065): data at 4 bytes before start of the buffer was touched', 'fail: v4l2-test-buffers.cpp(2065): data at 8 bytes before start of the buffer was touched', 'fail: v4l2-test-buffers.cpp(2065): data at 4 bytes before start of the buffer was touched', 'fail: v4l2-test-buffers.cpp(2065): data at 8 bytes before start of the buffer was touched', 'fail: v4l2-test-buffers.cpp(2065): data at 4 bytes before start of the buffer was touched']
+E   assert 7 == 0
+E    +  where 7 = int('7')
+=========================== short test summary info ============================
+FAILED tests/test_k1_compliance.py::test_compliance[video] - AssertionError: ...
+1 failed, 70 passed, 3 skipped in 111.56s (0:01:51)
