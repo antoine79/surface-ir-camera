@@ -11,3 +11,4 @@ kernel/build/Module.symvers
 kernel/build/modules.order
 *.gcno
 *.gcda
+kernel/build/*.gcov

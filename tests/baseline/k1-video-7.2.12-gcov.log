@@ -1,0 +1,234 @@
+$ v4l2-compliance -d /dev/video2 -s 30
+# exit status 1
+v4l2-compliance 1.32.0, 64 bits, 64-bit time_t
+
+Compliance test for ipu3-cio2 device /dev/video2:
+
+Driver Info:
+	Driver name      : ipu3-cio2
+	Card type        : Intel IPU3 CIO2
+	Bus info         : PCI:0000:00:14.3
+	Driver version   : 7.2.12
+	Capabilities     : 0x84201000
+		Video Capture Multiplanar
+		Streaming
+		Extended Pix Format
+		Device Capabilities
+	Device Caps      : 0x04201000
+		Video Capture Multiplanar
+		Streaming
+		Extended Pix Format
+Media Driver Info:
+	Driver name      : ipu3-cio2
+	Model            : Intel IPU3 CIO2
+	Serial           : 
+	Bus info         : PCI:0000:00:14.3
+	Media version    : 7.2.12
+	Hardware revision: 0x00000000 (0)
+	Driver version   : 7.2.12
+Interface Info:
+	ID               : 0x03000018
+	Type             : V4L Video
+Entity Info:
+	ID               : 0x00000016 (22)
+	Name             : ipu3-cio2 2
+	Function         : V4L2 I/O
+	Pad 0x01000017   : 0: Sink, Must Connect
+	  Link 0x0200001a: from remote pad 0x1000015 of entity 'ipu3-csi2 2' (Video Interface Bridge): Data, Enabled, Immutable
+
+Required ioctls:
+	test MC information (see 'Media Driver Info' above): OK
+	test VIDIOC_QUERYCAP: OK
+	test invalid ioctls: OK
+
+Allow for multiple opens:
+	test second /dev/video2 open: OK
+	test VIDIOC_QUERYCAP: OK
+	test VIDIOC_G/S_PRIORITY: OK
+	test for unlimited opens: OK
+
+Debug ioctls:
+	test VIDIOC_DBG_G/S_REGISTER: OK (Not Supported)
+	test VIDIOC_LOG_STATUS: OK (Not Supported)
+
+Input ioctls:
+	test VIDIOC_G/S_TUNER/ENUM_FREQ_BANDS: OK (Not Supported)
+	test VIDIOC_G/S_FREQUENCY: OK (Not Supported)
+	test VIDIOC_S_HW_FREQ_SEEK: OK (Not Supported)
+	test VIDIOC_ENUMAUDIO: OK (Not Supported)
+	test VIDIOC_G/S/ENUMINPUT: OK
+	test VIDIOC_G/S_AUDIO: OK (Not Supported)
+	Inputs: 1 Audio Inputs: 0 Tuners: 0
+
+Output ioctls:
+	test VIDIOC_G/S_MODULATOR: OK (Not Supported)
+	test VIDIOC_G/S_FREQUENCY: OK (Not Supported)
+	test VIDIOC_ENUMAUDOUT: OK (Not Supported)
+	test VIDIOC_G/S/ENUMOUTPUT: OK (Not Supported)
+	test VIDIOC_G/S_AUDOUT: OK (Not Supported)
+	Outputs: 0 Audio Outputs: 0 Modulators: 0
+
+Input/Output configuration ioctls:
+	test VIDIOC_ENUM/G/S/QUERY_STD: OK (Not Supported)
+	test VIDIOC_ENUM/G/S/QUERY_DV_TIMINGS: OK (Not Supported)
+	test VIDIOC_DV_TIMINGS_CAP: OK (Not Supported)
+	test VIDIOC_G/S_EDID: OK (Not Supported)
+
+Control ioctls (Input 0):
+	test VIDIOC_QUERY_EXT_CTRL/QUERYMENU: OK (Not Supported)
+	test VIDIOC_QUERYCTRL: OK (Not Supported)
+	test VIDIOC_G/S_CTRL: OK (Not Supported)
+	test VIDIOC_G/S/TRY_EXT_CTRLS: OK (Not Supported)
+	test VIDIOC_(UN)SUBSCRIBE_EVENT/DQEVENT: OK (Not Supported)
+	test VIDIOC_G/S_JPEGCOMP: OK (Not Supported)
+	Standard Controls: 0 Private Controls: 0
+
+Format ioctls (Input 0):
+	test VIDIOC_ENUM_FMT/FRAMESIZES/FRAMEINTERVALS: OK
+	test VIDIOC_G/S_PARM: OK (Not Supported)
+	test VIDIOC_G_FBUF: OK (Not Supported)
+	test VIDIOC_G_FMT: OK
+	test VIDIOC_TRY_FMT: OK
+	test VIDIOC_S_FMT: OK
+	test VIDIOC_G_SLICED_VBI_CAP: OK (Not Supported)
+	test Cropping: OK (Not Supported)
+	test Composing: OK (Not Supported)
+	test Scaling: OK
+
+Codec ioctls (Input 0):
+	test VIDIOC_(TRY_)ENCODER_CMD: OK (Not Supported)
+	test VIDIOC_G_ENC_INDEX: OK (Not Supported)
+	test VIDIOC_(TRY_)DECODER_CMD: OK (Not Supported)
+
+Buffer ioctls (Input 0):
+		fail: v4l2-test-buffers.cpp(901): q.create_bufs(node, 1, &fmt) != EINVAL
+	test VIDIOC_REQBUFS/CREATE_BUFS/QUERYBUF: FAIL
+	test CREATE_BUFS maximum buffers: OK
+	test VIDIOC_REMOVE_BUFS: OK
+	test VIDIOC_EXPBUF: OK
+	test Requests: OK (Not Supported)
+	test blocking wait: OK
+
+Test input 0:
+
+Streaming ioctls:
+	test read/write: OK (Not Supported)
+		fail: v4l2-test-buffers.cpp(1667): buf.g_length(p) < fmt.g_sizeimage(p)
+	test MMAP (no poll, REQBUFS): FAIL
+		fail: v4l2-test-buffers.cpp(1667): buf.g_length(p) < fmt.g_sizeimage(p)
+	test MMAP (select, REQBUFS): FAIL
+		fail: v4l2-test-buffers.cpp(1667): buf.g_length(p) < fmt.g_sizeimage(p)
+	test MMAP (epoll, REQBUFS): FAIL
+		fail: v4l2-test-buffers.cpp(1667): buf.g_length(p) < fmt.g_sizeimage(p)
+	test MMAP (no poll, CREATE_BUFS): FAIL
+		fail: v4l2-test-buffers.cpp(1667): buf.g_length(p) < fmt.g_sizeimage(p)
+	test MMAP (select, CREATE_BUFS): FAIL
+		fail: v4l2-test-buffers.cpp(1667): buf.g_length(p) < fmt.g_sizeimage(p)
+	test MMAP (epoll, CREATE_BUFS): FAIL
+		warn: v4l2-test-buffers.cpp(438): got sequence number 1, expected 0
+
+	Video Capture Multiplanar: Frame #000
+	Video Capture Multiplanar: Frame #001		warn: v4l2-test-buffers.cpp(438): got sequence number 4, expected 3
+
+	Video Capture Multiplanar: Frame #002
+	Video Capture Multiplanar: Frame #003		warn: v4l2-test-buffers.cpp(438): got sequence number 7, expected 6
+
+	Video Capture Multiplanar: Frame #004
+	Video Capture Multiplanar: Frame #005		warn: v4l2-test-buffers.cpp(438): got sequence number 10, expected 9
+
+	Video Capture Multiplanar: Frame #006
+	Video Capture Multiplanar: Frame #007		warn: v4l2-test-buffers.cpp(438): got sequence number 13, expected 12
+
+	Video Capture Multiplanar: Frame #008
+	Video Capture Multiplanar: Frame #009		warn: v4l2-test-buffers.cpp(438): got sequence number 16, expected 15
+
+	Video Capture Multiplanar: Frame #010
+	Video Capture Multiplanar: Frame #011		warn: v4l2-test-buffers.cpp(438): got sequence number 19, expected 18
+
+	Video Capture Multiplanar: Frame #012
+	Video Capture Multiplanar: Frame #013		warn: v4l2-test-buffers.cpp(438): got sequence number 22, expected 21
+
+	Video Capture Multiplanar: Frame #014
+	Video Capture Multiplanar: Frame #015		warn: v4l2-test-buffers.cpp(438): got sequence number 25, expected 24
+
+	Video Capture Multiplanar: Frame #016
+	Video Capture Multiplanar: Frame #017		warn: v4l2-test-buffers.cpp(438): got sequence number 28, expected 27
+
+	Video Capture Multiplanar: Frame #018
+	Video Capture Multiplanar: Frame #019		warn: v4l2-test-buffers.cpp(438): got sequence number 31, expected 30
+
+	Video Capture Multiplanar: Frame #020
+	Video Capture Multiplanar: Frame #021		warn: v4l2-test-buffers.cpp(438): got sequence number 34, expected 33
+
+	Video Capture Multiplanar: Frame #022
+	Video Capture Multiplanar: Frame #023		warn: v4l2-test-buffers.cpp(438): got sequence number 37, expected 36
+
+	Video Capture Multiplanar: Frame #024
+	Video Capture Multiplanar: Frame #025		warn: v4l2-test-buffers.cpp(438): got sequence number 40, expected 39
+
+	Video Capture Multiplanar: Frame #026
+	Video Capture Multiplanar: Frame #027		warn: v4l2-test-buffers.cpp(438): got sequence number 43, expected 42
+
+	Video Capture Multiplanar: Frame #028
+	Video Capture Multiplanar: Frame #029
+	                                                  
+		fail: v4l2-test-buffers.cpp(2065): data at 8 bytes before start of the buffer was touched
+		fail: v4l2-test-buffers.cpp(2065): data at 4 bytes before start of the buffer was touched
+		fail: v4l2-test-buffers.cpp(2065): data at 8 bytes before start of the buffer was touched
+		fail: v4l2-test-buffers.cpp(2065): data at 4 bytes before start of the buffer was touched
+	test USERPTR (no poll): OK
+		warn: v4l2-test-buffers.cpp(438): got sequence number 1, expected 0
+
+	Video Capture Multiplanar: Frame #000 (select)
+	Video Capture Multiplanar: Frame #001 (select)		warn: v4l2-test-buffers.cpp(438): got sequence number 4, expected 3
+
+	Video Capture Multiplanar: Frame #002 (select)
+	Video Capture Multiplanar: Frame #003 (select)		warn: v4l2-test-buffers.cpp(438): got sequence number 7, expected 6
+
+	Video Capture Multiplanar: Frame #004 (select)
+	Video Capture Multiplanar: Frame #005 (select)		warn: v4l2-test-buffers.cpp(438): got sequence number 10, expected 9
+
+	Video Capture Multiplanar: Frame #006 (select)
+	Video Capture Multiplanar: Frame #007 (select)		warn: v4l2-test-buffers.cpp(438): got sequence number 13, expected 12
+
+	Video Capture Multiplanar: Frame #008 (select)
+	Video Capture Multiplanar: Frame #009 (select)		warn: v4l2-test-buffers.cpp(438): got sequence number 16, expected 15
+
+	Video Capture Multiplanar: Frame #010 (select)
+	Video Capture Multiplanar: Frame #011 (select)		warn: v4l2-test-buffers.cpp(438): got sequence number 19, expected 18
+
+	Video Capture Multiplanar: Frame #012 (select)
+	Video Capture Multiplanar: Frame #013 (select)		warn: v4l2-test-buffers.cpp(438): got sequence number 22, expected 21
+
+	Video Capture Multiplanar: Frame #014 (select)
+	Video Capture Multiplanar: Frame #015 (select)		warn: v4l2-test-buffers.cpp(438): got sequence number 25, expected 24
+
+	Video Capture Multiplanar: Frame #016 (select)
+	Video Capture Multiplanar: Frame #017 (select)		warn: v4l2-test-buffers.cpp(438): got sequence number 28, expected 27
+
+	Video Capture Multiplanar: Frame #018 (select)
+	Video Capture Multiplanar: Frame #019 (select)		warn: v4l2-test-buffers.cpp(438): got sequence number 31, expected 30
+
+	Video Capture Multiplanar: Frame #020 (select)
+	Video Capture Multiplanar: Frame #021 (select)		warn: v4l2-test-buffers.cpp(438): got sequence number 34, expected 33
+
+	Video Capture Multiplanar: Frame #022 (select)
+	Video Capture Multiplanar: Frame #023 (select)		warn: v4l2-test-buffers.cpp(438): got sequence number 37, expected 36
+
+	Video Capture Multiplanar: Frame #024 (select)
+	Video Capture Multiplanar: Frame #025 (select)		warn: v4l2-test-buffers.cpp(438): got sequence number 40, expected 39
+
+	Video Capture Multiplanar: Frame #026 (select)
+	Video Capture Multiplanar: Frame #027 (select)		warn: v4l2-test-buffers.cpp(438): got sequence number 43, expected 42
+
+	Video Capture Multiplanar: Frame #028 (select)
+	Video Capture Multiplanar: Frame #029 (select)
+	                                                  
+		fail: v4l2-test-buffers.cpp(2065): data at 8 bytes before start of the buffer was touched
+		fail: v4l2-test-buffers.cpp(2065): data at 4 bytes before start of the buffer was touched
+		fail: v4l2-test-buffers.cpp(2065): data at 8 bytes before start of the buffer was touched
+		fail: v4l2-test-buffers.cpp(2065): data at 4 bytes before start of the buffer was touched
+	test USERPTR (select): OK
+	test DMABUF: Cannot test, specify --expbuf-device
+
+Total for ipu3-cio2 device /dev/video2: 58, Succeeded: 51, Failed: 7, Warnings: 30

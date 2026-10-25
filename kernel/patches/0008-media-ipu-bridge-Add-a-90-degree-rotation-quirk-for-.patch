@@ -1,8 +1,8 @@
-From 88e3b9cd4356a2f895ec10ac86a0ea5cb18bca35 Mon Sep 17 00:00:00 2001
+From c235c659bb93a3a09289139727a5d7f34abe0a0b Mon Sep 17 00:00:00 2001
 From: Antoine Pichot <antoine.pichot@gmail.com>
 Date: Sat, 24 Oct 2026 22:41:03 +0900
-Subject: [PATCH 8/8] media: ipu-bridge: Add a 90 degree rotation quirk for Surface
- Book 2
+Subject: [PATCH 8/8] media: ipu-bridge: Add a 90 degree rotation quirk for
+ Surface Book 2
 
 The infrared camera of the Microsoft Surface Book 2, an OmniVision
 OV7251 with ACPI ID INT347E, is mounted rotated by 90 degrees. An
@@ -10,8 +10,9 @@ upright scene appears rotated 90 degrees clockwise in its frames, with
 the top of the scene at the right edge of the image, while a frame
 taken at the same moment by the colour camera next to it shows the
 scene upright. The degree field of the sensor's SSDB buffer in the ACPI
-tables is 0, so ipu_bridge_parse_rotation() sets the rotation property
-to 0 and userspace has no way to know that the image needs correcting.
+tables is 0, and so is the rotation field of its _PLD, so
+ipu_bridge_parse_rotation() sets the rotation property to 0 and
+userspace has no way to know that the image needs correcting.
 
 The firmware is wrong here, and ipu-bridge is where the firmware data
 is turned into the rotation property: it already carries DMI (Desktop
@@ -19,12 +20,16 @@ Management Interface) quirks for sensors mounted upside down without
 the firmware saying so. Add a second table for sensors rotated by 90
 degrees, checked the same way, with one entry for the Surface Book 2
 infrared sensor. Following V4L2_CID_CAMERA_SENSOR_ROTATION, 90 is the
-counter-clockwise rotation to apply to correct the image. The 13 and
-15 inch models share the product name and the camera module, so the
-entry matches on the product name. The colour sensors of this machine
-(INT33BE and INT347A) already report 180 degrees and are unchanged.
+counter-clockwise rotation to apply to correct the image. The entry
+matches on the product name, which the 15 inch model shares; its
+sensor mounting has not been checked. The colour sensors of this
+machine (INT33BE and INT347A) already report 180 degrees and are
+unchanged.
 
-Tested on a Surface Book 2 (SKU Surface_Book_1832).
+Tested on a 13 inch Surface Book 2 (SKU Surface_Book_1832) with a
+7.2.12 kernel: V4L2_CID_CAMERA_SENSOR_ROTATION on the OV7251 reads 90
+instead of 0, the colour sensors still read 180 and the orientation
+controls are unchanged.
 
 Signed-off-by: Antoine Pichot <antoine.pichot@gmail.com>
 ---
