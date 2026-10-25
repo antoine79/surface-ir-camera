@@ -1,4 +1,4 @@
-From d6594cecad4c8a7d1fe620552c321de070af2b44 Mon Sep 17 00:00:00 2001
+From abbb0e9657a8a6978f95c59b9e37afe7e39fcecf Mon Sep 17 00:00:00 2001
 From: Daniel Scally <dan.scally@ideasonboard.com>
 Date: Tue, 21 Mar 2023 13:45:26 +0000
 Subject: [PATCH 2/8] media: i2c: Clarify that gain is Analogue gain in OV7251
