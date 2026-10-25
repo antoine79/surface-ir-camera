@@ -1,0 +1,46 @@
+[Unit]
+Description=Infrared camera bridge: OV7251 ip3y frames to the "Intel IR Camera" v4l2loopback device (shortcut until libcamera supports the sensor)
+After=modprobe@v4l2loopback.service
+Wants=modprobe@v4l2loopback.service
+StartLimitIntervalSec=60
+StartLimitBurst=5
+
+[Service]
+Type=simple
+# No root: the sensor, media controller and capture nodes are root:video 0660, so a throwaway user in group video
+# is enough. The script lives in a root-owned directory (copied from ~/projects/surface-ir-camera/tools by
+# `sudo install`), so a user-writable file is never executed by a service.
+DynamicUser=yes
+SupplementaryGroups=video
+ExecStart=/usr/bin/python3 /usr/local/lib/ir-camera-bridge/ir-bridge.py --frames lit
+Restart=on-failure
+RestartSec=5
+# Confinement: no network, read-only system, only the camera device classes, no privileges.
+NoNewPrivileges=yes
+CapabilityBoundingSet=
+PrivateNetwork=yes
+RestrictAddressFamilies=none
+ProtectSystem=strict
+ProtectHome=yes
+PrivateTmp=yes
+DevicePolicy=closed
+DeviceAllow=char-video4linux rw
+DeviceAllow=char-media rw
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectKernelLogs=yes
+ProtectControlGroups=yes
+ProtectClock=yes
+ProtectHostname=yes
+ProtectProc=invisible
+RestrictNamespaces=yes
+RestrictRealtime=yes
+RestrictSUIDSGID=yes
+LockPersonality=yes
+MemoryDenyWriteExecute=yes
+SystemCallArchitectures=native
+SystemCallFilter=@system-service
+UMask=0077
+
+[Install]
+WantedBy=multi-user.target
