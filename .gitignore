@@ -12,3 +12,4 @@ kernel/build/modules.order
 *.gcno
 *.gcda
 kernel/build/*.gcov
+docs/props/
