@@ -1,4 +1,4 @@
-From 16641b12df7ffc8d41c35046ef8d93cfebcef4d6 Mon Sep 17 00:00:00 2001
+From 11e624277da8bbc0cf7e4b0369464b54aa0c85f4 Mon Sep 17 00:00:00 2001
 From: Antoine Pichot <antoine.pichot@gmail.com>
 Date: Sat, 24 Oct 2026 20:47:34 +0900
 Subject: [PATCH 6/7] media: i2c: ov7251: Add strobe output enable control
@@ -11,8 +11,9 @@ LED, GPIO line or regulator for it. The mode tables leave the pad
 disabled, so the camera only sees an unlit scene.
 
 Add a V4L2_CID_FLASH_STROBE_OE control, off by default. When enabled
-it sets the STROBE pad output enable (SC_REG5 bit 3), strobes every
-frame (frame pattern 0xff instead of the default 0xa5) and sets the
+it sets the STROBE pad output enable (SC_REG5 bit 3), strobes
+alternate frames (frame pattern 0xaa instead of the default 0xa5, which
+lights four frames in eight) and sets the
 pulse length (strobe frame span, in lines) to the exposure time,
 clamped between 52 lines and 45% of the frame length, never more than
 776 lines. When disabled it
@@ -27,14 +28,23 @@ within that envelope (eye safety) at 60 and 90 fps too, where a fixed
 lines). Keeping the 776-line limit as well bounds the pulse when
 vertical blanking stretches the frame, up to 65535 lines.
 
+Alternate frames is what the Windows driver uses for face recognition
+on this hardware: its 30 and 60 fps modes write 0xaa, and a register
+dump taken during a Windows Hello sign-in on a Surface Book 2 shows the
+same. Lighting every frame (0xff, which two of its other modes use)
+would double the average emitter power. User space tells lit frames
+from dark ones by their brightness; V4L2 has no per-frame illumination
+flag yet.
+
 The control is written only while the sensor is powered, and from
 __v4l2_ctrl_handler_setup() at stream start, after the mode and strobe
 register tables. Setting it while the sensor is idle does not power it
 up, and the emitter goes off with the sensor when streaming stops.
 
 On a Surface Book 2 at analogue gain 128 the mean pixel value of the
-infrared image of a room goes from 19 unlit to 495 with the strobe
-enabled at exposure 504 (span 504) and 585 at exposure 1704 (span 776).
+infrared image of a room is 19 unlit; with the strobe enabled the lit
+frames read 496 at exposure 504 (span 504) and 587 at exposure 1704
+(span 776), the dark frames in between 18 to 20.
 The span read back while streaming is 258 at 90 fps, 45% of the
 572-line frame.
 
@@ -44,7 +54,7 @@ Signed-off-by: Antoine Pichot <antoine.pichot@gmail.com>
  1 file changed, 76 insertions(+), 9 deletions(-)
 
 diff --git a/drivers/media/i2c/ov7251.c b/drivers/media/i2c/ov7251.c
-index ad66422d9e..5b08a1814f 100644
+index ad66422d9e..de650b4457 100644
 --- a/drivers/media/i2c/ov7251.c
 +++ b/drivers/media/i2c/ov7251.c
 @@ -18,6 +18,7 @@
@@ -61,7 +71,7 @@ index ad66422d9e..5b08a1814f 100644
  #define OV7251_SC_REG5			0x3005
 +#define OV7251_SC_REG5_STROBE_OE	BIT(3)
  #define OV7251_STROBE_FRAME_PATTERN	0x3b81
-+#define OV7251_STROBE_FRAME_PATTERN_ALL	0xff
++#define OV7251_STROBE_FRAME_PATTERN_ALT	0xaa	/* alternate frames */
 +#define OV7251_STROBE_FRAME_PATTERN_DEF	0xa5
  #define OV7251_STROBE_FRAME_SPAN	0x3b8c
 +#define OV7251_STROBE_FRAME_SPAN_DEF	0x1a
@@ -161,7 +171,7 @@ index ad66422d9e..5b08a1814f 100644
 +		return ret;
 +
 +	ret = ov7251_write_reg(ov7251, OV7251_STROBE_FRAME_PATTERN,
-+			       value ? OV7251_STROBE_FRAME_PATTERN_ALL :
++			       value ? OV7251_STROBE_FRAME_PATTERN_ALT :
 +				       OV7251_STROBE_FRAME_PATTERN_DEF);
 +	if (ret)
 +		return ret;

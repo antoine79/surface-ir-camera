@@ -95,7 +95,7 @@ def test_lit_60fps_capture(graph):
         set_ctrl(STROBE, 1)
         lit, fps = grab(FPS)
         set_ctrl(STROBE, 0)
-        mid = lit[FPS // 2]
+        mid = max(lit[FPS // 2], lit[FPS // 2 + 1], key=lambda f: f.mean())  # the lit one of a lit/dark pair
         to_png(dark[len(dark) // 2], OUT / f"ir-{FPS}fps-emitter-off.png")  # written before the asserts: a failed run
         to_png(mid, OUT / f"ir-{FPS}fps-emitter-on.png")  # still shows what the camera saw
 
@@ -103,10 +103,11 @@ def test_lit_60fps_capture(graph):
         # judgement: 10 % covers v4l2-ctl's once-a-second fps estimate; the stock 30 fps is off by 50 %
         assert fps and fps >= 0.9 * FPS, f"streamed at {fps} fps, asked {FPS}: the frame interval must change the frame length (patch 2)"
         dark_mean, lit_mean = dark.mean(), lit.mean()
-        assert lit_mean > 2.5 * dark_mean, \
-            f"lit mean {lit_mean:.1f} vs dark {dark_mean:.1f}: the emitter must light the scene on every frame (patch 6)"
-        per_frame = lit.reshape(FPS, -1).mean(axis=1)
-        assert (per_frame > 2.5 * dark_mean).all(), f"some frames unlit: {per_frame.round(0)}"
+        assert lit_mean > 1.5 * dark_mean, \
+            f"lit mean {lit_mean:.1f} vs dark {dark_mean:.1f}: the emitter must light the scene on alternate frames (patch 6)"
+        is_lit = lit.reshape(FPS, -1).mean(axis=1) > 2.5 * dark_mean
+        assert is_lit[::2].all() != is_lit[1::2].all() and not (is_lit[::2].any() and is_lit[1::2].any()), \
+            f"lit frames must alternate with dark ones (pattern 0xaa): {is_lit.astype(int)}"
         p10, p90 = np.percentile(mid, [10, 90])
         # judgement: a 10-bit scene with no texture has p90-p10 below ~10, saturated frames exceed 50%
         assert p90 - p10 > 40, f"lit frame has no texture (p10 {p10:.0f}, p90 {p90:.0f}): not a picture of a scene"

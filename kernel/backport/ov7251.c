@@ -57,7 +57,7 @@
 #define OV7251_SC_REG5			0x3005
 #define OV7251_SC_REG5_STROBE_OE	BIT(3)
 #define OV7251_STROBE_FRAME_PATTERN	0x3b81
-#define OV7251_STROBE_FRAME_PATTERN_ALL	0xff
+#define OV7251_STROBE_FRAME_PATTERN_ALT	0xaa	/* alternate frames */
 #define OV7251_STROBE_FRAME_PATTERN_DEF	0xa5
 #define OV7251_STROBE_FRAME_SPAN	0x3b8c
 #define OV7251_STROBE_FRAME_SPAN_DEF	0x1a
@@ -1024,7 +1024,7 @@ static int ov7251_set_strobe(struct ov7251 *ov7251, s32 value)
 		return ret;
 
 	ret = ov7251_write_reg(ov7251, OV7251_STROBE_FRAME_PATTERN,
-			       value ? OV7251_STROBE_FRAME_PATTERN_ALL :
+			       value ? OV7251_STROBE_FRAME_PATTERN_ALT :
 				       OV7251_STROBE_FRAME_PATTERN_DEF);
 	if (ret)
 		return ret;

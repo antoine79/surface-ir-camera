@@ -1,4 +1,5 @@
-"""K5: strobe_output_enable=1 set before streaming lights the emitter on every frame from the start."""
+"""K5: strobe_output_enable=1 set before streaming lights the emitter on alternate frames from the start (pattern 0xaa, the
+Windows Hello pattern on this hardware: one lit frame, one dark)."""
 import pytest
 
 from conftest import DARK_MAX, STROBE, bench_exposure, capture, ctrl_info, frame_means, need_dark, set_ctrl
@@ -23,16 +24,18 @@ def lit(dark_mean):
         set_ctrl(STROBE, 0)
 
 
-def test_emitter_lights_the_scene(lit, dark_mean):
+def test_emitter_lights_alternate_frames(lit, dark_mean):
     assert lit is not None, MISSING
-    assert lit.mean() > 2.5 * dark_mean, \
-        f"lit mean {lit.mean():.1f} vs dark {dark_mean:.1f}: with {STROBE}=1 the emitter must strobe (Phase 0: x5)"
+    is_lit = lit > 2.5 * dark_mean
+    assert is_lit.any(), f"frame means {lit.round(1)} vs dark {dark_mean:.1f}: with {STROBE}=1 the emitter must strobe (Phase 0: x5)"
+    assert is_lit[::2].all() != is_lit[1::2].all() and not (is_lit[::2].any() and is_lit[1::2].any()), \
+        f"lit frames must alternate with dark ones (pattern 0xaa), got {is_lit.astype(int)}"
 
 
 def test_lit_from_first_frames(lit, dark_mean):
     assert lit is not None, MISSING
-    assert (lit[:3] > 2.5 * dark_mean).all(), \
-        f"first frames {lit[:3].round(1)} vs dark {dark_mean:.1f}: the stream-start mode table must not clear the strobe"
+    assert (lit[:2] > 2.5 * dark_mean).sum() == 1, \
+        f"first frames {lit[:2].round(1)} vs dark {dark_mean:.1f}: one of the first two frames must be lit (the stream-start mode table must not clear the strobe)"
 
 
 def test_dark_again_after_reset(lit):

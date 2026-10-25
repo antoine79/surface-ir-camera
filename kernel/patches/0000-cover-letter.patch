@@ -1,4 +1,4 @@
-From 4e81ce210a1b1a928d01542b17e622cb8ca7c806 Mon Sep 17 00:00:00 2001
+From 543f699f85d974b694f225e05e41bdfecd7bb6dc Mon Sep 17 00:00:00 2001
 From: Antoine Pichot <antoine.pichot@gmail.com>
 Date: Sat, 24 Oct 2026 20:57:10 +0900
 Subject: [PATCH 0/7] media: i2c: ov7251: fixes and infrared strobe for Surface Book 2
@@ -26,17 +26,19 @@ machine, patch 4 adds the placement controls:
 Patches 5 and 6 add the emitter. 5 moves the strobe registers, which
 the three mode tables write identically, out of the tables without
 functional change. 6 adds a V4L2_CID_FLASH_STROBE_OE control that
-enables the STROBE pin, pulses it on every frame and makes the pulse
-follow the exposure, from 52 lines up to 45% of the frame and never
-more than 776 lines. Those are the limits the Windows driver applies,
-read from its binary [1]; a
-register dump taken on a Surface Book 2 during a Windows Hello sign-in
-shows a 331-line pulse [1]. Windows uses more than one frame pattern:
-that dump shows alternate frames (0xaa), while the driver binary for a
-Surface Pro 7+ writes every frame (0xff) in its illuminated modes [2].
-This series pulses every frame: each pulse is the same as in the
-alternate mode, the average emitter power is up to twice. 0xaa is a
-one-line change if preferred. Filmed with a phone at locked exposure,
+enables the STROBE pin, pulses it on alternate frames and makes the
+pulse follow the exposure, from 52 lines up to 45% of the frame and
+never more than 776 lines. This is what the Windows driver installed
+on this machine does (Intel ov7251.sys 30.18305.6.5127, read with a
+decompiler): all four of its streaming modes enable the STROBE pin and
+set the pulse to the exposure clamped to 52 to 776 lines; its two
+648x488 modes at 30 and 60 fps, the ones Windows Hello uses, light
+alternate frames (0xaa), its two 640x480 modes light every frame
+(0xff). A register dump taken on a Surface Book 2 during a Windows
+Hello sign-in [1] matches the 30 fps alternate mode. User space tells
+lit frames from dark ones by their brightness, V4L2 having no
+per-frame illumination flag; every frame is a one-line change if
+preferred. Filmed with a phone at locked exposure,
 the emitter is 1.1x (default exposure) to 1.2x (776-line pulse) as
 bright as during a Windows Hello sign-in on the same unit.
 
@@ -70,7 +72,8 @@ tree against linux-surface 7.2.12:
 - strobe span read back while streaming: 504 lines at exposure 504,
   776 at exposure 1704 (30 fps), 258 at exposure 552 (90 fps)
 - mean pixel value of an indoor infrared frame at analogue gain 128:
-  19 unlit, 495 with the strobe enabled at exposure 504, 585 at 1704
+  19 unlit; with the strobe enabled the lit frames read 496 at
+  exposure 504 and 587 at 1704, the dark frames in between 18 to 20
 - strobe off and sensor suspended within 2 s of the stream stopping
 - 10 unbind/unload/load cycles: no warning in the kernel log
 

@@ -36,8 +36,7 @@ def clean():
     """Leave the strobe off, 30 fps and the 30 fps frame length whatever the test did."""
     yield
     strobe_off_if_present()
-    set_fps(30)
-    set_ctrl("vertical_blanking", ctrl_info("vertical_blanking")["default"])
+    restore_30fps_vblank()
 
 
 @pytest.mark.parametrize("fps", [30, 60, 90])
@@ -62,7 +61,7 @@ def test_strobe_on_at_stream_start(graph, clean, fps, exposure):
     with streaming():
         reg5, pattern, span = strobe_state()
     want = span_for(exposure, MODE_VTS[fps])
-    assert (reg5, pattern) == (0x08, 0xff), f"0x3005 = 0x{reg5:02x}, 0x3b81 = 0x{pattern:02x}, expected 0x08 (pad on) and 0xff"
+    assert (reg5, pattern) == (0x08, 0xaa), f"0x3005 = 0x{reg5:02x}, 0x3b81 = 0x{pattern:02x}, expected 0x08 (pad on) and 0xaa (alternate frames)"
     assert span == want, f"span {span} at {fps} fps, exposure {exposure}: expected clamp({exposure}, {SPAN_MIN}, 45% of {MODE_VTS[fps]}) = {want}"
 
 
@@ -124,7 +123,7 @@ def test_strobe_toggled_while_streaming(graph, clean):
         seen.append(strobe_state())
         set_ctrl(STROBE, 0)
         seen.append(strobe_state())
-    want = [OFF, (0x08, 0xff, 504), OFF]
+    want = [OFF, (0x08, 0xaa, 504), OFF]
     assert seen == want, f"(0x3005, 0x3b81, span) off/on/off while streaming: {seen}, expected {want}"
 
 
@@ -140,4 +139,4 @@ def test_strobe_survives_runtime_suspend(graph, clean):
     assert wait_for(lambda: runtime_status() == "suspended", 3), f"sensor {runtime_status()} 3 s after the stream"
     with streaming(2):
         second = strobe_state()
-    assert first == second == (0x08, 0xff, 504), f"strobe registers first stream {first}, after suspend {second}"
+    assert first == second == (0x08, 0xaa, 504), f"strobe registers first stream {first}, after suspend {second}"

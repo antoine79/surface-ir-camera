@@ -4,7 +4,7 @@ module: OE
 link_frequency index: 1
 link_frequency Hz: 319200000
 pixel_rate Hz: 63840000
-fps measured at 30: 30.01
+fps measured at 30: 30.0
 fps measured at 60: 60.16
 fps measured at 90: 90.45
 v4l2-compliance -u sensor: Total for device /dev/v4l-subdev7: 46, Succeeded: 46, Failed: 0, Warnings: 1
@@ -16,7 +16,9 @@ span at 30 fps, exposure 1704: 776
 span at 90 fps, exposure 552: 258
 mean pixel value, strobe 0, exposure 504, gain 128: 18
 mean pixel value, strobe 0, exposure 1704, gain 128: 19
-mean pixel value, strobe 1, exposure 504, gain 128: 495
-mean pixel value, strobe 1, exposure 1704, gain 128: 585
+mean pixel value, strobe 1, lit frames, exposure 504, gain 128: 496
+mean pixel value, strobe 1, dark frames, exposure 504, gain 128: 18
+mean pixel value, strobe 1, lit frames, exposure 1704, gain 128: 587
+mean pixel value, strobe 1, dark frames, exposure 1704, gain 128: 20
 sensor suspended after stream end within s: 1.3
 reload cycles: see docs/phase3-7.2-test-2026-10-25-k9-reload.log (K9, 10 cycles)

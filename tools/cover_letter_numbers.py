@@ -69,8 +69,13 @@ for strobe in (0, 1):
     set_ctrl(STROBE, strobe)
     for exposure in (504, 1704):
         set_ctrl("exposure", exposure)
-        m = frame_means(capture(30)).mean()
-        say(f"mean pixel value, strobe {strobe}, exposure {exposure}, gain 128", f"{m:.0f}")
+        means = frame_means(capture(30))
+        m = means.mean()
+        if strobe:  # alternate frames: report the lit and the dark half separately
+            say(f"mean pixel value, strobe 1, lit frames, exposure {exposure}, gain 128", f"{max(means[::2].mean(), means[1::2].mean()):.0f}")
+            say(f"mean pixel value, strobe 1, dark frames, exposure {exposure}, gain 128", f"{min(means[::2].mean(), means[1::2].mean()):.0f}")
+        else:
+            say(f"mean pixel value, strobe 0, exposure {exposure}, gain 128", f"{m:.0f}")
         if strobe == 0 and exposure == 1704 and m >= DARK_MAX:
             say("WARNING", f"room too bright for the emitter figures ({m:.0f} >= {DARK_MAX})")
 set_ctrl(STROBE, 0)
