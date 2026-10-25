@@ -33,7 +33,8 @@ modinfo $T/ov7251.ko | grep vermagic     # 6.18.8-1.surface.fc43.x86_64
 ## Load for a test session
 
 ```sh
-sudo modprobe -r ov7251 && sudo insmod ./kernel/build/ov7251.ko
+echo i2c-INT347E:00 | sudo tee /sys/bus/i2c/drivers/ov7251/unbind && sudo modprobe -r ov7251 && sudo insmod ./kernel/build/ov7251.ko
+sudo setfacl -m u:$USER:rw /dev/$(basename /sys/bus/i2c/devices/i2c-INT347E:00/video4linux/v4l-subdev*)   # 7.2: the seat ACL is not re-applied after a reload
 ```
 
 Caveat (found 2026-10-24 on 6.18.8): `modprobe -r ov7251` fails with "Module ov7251 is in use" while ipu3-cio2 is bound. `v4l2_device_register_subdev()` takes a reference on the sensor module (`try_module_get()`, `drivers/media/v4l2-core/v4l2-device.c`) for as long as the subdev is registered with cio2's v4l2_device, so the module has refcount 1 and no holders even with nothing open. Unloading needs the I2C device unbound first (`echo i2c-INT347E:00 | sudo tee /sys/bus/i2c/drivers/ov7251/unbind`), which removes the ov7251 entity from `/dev/media0` until the new module binds again, or ipu3-cio2 reloaded, which also takes down the ov5693 front camera.
@@ -43,7 +44,7 @@ ipu3-cio2, ipu-bridge and the other sensor drivers stay loaded. `modprobe -r` fa
 ## Undo
 
 ```sh
-sudo rmmod ov7251 && sudo modprobe ov7251
+echo i2c-INT347E:00 | sudo tee /sys/bus/i2c/drivers/ov7251/unbind && sudo rmmod ov7251 && sudo modprobe ov7251
 ```
 
 This restores the distro module. A reboot does the same.

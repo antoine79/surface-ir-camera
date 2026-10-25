@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 # Phase 0 bench: does driving the OV7251 STROBE pad light the 850 nm emitter?
+# Written for 6.18, where the cio2 nodes were /dev/media0 and /dev/video2 (7.2: media1/video12), and superseded
+# by the pytest suite in tests/, which resolves the nodes by name. Kept as the record of the Phase 0 measurement.
 #
 #   sudo tools/bench-strobe.sh [outdir]
 #
@@ -17,7 +19,7 @@ CSI="ipu3-csi2 2"
 W=640
 H=480
 here=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
-out=${1:-/tmp/claude-1000/-home-antoine-projects-surface/3ccf287b-d9c6-4190-a42c-0b614d1d1d83/scratchpad/bench}
+out=${1:-$here/../docs/bench}
 pid=
 
 die() { echo "error: $*" >&2; exit 1; }
