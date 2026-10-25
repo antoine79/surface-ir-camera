@@ -1,7 +1,7 @@
-From f309f94e16c40dd30ef1f9f22fff9b26f90cd45a Mon Sep 17 00:00:00 2001
+From 5e1255ca54afaaacebed314bc119e1da615de943 Mon Sep 17 00:00:00 2001
 From: Antoine Pichot <antoine.pichot@gmail.com>
 Date: Sat, 24 Oct 2026 20:44:45 +0900
-Subject: [PATCH 3/7] media: i2c: ov7251: Reset vblank when the frame interval
+Subject: [PATCH 2/7] media: i2c: ov7251: Reset vblank when the frame interval
  changes
 
 Setting a 60 or 90 fps frame interval is accepted and read back, but
@@ -32,16 +32,17 @@ v4l2-ctl --set-subdev-fps pad=0,fps=60 (90), v4l2-ctl measures 60.15
 (90.45) fps instead of 30.01, with vblank 380 (92).
 
 Fixes: 1b598f413c7a ("media: i2c: Add vblank control to ov7251 driver")
+Cc: stable@vger.kernel.org
 Signed-off-by: Antoine Pichot <antoine.pichot@gmail.com>
 ---
  drivers/media/i2c/ov7251.c | 18 ++++++++++++++++++
  1 file changed, 18 insertions(+)
 
 diff --git a/drivers/media/i2c/ov7251.c b/drivers/media/i2c/ov7251.c
-index 66e04a6b4d..917285a62d 100644
+index 1413f1856e..8dad747f77 100644
 --- a/drivers/media/i2c/ov7251.c
 +++ b/drivers/media/i2c/ov7251.c
-@@ -1262,6 +1262,10 @@ static int ov7251_set_format(struct v4l2_subdev *sd,
+@@ -1261,6 +1261,10 @@ static int ov7251_set_format(struct v4l2_subdev *sd,
  		if (ret < 0)
  			goto exit;
  
@@ -52,7 +53,7 @@ index 66e04a6b4d..917285a62d 100644
  		ov7251->current_mode = new_mode;
  	}
  
-@@ -1415,6 +1419,7 @@ static int ov7251_set_frame_interval(struct v4l2_subdev *subdev,
+@@ -1414,6 +1418,7 @@ static int ov7251_set_frame_interval(struct v4l2_subdev *subdev,
  {
  	struct ov7251 *ov7251 = to_ov7251(subdev);
  	const struct ov7251_mode_info *new_mode;
@@ -60,7 +61,7 @@ index 66e04a6b4d..917285a62d 100644
  	int ret = 0;
  
  	/*
-@@ -1443,6 +1448,19 @@ static int ov7251_set_frame_interval(struct v4l2_subdev *subdev,
+@@ -1442,6 +1447,19 @@ static int ov7251_set_frame_interval(struct v4l2_subdev *subdev,
  		if (ret < 0)
  			goto exit;
  

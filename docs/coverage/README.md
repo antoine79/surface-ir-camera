@@ -7,7 +7,7 @@ Measured 2026-10-25 on kernel 7.2.12-gcov (kernel-surface 7.2.12 rebuilt with CO
 | whole driver | 557 | 416 (74.7%) | 141 |
 | lines added or changed by patches 1 to 6 | 43 | 38 | 5 |
 
-The 5 patched lines never executed are error returns: the three `goto exit` after a failed control range update or control write in set_format and set_frame_interval (patch 3), and the "could not set strobe defaults" branch at stream start (patch 5). All four fire only when an I2C write or a control-framework call fails.
+The 5 patched lines never executed are error returns: the three `goto exit` after a failed control range update or control write in set_format and set_frame_interval (patch 2), and the "could not set strobe defaults" branch at stream start (patch 5). All four fire only when an I2C write or a control-framework call fails.
 
 The 141 unexecuted lines of the whole driver, by kind:
 

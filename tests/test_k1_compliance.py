@@ -17,7 +17,7 @@ TOTAL = re.compile(r"Total.*: (\d+), Succeeded: (\d+), Failed: (\d+), Warnings: 
 
 
 @pytest.mark.parametrize("target, args", [
-    pytest.param("subdev", lambda: ["-u", sd()], marks=pytest.mark.needs_patch("2")),
+    pytest.param("subdev", lambda: ["-u", sd()], marks=pytest.mark.needs_patch("3")),
     pytest.param("media", lambda: ["-m", MEDIA], marks=pytest.mark.disruptive(reason=MEDIA_OOPS)),
     ("video", lambda: ["-d", VIDEO, "-s", "30"]),
 ], ids=["subdev", "media", "video"])

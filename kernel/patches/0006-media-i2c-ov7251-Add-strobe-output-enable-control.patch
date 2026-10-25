@@ -1,4 +1,4 @@
-From 33a998006305d55130ff2294dd48e3d6660fc420 Mon Sep 17 00:00:00 2001
+From 1638230d5d3103bd57f7e049d6f2dc44eff71d41 Mon Sep 17 00:00:00 2001
 From: Antoine Pichot <antoine.pichot@gmail.com>
 Date: Sat, 24 Oct 2026 20:47:34 +0900
 Subject: [PATCH 6/7] media: i2c: ov7251: Add strobe output enable control

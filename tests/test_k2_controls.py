@@ -20,7 +20,7 @@ def test_analogue_gain_written_to_sensor(graph):
             got = read_reg(GAIN_REG, 2)
     finally:
         set_ctrl("analogue_gain", 16)
-    assert got == 200, f"0x350a/0x350b = {got} with analogue_gain 200: the ANALOGUE_GAIN handler must write the gain (patch 2)"
+    assert got == 200, f"0x350a/0x350b = {got} with analogue_gain 200: the ANALOGUE_GAIN handler must write the gain (patch 3)"
 
 
 FWNODE = "patch 4 registers the fwnode controls (v4l2_ctrl_new_fwnode_properties)"
@@ -57,7 +57,7 @@ def test_fwnode_controls_are_read_only(graph, name, value):
     assert ctrl(name) == c["value"], f"{name} changed to {ctrl(name)} after a refused write"
 
 
-@pytest.mark.needs_patch("2")
+@pytest.mark.needs_patch("3")
 def test_exposure_change_sends_event_with_value(graph):
     old = ctrl("exposure")
     new = 432 if old != 432 else 433
@@ -69,11 +69,11 @@ def test_exposure_change_sends_event_with_value(graph):
         out, _ = waiter.communicate(timeout=5)
     except subprocess.TimeoutExpired:
         waiter.kill()
-        pytest.fail("no control event within 5 s of changing exposure (patch 2)")
+        pytest.fail("no control event within 5 s of changing exposure (patch 3)")
     finally:
         set_ctrl("exposure", old)
     got = re.search(r"value: (-?\d+)", out)
-    assert waiter.returncode == 0 and got, f"no exposure control event (patch 2 adds subscribe_event):\n{out.strip()}"
+    assert waiter.returncode == 0 and got, f"no exposure control event (patch 3 adds subscribe_event):\n{out.strip()}"
     assert int(got.group(1)) == new, f"event carries exposure {got.group(1)}, set {new}:\n{out.strip()}"
 
 

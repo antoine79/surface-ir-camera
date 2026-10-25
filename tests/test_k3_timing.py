@@ -49,7 +49,7 @@ def test_90_frames_at_30fps_take_3s(graph):
     assert 2.6 <= t <= 3.6, f"90 frames took {t:.2f} s (v4l2-ctl fps {fps}, wall {wall:.2f} s), expected ~3 s at 30 fps"
 
 
-@pytest.mark.needs_patch("3")
+@pytest.mark.needs_patch("2")
 @pytest.mark.parametrize("fps", [60, 90])
 def test_frame_interval_selects_fps(graph, fps):
     try:
@@ -68,12 +68,12 @@ def check_mode_controls(fps):
     vb, ex = ctrl_info("vertical_blanking"), ctrl_info("exposure")
     want = {"min": 1, "max": 0xffff - H, "default": vts - H, "value": vts - H}
     assert {k: vb[k] for k in want} == want, \
-        f"vertical_blanking at {fps} fps {vb}, expected {want} (VTS {vts}): patch 3 resets VBLANK on a frame interval change"
+        f"vertical_blanking at {fps} fps {vb}, expected {want} (VTS {vts}): patch 2 resets VBLANK on a frame interval change"
     assert ex["max"] == vts - INTEGRATION_MARGIN, \
         f"exposure max {ex['max']} at {fps} fps, expected VTS {vts} - {INTEGRATION_MARGIN} = {vts - INTEGRATION_MARGIN}"
 
 
-@pytest.mark.needs_patch("3")
+@pytest.mark.needs_patch("2")
 @pytest.mark.parametrize("fps", [60, 90])
 def test_vblank_and_exposure_range_follow_frame_interval(graph, fps):
     try:
@@ -85,8 +85,8 @@ def test_vblank_and_exposure_range_follow_frame_interval(graph, fps):
         restore_30fps_vblank()
 
 
-@pytest.mark.parametrize("fps", [30, pytest.param(60, marks=pytest.mark.needs_patch("3")),
-                                 pytest.param(90, marks=pytest.mark.needs_patch("3"))])
+@pytest.mark.parametrize("fps", [30, pytest.param(60, marks=pytest.mark.needs_patch("2")),
+                                 pytest.param(90, marks=pytest.mark.needs_patch("2"))])
 def test_vts_register_matches_mode(graph, fps):
     try:
         set_fps(fps)
@@ -94,12 +94,12 @@ def test_vts_register_matches_mode(graph, fps):
             vts = read_reg(VTS_REG, 2)
     finally:
         restore_30fps_vblank()
-    assert vts == MODE_VTS[fps], f"0x380e/0x380f = {vts} streaming at {fps} fps, expected the mode's VTS {MODE_VTS[fps]} (patch 3)"
+    assert vts == MODE_VTS[fps], f"0x380e/0x380f = {vts} streaming at {fps} fps, expected the mode's VTS {MODE_VTS[fps]} (patch 2)"
 
 
-@pytest.mark.needs_patch("3")
+@pytest.mark.needs_patch("2")
 def test_set_fmt_after_frame_interval_is_consistent(graph):
-    """The other direction of patch 3: an active set_fmt after a 60 fps interval must not keep the 60 fps VBLANK
+    """The other direction of patch 2: an active set_fmt after a 60 fps interval must not keep the 60 fps VBLANK
     (set_fmt picks the first 640x480 mode, 30 fps). VBLANK is also set by hand so the stock driver reaches the same state."""
     try:
         set_fps(60)
@@ -112,5 +112,5 @@ def test_set_fmt_after_frame_interval_is_consistent(graph):
     finally:
         restore_30fps_vblank()
     assert vb == MODE_VTS[fps] - H, \
-        f"after set_fmt the interval reads {fps} fps but vertical_blanking is {vb}, expected {MODE_VTS[fps] - H} (patch 3)"
-    assert vts == MODE_VTS[fps], f"after set_fmt streaming VTS {vts}, the {fps} fps mode needs {MODE_VTS[fps]} (patch 3)"
+        f"after set_fmt the interval reads {fps} fps but vertical_blanking is {vb}, expected {MODE_VTS[fps] - H} (patch 2)"
+    assert vts == MODE_VTS[fps], f"after set_fmt streaming VTS {vts}, the {fps} fps mode needs {MODE_VTS[fps]} (patch 2)"

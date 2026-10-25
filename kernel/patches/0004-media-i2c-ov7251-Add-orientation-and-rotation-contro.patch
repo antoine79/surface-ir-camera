@@ -1,4 +1,4 @@
-From d47ab678315c4b8ac26e4910c2e2b0a9cc27a8d7 Mon Sep 17 00:00:00 2001
+From 08587ee3e0594d02125b16a845473149d5964798 Mon Sep 17 00:00:00 2001
 From: Antoine Pichot <antoine.pichot@gmail.com>
 Date: Sat, 24 Oct 2026 20:45:11 +0900
 Subject: [PATCH 4/7] media: i2c: ov7251: Add orientation and rotation controls

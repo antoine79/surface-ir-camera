@@ -5,8 +5,8 @@ a patch; with the whole series it passes and leaves two pictures in $IRCAM_E2E_O
 
 1. the sensor reports the link frequency the firmware asks for (patch 1) and where it sits (patch 4), mounted rotated
    by 90 degrees (patch 7, ipu-bridge DMI quirk: the ACPI _PLD says 0);
-2. a process can subscribe to control events, as libcamera does at start-up (patch 2);
-3. the stack selects 60 fps (patch 3), sets exposure and analogue gain and switches the emitter on (patch 6);
+2. a process can subscribe to control events, as libcamera does at start-up (patch 3);
+3. the stack selects 60 fps (patch 2), sets exposure and analogue gain and switches the emitter on (patch 6);
 4. 60 frames arrive in about one second, lit by the emitter, with a real image in them: aim the camera at the room
    before running, in the dark (daylight swamps the emitter), the lit frame is saved as the picture of the room;
 5. afterwards the emitter is off and the sensor powered down (patch 6).
@@ -65,7 +65,7 @@ def test_firmware_rotation(graph):
 
 
 def test_control_events(graph):
-    """libcamera subscribes to control events on every sensor it opens; the stock driver refuses (patch 2)."""
+    """libcamera subscribes to control events on every sensor it opens; the stock driver refuses (patch 3)."""
     waiter = subprocess.Popen(["v4l2-ctl", "-d", sd(), "--wait-for-event=ctrl=exposure"],
                               stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
     try:
@@ -77,7 +77,7 @@ def test_control_events(graph):
         waiter.kill()
         pytest.fail("no control event arrived within 5 s of changing exposure")
     assert waiter.returncode == 0 and "SUBSCRIBE_EVENT: failed" not in out, \
-        f"subscribing to the exposure control event failed (patch 2):\n{out.strip()}"
+        f"subscribing to the exposure control event failed (patch 3):\n{out.strip()}"
 
 
 def test_lit_60fps_capture(graph):
@@ -99,7 +99,7 @@ def test_lit_60fps_capture(graph):
         to_png(mid, OUT / f"ir-{FPS}fps-emitter-on.png")  # still shows what the camera saw
 
         need_dark(dark.mean())
-        assert fps and fps >= 0.9 * FPS, f"streamed at {fps} fps, asked {FPS}: the frame interval must change the frame length (patch 3)"
+        assert fps and fps >= 0.9 * FPS, f"streamed at {fps} fps, asked {FPS}: the frame interval must change the frame length (patch 2)"
         dark_mean, lit_mean = dark.mean(), lit.mean()
         assert lit_mean > 2.5 * dark_mean, \
             f"lit mean {lit_mean:.1f} vs dark {dark_mean:.1f}: the emitter must light the scene on every frame (patch 6)"

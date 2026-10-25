@@ -11,7 +11,7 @@ IRCAM_DISRUPTIVE=1 pytest -q tests/test_k8_suspend.py tests/test_k9_reload.py   
 IRCAM_DISRUPTIVE=1 pytest -q "tests/test_k1_compliance.py::test_compliance[media]"   # oopses ov5693, only before a reboot
 ```
 
-Markers (registered in `pytest.ini`): `needs_patch("n")` = expected red until kernel patch n lands, numbered as in `kernel/patches/` (1 link frequency, 2 control events, 3 frame interval, 4 fwnode controls, 5 strobe refactor, 6 strobe control, 7 ipu-bridge DMI quirk that reports the 90 degree sensor rotation the ACPI `_PLD` gets wrong, `all` for the end-to-end scenario); `disruptive` = suspends the machine, reloads modules or oopses the kernel, skipped unless `IRCAM_DISRUPTIVE=1`.
+Markers (registered in `pytest.ini`): `needs_patch("n")` = expected red until kernel patch n lands, numbered as in `kernel/patches/` (1 link frequency, 2 frame interval, 3 control events, 4 fwnode controls, 5 strobe refactor, 6 strobe control, 7 ipu-bridge DMI quirk that reports the 90 degree sensor rotation the ACPI `_PLD` gets wrong, `all` for the end-to-end scenario); `disruptive` = suspends the machine, reloads modules or oopses the kernel, skipped unless `IRCAM_DISRUPTIVE=1`.
 
 ## Matrix
 
@@ -19,20 +19,20 @@ Markers (registered in `pytest.ini`): `needs_patch("n")` = expected red until ke
 |----|------|---------|------------|-------------|
 | helpers | `test_helpers.py` | `v4l2-ctl -l` parser on `fixtures/ov7251-6.18-ctrls.txt` | green | |
 | ip3y | `test_ip3y.py` | unpacker against a reference packer | green | |
-| K1 | `test_k1_compliance.py` | `v4l2-compliance -u <subdev>`, `-m /dev/media0`, `-d /dev/video2 -s 30`: Failed == 0; first run per kernel saves `baseline/k1-<target>-<release>.log` | red (see baseline logs) | subdev: patch 2; video: not an ov7251 issue (7 buffer failures in ipu3-cio2); media: disruptive, skipped by default: `v4l2-compliance -m` oopses the kernel in `ov5693_set_fmt` (divide error, front camera) and dies with SIGSEGV, so run it only before a reboot |
+| K1 | `test_k1_compliance.py` | `v4l2-compliance -u <subdev>`, `-m /dev/media0`, `-d /dev/video2 -s 30`: Failed == 0; first run per kernel saves `baseline/k1-<target>-<release>.log` | red (see baseline logs) | subdev: patch 3; video: not an ov7251 issue (7 buffer failures in ipu3-cio2); media: disruptive, skipped by default: `v4l2-compliance -m` oopses the kernel in `ov5693_set_fmt` (divide error, front camera) and dies with SIGSEGV, so run it only before a reboot |
 | K2 | `test_k2_controls.py` | `analogue_gain` present, `gain` absent (linux-surface's rename, not in the series: mainline names it `gain`) | green | |
 | K2 | | `analogue_gain` 200 reads back from 0x350a/0x350b while streaming | green | |
 | K2 | | `camera_orientation` = 0 (Front), `camera_sensor_rotation` present, both read-only: `--set-ctrl` fails with Permission denied (EACCES) and the value stays | red | patch 4 |
 | K2 | | `camera_sensor_rotation` = 90 (the sensor is mounted rotated) | red | patch 7 |
-| K2 | | an exposure change delivers a control event carrying the new value (`--wait-for-event=ctrl=exposure`) | red | patch 2 |
+| K2 | | an exposure change delivers a control event carrying the new value (`--wait-for-event=ctrl=exposure`) | red | patch 3 |
 | K2 | | `strobe_output_enable` is bool, default and value 0, not read-only, volatile or inactive | red | patch 6 |
 | K3 | `test_k3_timing.py` | `link_frequency` = 319200000, `pixel_rate` = 63840000 | red | patch 1 |
 | K3 | | PLL1 registers 0x30b0-0x30b5 read back while streaming = the 19.2 MHz xclk, 319.2 MHz table (01 85 04 0a 05; stock programs the 240 MHz one, 03 4b 01 0a 05) | red | patch 1 |
 | K3 | | 90 frames at 30 fps take 2.6-3.6 s | green | |
-| K3 | | `--set-subdev-fps` 60 / 90 reads back and the stream really runs at that rate | red (reads back, streams at 30) | patch 3 |
-| K3 | | after 60 / 90 fps, `vertical_blanking` range 1-65055, default and value 380 / 92, `exposure` max = VTS - 20 (840 / 552); back at 30 fps 1244 and 1704 | red | patch 3 |
-| K3 | | 0x380e/0x380f read back while streaming = the mode's VTS (1724, 860, 572) | 30: green, 60/90: red | patch 3 |
-| K3 | | an active set_fmt after a 60 fps interval (VBLANK 380) gives a consistent mode: the interval read back, VBLANK and streaming VTS all agree (30 fps, 1244, 1724) | red | patch 3 |
+| K3 | | `--set-subdev-fps` 60 / 90 reads back and the stream really runs at that rate | red (reads back, streams at 30) | patch 2 |
+| K3 | | after 60 / 90 fps, `vertical_blanking` range 1-65055, default and value 380 / 92, `exposure` max = VTS - 20 (840 / 552); back at 30 fps 1244 and 1704 | red | patch 2 |
+| K3 | | 0x380e/0x380f read back while streaming = the mode's VTS (1724, 860, 572) | 30: green, 60/90: red | patch 2 |
+| K3 | | an active set_fmt after a 60 fps interval (VBLANK 380) gives a consistent mode: the interval read back, VBLANK and streaming VTS all agree (30 fps, 1244, 1724) | red | patch 2 |
 | K4 | `test_k4_dark.py` | emitter off, exposure 1704, gain 128: 30-frame mean < 40 | green | |
 | K5 | `test_k5_emitter.py` | `strobe_output_enable=1` before stream: mean > 2.5 x K4 dark, first 3 frames lit, dark again after reset to 0 | red | patch 6 |
 | K7 | `test_k7_safety.py` | sensor `runtime_status` = suspended within 2 s of a stream ending | green | |
