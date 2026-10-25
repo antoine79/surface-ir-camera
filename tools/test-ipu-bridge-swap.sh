@@ -27,7 +27,7 @@
 set -euo pipefail
 set -x
 
-KVER=7.2.12-1.surface.fc43.x86_64
+KVER=${KVER:-7.2.12-1.surface.fc43.x86_64}   # KVER=7.2.12-gcov for the coverage kernel
 REPO=$(cd "$(dirname "$0")/.." && pwd)
 KO=$REPO/kernel/build/ipu-bridge.ko
 OV7251_KO=$REPO/kernel/build/ov7251.ko

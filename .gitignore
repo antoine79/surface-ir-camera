@@ -9,3 +9,5 @@ kernel/build/.*.cmd
 kernel/build/*.cmd
 kernel/build/Module.symvers
 kernel/build/modules.order
+*.gcno
+*.gcda
