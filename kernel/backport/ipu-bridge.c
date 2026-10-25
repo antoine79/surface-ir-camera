@@ -161,11 +161,11 @@ static const struct dmi_system_id upside_down_sensor_dmi_ids[] = {
  */
 static const struct dmi_system_id rotated_90_sensor_dmi_ids[] = {
 	{
-		/* Microsoft Surface Book 2, infrared sensor */
+		/* Microsoft Surface Book 2 13 inch, infrared sensor */
 		.matches = {
 			DMI_EXACT_MATCH(DMI_SYS_VENDOR,
 					"Microsoft Corporation"),
-			DMI_EXACT_MATCH(DMI_PRODUCT_NAME, "Surface Book 2"),
+			DMI_EXACT_MATCH(DMI_PRODUCT_SKU, "Surface_Book_1832"),
 		},
 		.driver_data = "INT347E",
 	},

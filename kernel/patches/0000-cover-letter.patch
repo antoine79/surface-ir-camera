@@ -1,4 +1,4 @@
-From 9d8f0eed22c04265caa7d59661894204d3ca15ea Mon Sep 17 00:00:00 2001
+From 92b275fb6a283d112743d9fe0ebee772e35a7bc8 Mon Sep 17 00:00:00 2001
 From: Antoine Pichot <antoine.pichot@gmail.com>
 Date: Sat, 24 Oct 2026 20:57:10 +0900
 Subject: [PATCH 0/7] media: i2c: ov7251: fixes and infrared strobe for Surface Book 2
