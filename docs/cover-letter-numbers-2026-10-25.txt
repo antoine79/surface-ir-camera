@@ -1,0 +1,22 @@
+date: 2026-10-25
+kernel: 7.2.12-gcov
+module: OE
+link_frequency index: 1
+link_frequency Hz: 319200000
+pixel_rate Hz: 63840000
+fps measured at 30: 30.01
+fps measured at 60: 60.16
+fps measured at 90: 90.45
+v4l2-compliance -u sensor: Total for device /dev/v4l-subdev7: 46, Succeeded: 46, Failed: 0, Warnings: 1
+ov7251 orientation, rotation: ('Front', '90')
+ov5693 2-0036 orientation, rotation: ('Front', '180')
+ov8865 3-0010 orientation, rotation: ('Back', '180')
+span at 30 fps, exposure 504: 504
+span at 30 fps, exposure 1704: 776
+span at 90 fps, exposure 552: 258
+mean pixel value, strobe 0, exposure 504, gain 128: 18
+mean pixel value, strobe 0, exposure 1704, gain 128: 19
+mean pixel value, strobe 1, exposure 504, gain 128: 495
+mean pixel value, strobe 1, exposure 1704, gain 128: 585
+sensor suspended after stream end within s: 1.3
+reload cycles: see docs/phase3-7.2-test-2026-10-25-k9-reload.log (K9, 10 cycles)

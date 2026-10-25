@@ -1,8 +1,8 @@
-From 92b275fb6a283d112743d9fe0ebee772e35a7bc8 Mon Sep 17 00:00:00 2001
+From 4e81ce210a1b1a928d01542b17e622cb8ca7c806 Mon Sep 17 00:00:00 2001
 From: Antoine Pichot <antoine.pichot@gmail.com>
 Date: Sat, 24 Oct 2026 22:41:03 +0900
-Subject: [PATCH] media: ipu-bridge: Add a 90 degree rotation quirk for Surface
- Book 2
+Subject: [PATCH 7/7] media: ipu-bridge: Add a 90 degree rotation quirk for
+ Surface Book 2
 
 The infrared camera of the Microsoft Surface Book 2, an OmniVision
 OV7251 with ACPI ID INT347E, is mounted rotated by 90 degrees. An

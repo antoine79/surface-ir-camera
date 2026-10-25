@@ -48,6 +48,7 @@ for fps in (30, 60, 90):
 set_fps(30)
 p = subprocess.run(["v4l2-compliance", "-u", sd()], capture_output=True, text=True, timeout=300)
 set_fps(30)
+set_ctrl("test_pattern", 0)  # v4l2-compliance leaves the test pattern on, which would fix every mean at 513
 say("v4l2-compliance -u sensor", re.findall(r"Total for .*", p.stdout)[-1])
 say("ov7251 orientation, rotation", placement(sd()))
 for f in sorted(Path("/sys/class/video4linux").glob("v4l-subdev*/name")):

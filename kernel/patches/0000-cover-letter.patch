@@ -1,4 +1,4 @@
-From 92b275fb6a283d112743d9fe0ebee772e35a7bc8 Mon Sep 17 00:00:00 2001
+From 4e81ce210a1b1a928d01542b17e622cb8ca7c806 Mon Sep 17 00:00:00 2001
 From: Antoine Pichot <antoine.pichot@gmail.com>
 Date: Sat, 24 Oct 2026 20:57:10 +0900
 Subject: [PATCH 0/7] media: i2c: ov7251: fixes and infrared strobe for Surface Book 2
@@ -63,14 +63,14 @@ tree against linux-surface 7.2.12:
 
 - link frequency 319200000, pixel rate 63840000, 30.01 fps unchanged
 - v4l2-compliance -u on the sensor: 0 failures (was 1)
-- --set-subdev-fps 60 / 90: 60.15 / 90.45 fps measured (was 30.01)
+- --set-subdev-fps 60 / 90: 60.16 / 90.45 fps measured (was 30.01)
 - orientation front, rotation 90 (0 before patch 7); the colour sensors
   still report 180
 - dark frames and the sensor test pattern unchanged after patch 5
 - strobe span read back while streaming: 504 lines at exposure 504,
   776 at exposure 1704 (30 fps), 258 at exposure 552 (90 fps)
 - mean pixel value of an indoor infrared frame at analogue gain 128:
-  20 unlit, 624 with the strobe enabled at exposure 504, 706 at 1704
+  19 unlit, 495 with the strobe enabled at exposure 504, 585 at 1704
 - strobe off and sensor suspended within 2 s of the stream stopping
 - 10 unbind/unload/load cycles: no warning in the kernel log
 

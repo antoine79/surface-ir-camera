@@ -1,4 +1,4 @@
-From 816309a36be988a8320ba4a5076f1ce27cbbe722 Mon Sep 17 00:00:00 2001
+From 16641b12df7ffc8d41c35046ef8d93cfebcef4d6 Mon Sep 17 00:00:00 2001
 From: Antoine Pichot <antoine.pichot@gmail.com>
 Date: Sat, 24 Oct 2026 20:47:34 +0900
 Subject: [PATCH 6/7] media: i2c: ov7251: Add strobe output enable control
@@ -33,8 +33,8 @@ register tables. Setting it while the sensor is idle does not power it
 up, and the emitter goes off with the sensor when streaming stops.
 
 On a Surface Book 2 at analogue gain 128 the mean pixel value of the
-infrared image of a room goes from 20 unlit to 624 with the strobe
-enabled at exposure 504 (span 504) and 706 at exposure 1704 (span 776).
+infrared image of a room goes from 19 unlit to 495 with the strobe
+enabled at exposure 504 (span 504) and 585 at exposure 1704 (span 776).
 The span read back while streaming is 258 at 90 fps, 45% of the
 572-line frame.
 
