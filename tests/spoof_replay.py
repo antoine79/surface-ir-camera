@@ -36,16 +36,17 @@ def trial(name, frames):
     print(f"{name:34s} {CODES.get(rc, f'exit {rc}'):40s} {time.time() - t0:4.1f} s", flush=True)
 
 
-ir = np.fromfile(sys.argv[1], np.uint8).reshape(-1, H, W)
-still = ir[ir.mean(axis=(1, 2)).argmax()]
-rng = np.random.default_rng(0)
-jitter = [np.roll(still, (int(dy), int(dx)), (0, 1)) for dy, dx in rng.integers(-6, 7, (30, 2))]
-yuyv = np.fromfile(sys.argv[2], np.uint8).reshape(-1, 720, 1280, 2)[-1, ..., 0]
-colour = np.array(__import__("PIL.Image").Image.fromarray(yuyv).resize((W, H)))
+if __name__ == "__main__":
+  ir = np.fromfile(sys.argv[1], np.uint8).reshape(-1, H, W)
+  still = ir[ir.mean(axis=(1, 2)).argmax()]
+  rng = np.random.default_rng(0)
+  jitter = [np.roll(still, (int(dy), int(dx)), (0, 1)) for dy, dx in rng.integers(-6, 7, (30, 2))]
+  yuyv = np.fromfile(sys.argv[2], np.uint8).reshape(-1, 720, 1280, 2)[-1, ..., 0]
+  colour = np.array(__import__("PIL.Image").Image.fromarray(yuyv).resize((W, H)))
 
-trial("control: dark frames", [np.zeros((H, W), np.uint8)])
-trial("control: grey, no face", [np.full((H, W), 100, np.uint8)])
-trial("video replay (20 lit frames)", list(ir))
-trial("perfect photo (1 frame repeated)", [still])
-trial("hand-held photo (jitter 6 px)", jitter)
-trial("colour-camera photo, as grey", [colour])
+  trial("control: dark frames", [np.zeros((H, W), np.uint8)])
+  trial("control: grey, no face", [np.full((H, W), 100, np.uint8)])
+  trial("video replay (20 lit frames)", list(ir))
+  trial("perfect photo (1 frame repeated)", [still])
+  trial("hand-held photo (jitter 6 px)", jitter)
+  trial("colour-camera photo, as grey", [colour])
