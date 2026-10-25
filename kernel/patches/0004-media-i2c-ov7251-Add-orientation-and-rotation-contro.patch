@@ -1,7 +1,7 @@
-From 5cd55ebe0f94ca2120af984e99f44c6818a6cc27 Mon Sep 17 00:00:00 2001
+From d47ab678315c4b8ac26e4910c2e2b0a9cc27a8d7 Mon Sep 17 00:00:00 2001
 From: Antoine Pichot <antoine.pichot@gmail.com>
 Date: Sat, 24 Oct 2026 20:45:11 +0900
-Subject: [PATCH 5/8] media: i2c: ov7251: Add orientation and rotation controls
+Subject: [PATCH 4/7] media: i2c: ov7251: Add orientation and rotation controls
 
 Parse the firmware device properties and register the
 V4L2_CID_CAMERA_ORIENTATION and V4L2_CID_CAMERA_SENSOR_ROTATION
@@ -21,7 +21,7 @@ Signed-off-by: Antoine Pichot <antoine.pichot@gmail.com>
  1 file changed, 10 insertions(+), 1 deletion(-)
 
 diff --git a/drivers/media/i2c/ov7251.c b/drivers/media/i2c/ov7251.c
-index 6ccd5ac53f..acd4d8dfdc 100644
+index 917285a62d..b6579a56a5 100644
 --- a/drivers/media/i2c/ov7251.c
 +++ b/drivers/media/i2c/ov7251.c
 @@ -1591,11 +1591,17 @@ static int ov7251_detect_chip(struct ov7251 *ov7251)

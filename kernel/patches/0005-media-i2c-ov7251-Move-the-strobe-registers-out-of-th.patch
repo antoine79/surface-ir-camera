@@ -1,7 +1,7 @@
-From ab0b4606509d145e974d44dbb7d5b7d0fdfa3e70 Mon Sep 17 00:00:00 2001
+From 68562a728016dc8fbabab17cae64f6e4e0e9a3a1 Mon Sep 17 00:00:00 2001
 From: Antoine Pichot <antoine.pichot@gmail.com>
 Date: Sat, 24 Oct 2026 20:46:18 +0900
-Subject: [PATCH 6/8] media: i2c: ov7251: Move the strobe registers out of the
+Subject: [PATCH 5/7] media: i2c: ov7251: Move the strobe registers out of the
  mode tables
 
 The three mode tables write the same values to the STROBE pad output
@@ -20,7 +20,7 @@ Signed-off-by: Antoine Pichot <antoine.pichot@gmail.com>
  1 file changed, 33 insertions(+), 60 deletions(-)
 
 diff --git a/drivers/media/i2c/ov7251.c b/drivers/media/i2c/ov7251.c
-index acd4d8dfdc..83fce6ebbc 100644
+index b6579a56a5..ad66422d9e 100644
 --- a/drivers/media/i2c/ov7251.c
 +++ b/drivers/media/i2c/ov7251.c
 @@ -53,6 +53,9 @@

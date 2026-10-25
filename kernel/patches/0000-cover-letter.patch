@@ -1,7 +1,7 @@
-From 837580706b358387ab5fa44255e4f29f55d94a4d Mon Sep 17 00:00:00 2001
+From 41a3139907ff46a565d8deb1b49e43fbc02fbfea Mon Sep 17 00:00:00 2001
 From: Antoine Pichot <antoine.pichot@gmail.com>
 Date: Sat, 24 Oct 2026 20:57:10 +0900
-Subject: [PATCH 0/8] media: i2c: ov7251: fixes and infrared strobe for Surface Book 2
+Subject: [PATCH 0/7] media: i2c: ov7251: fixes and infrared strobe for Surface Book 2
 
 The Microsoft Surface Book 2 has an OV7251 infrared camera (used by
 Windows Hello) next to its front camera, both on the Intel IPU3 (image
@@ -10,23 +10,21 @@ sensor's STROBE output pin: the ACPI tables describe no LED, GPIO line
 or regulator for it. With the mainline driver the camera streams, but
 always unlit.
 
-Patches 1 to 5 fix issues found while testing the driver on this
-machine:
+Patches 1 to 3 fix issues found while testing the driver on this
+machine, patch 4 adds the placement controls:
 
 - 1: the link frequency index is taken from the firmware list instead
   of the driver's table, so the sensor runs at 240 MHz while
   ipu-bridge asks for 319.2 MHz (Fixes, Cc stable).
-- 2: Daniel Scally's patch switching the gain control to
-  V4L2_CID_ANALOGUE_GAIN, carried by linux-surface.
-- 3: control events, the one v4l2-compliance failure on the sensor.
-- 4: the 60 and 90 fps frame intervals are accepted but the sensor
+- 2: control events, the one v4l2-compliance failure on the sensor.
+- 3: the 60 and 90 fps frame intervals are accepted but the sensor
   keeps streaming at 30 fps, because the vertical blanking control is
   not updated and rewrites the 30 fps frame length at stream start.
-- 5: orientation and rotation controls from firmware.
+- 4: orientation and rotation controls from firmware.
 
-Patches 6 and 7 add the emitter. 6 moves the strobe registers, which
+Patches 5 and 6 add the emitter. 5 moves the strobe registers, which
 the three mode tables write identically, out of the tables without
-functional change. 7 adds a V4L2_CID_FLASH_STROBE_OE control that
+functional change. 6 adds a V4L2_CID_FLASH_STROBE_OE control that
 enables the STROBE pin, pulses it on every frame and makes the pulse
 follow the exposure, from 52 lines up to 45% of the frame. The Windows
 driver on this hardware clamps it to 52 to 776 lines, 45% of the 30 fps
@@ -36,7 +34,7 @@ exposure) to 1.2x (776-line pulse) as bright as during a Windows Hello
 sign-in on the same unit. Windows reportedly strobes alternate frames;
 a 0xaa pattern is a one-line change if preferred.
 
-Patch 8 makes ipu-bridge report a rotation of 90 degrees for the
+Patch 7 makes ipu-bridge report a rotation of 90 degrees for the
 infrared sensor, whose frames show an upright scene rotated 90 degrees
 clockwise while the firmware says 0. It adds a DMI (Desktop Management
 Interface) quirk table next to the existing one for sensors mounted
@@ -48,9 +46,9 @@ tree against linux-surface 7.2.12:
 - link frequency 319200000, pixel rate 63840000, 30.01 fps unchanged
 - v4l2-compliance -u on the sensor: 0 failures (was 1)
 - --set-subdev-fps 60 / 90: 60.15 / 90.45 fps measured (was 30.01)
-- orientation front, rotation 90 (0 before patch 8); the colour sensors
+- orientation front, rotation 90 (0 before patch 7); the colour sensors
   still report 180
-- dark frames and the sensor test pattern unchanged after patch 6
+- dark frames and the sensor test pattern unchanged after patch 5
 - strobe span read back while streaming: 504 lines at exposure 504,
   776 at exposure 1704 (30 fps), 258 at exposure 552 (90 fps)
 - mean pixel value of an indoor infrared frame at analogue gain 128:
@@ -71,12 +69,9 @@ Antoine Pichot (7):
   media: i2c: ov7251: Add strobe output enable control
   media: ipu-bridge: Add a 90 degree rotation quirk for Surface Book 2
 
-Daniel Scally (1):
-  media: i2c: Clarify that gain is Analogue gain in OV7251
-
- drivers/media/i2c/ov7251.c           | 205 ++++++++++++++++++---------
- drivers/media/pci/intel/ipu-bridge.c |  22 +++
- 2 files changed, 161 insertions(+), 66 deletions(-)
+ drivers/media/i2c/ov7251.c           | 200 ++++++++++++++++++++++++-----------
+ drivers/media/pci/intel/ipu-bridge.c |  22 ++++
+ 2 files changed, 158 insertions(+), 64 deletions(-)
 
 -- 
 2.53.0

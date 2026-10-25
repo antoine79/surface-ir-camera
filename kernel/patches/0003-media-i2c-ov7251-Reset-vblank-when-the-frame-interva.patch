@@ -1,7 +1,7 @@
-From a8888ff1087a1340f15c82580b5d85657aa4053a Mon Sep 17 00:00:00 2001
+From f309f94e16c40dd30ef1f9f22fff9b26f90cd45a Mon Sep 17 00:00:00 2001
 From: Antoine Pichot <antoine.pichot@gmail.com>
 Date: Sat, 24 Oct 2026 20:44:45 +0900
-Subject: [PATCH 4/8] media: i2c: ov7251: Reset vblank when the frame interval
+Subject: [PATCH 3/7] media: i2c: ov7251: Reset vblank when the frame interval
  changes
 
 Setting a 60 or 90 fps frame interval is accepted and read back, but
@@ -38,7 +38,7 @@ Signed-off-by: Antoine Pichot <antoine.pichot@gmail.com>
  1 file changed, 18 insertions(+)
 
 diff --git a/drivers/media/i2c/ov7251.c b/drivers/media/i2c/ov7251.c
-index 344a50d312..6ccd5ac53f 100644
+index 66e04a6b4d..917285a62d 100644
 --- a/drivers/media/i2c/ov7251.c
 +++ b/drivers/media/i2c/ov7251.c
 @@ -1262,6 +1262,10 @@ static int ov7251_set_format(struct v4l2_subdev *sd,

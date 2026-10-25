@@ -17,7 +17,7 @@ def test_suspend_mid_stream(graph):
        and the sensor controls must be unchanged.
     """
     names = ["exposure", "analogue_gain", "vertical_blanking"]
-    if ctrl_info(STROBE):  # patch 7: the emitter is on across the suspend and the control must survive it
+    if ctrl_info(STROBE):  # patch 6: the emitter is on across the suspend and the control must survive it
         set_ctrl(STROBE, 1)
         names.append(STROBE)
     before = {n: ctrl_info(n)["value"] for n in names}

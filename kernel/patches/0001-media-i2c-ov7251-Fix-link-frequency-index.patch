@@ -1,7 +1,7 @@
 From 3233c5cea6014c28784e4dae4a524ed858920a96 Mon Sep 17 00:00:00 2001
 From: Antoine Pichot <antoine.pichot@gmail.com>
 Date: Sat, 24 Oct 2026 20:42:31 +0900
-Subject: [PATCH 1/8] media: i2c: ov7251: Fix link frequency index
+Subject: [PATCH 1/7] media: i2c: ov7251: Fix link frequency index
 
 ov7251_check_hwcfg() stores i, the index into the firmware's
 link_frequencies array, in link_freq_idx, which the driver then uses to

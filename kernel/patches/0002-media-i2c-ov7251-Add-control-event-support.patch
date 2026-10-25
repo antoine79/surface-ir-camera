@@ -1,7 +1,7 @@
-From 78b267c3049e564a69bc2840c7b05adbf7418b14 Mon Sep 17 00:00:00 2001
+From f67c0552a5e8b4a00a444ef2feb506475647262a Mon Sep 17 00:00:00 2001
 From: Antoine Pichot <antoine.pichot@gmail.com>
 Date: Sat, 24 Oct 2026 20:43:16 +0900
-Subject: [PATCH 3/8] media: i2c: ov7251: Add control event support
+Subject: [PATCH 2/7] media: i2c: ov7251: Add control event support
 
 The driver exposes writable controls on its subdev node but does not
 support control events, so VIDIOC_SUBSCRIBE_EVENT fails and
@@ -20,7 +20,7 @@ Signed-off-by: Antoine Pichot <antoine.pichot@gmail.com>
  1 file changed, 9 insertions(+), 1 deletion(-)
 
 diff --git a/drivers/media/i2c/ov7251.c b/drivers/media/i2c/ov7251.c
-index f7b1daa9d4..344a50d312 100644
+index 1413f1856e..66e04a6b4d 100644
 --- a/drivers/media/i2c/ov7251.c
 +++ b/drivers/media/i2c/ov7251.c
 @@ -19,6 +19,7 @@

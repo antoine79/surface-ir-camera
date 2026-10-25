@@ -12,9 +12,9 @@ def test_suspended_after_capture(graph):
         f"sensor runtime_status '{runtime_status()}' 2 s after the stream stopped, expected suspended (powered off)"
 
 
-@pytest.mark.needs_patch("7")
+@pytest.mark.needs_patch("6")
 def test_strobe_set_while_idle_keeps_sensor_off(graph):
-    assert ctrl_info(STROBE) is not None, f"{STROBE} missing: patch 7 adds V4L2_CID_FLASH_STROBE_OE"
+    assert ctrl_info(STROBE) is not None, f"{STROBE} missing: patch 6 adds V4L2_CID_FLASH_STROBE_OE"
     try:
         set_ctrl(STROBE, 1)
         assert ctrl(STROBE) == 1, f"{STROBE} did not read back 1 while idle"
