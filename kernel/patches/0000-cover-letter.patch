@@ -27,19 +27,35 @@ Patches 5 and 6 add the emitter. 5 moves the strobe registers, which
 the three mode tables write identically, out of the tables without
 functional change. 6 adds a V4L2_CID_FLASH_STROBE_OE control that
 enables the STROBE pin, pulses it on every frame and makes the pulse
-follow the exposure, from 52 lines up to 45% of the frame. The Windows
-driver on this hardware clamps it to 52 to 776 lines, 45% of the 30 fps
-frame.
-Filmed with a phone at locked exposure, the emitter is 1.1x (default
-exposure) to 1.2x (776-line pulse) as bright as during a Windows Hello
-sign-in on the same unit. Windows reportedly strobes alternate frames;
-a 0xaa pattern is a one-line change if preferred.
+follow the exposure, from 52 lines up to 45% of the frame. Those are
+the limits the Windows driver applies, read from its binary [1]; a
+register dump taken on a Surface Book 2 during a Windows Hello sign-in
+shows a 331-line pulse [1]. Windows uses more than one frame pattern:
+that dump shows alternate frames (0xaa), while the driver binary for a
+Surface Pro 7+ writes every frame (0xff) in its illuminated modes [2].
+This series pulses every frame: each pulse is the same as in the
+alternate mode, the average emitter power is up to twice. 0xaa is a
+one-line change if preferred. Filmed with a phone at locked exposure,
+the emitter is 1.1x (default exposure) to 1.2x (776-line pulse) as
+bright as during a Windows Hello sign-in on the same unit.
+
+A linux-surface pull request for the Surface Pro 7+ [2] instead turns
+the emitter on unconditionally while the sensor streams, with a module
+parameter to disable it. This series leaves that choice to user space:
+the control is off by default, and the emitter is off whenever the
+sensor is not streaming.
 
 Patch 7 makes ipu-bridge report a rotation of 90 degrees for the
 infrared sensor, whose frames show an upright scene rotated 90 degrees
 clockwise while the firmware says 0. It adds a DMI (Desktop Management
 Interface) quirk table next to the existing one for sensors mounted
-upside down.
+upside down. A user-space project for the Surface Book 3 rotates that
+model's infrared frames by 90 degrees as well [3]; the quirk covers
+only the Book 2, the one checked.
+
+[1] https://github.com/linux-surface/linux-surface/issues/739
+[2] https://github.com/linux-surface/linux-surface/pull/2252
+[3] https://github.com/linux-surface/linux-surface/pull/2289
 
 Tested on a Surface Book 2 (i7-8650U) with the series built out of
 tree against linux-surface 7.2.12:
