@@ -6,7 +6,7 @@ pattern and the 32-bit frame span from STROBE_OE: span = clamp(exposure, 52, min
 """
 import pytest
 
-from conftest import (EXPO_REG, H, INTEGRATION_MARGIN, MODE_VTS, SC_REG5, STROBE, STROBE_PATTERN, STROBE_SPAN, VTS_REG, ctrl,
+from conftest import (restore_30fps_vblank, EXPO_REG, H, INTEGRATION_MARGIN, MODE_VTS, SC_REG5, STROBE, STROBE_PATTERN, STROBE_SPAN, VTS_REG, ctrl,
                       ctrl_info, read_reg, runtime_status, set_ctrl, set_fps, streaming, wait_for)
 
 # 0x3005 and 0x3b80..0x3b96 as the stock mode tables (all three identical) write them, from the patch 5 diff
