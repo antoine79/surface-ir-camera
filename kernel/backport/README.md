@@ -6,13 +6,13 @@
 
 1. Base: `https://raw.githubusercontent.com/torvalds/linux/v7.2/drivers/media/i2c/ov7251.c` (sha256 `cf0f867e17e66ac87aa124b955f20d2915fee51baacd4ba67309de96e6806e75`).
 2. linux-surface patch: `https://raw.githubusercontent.com/linux-surface/linux-surface/master/patches/7.2/0013-cameras.patch` (sha256 `9875f5e095382092b3ae476505ff7f214172456d725fc9d77c168093c90d6eca` at download time; the file on master may change). Only the hunks touching `drivers/media/i2c/ov7251.c` were applied: commit 60082ed1beb9 "media: i2c: Clarify that gain is Analogue gain in OV7251" (Daniel Scally), which switches the gain control from `V4L2_CID_GAIN` to `V4L2_CID_ANALOGUE_GAIN`. This is the same change as patch 0002 of the series.
-3. Phase 3 series: `../patches/0001`, `0003` to `0007` (0002 is step 2), applied with `git apply`. They were written against the media `next` branch (7.3.0-rc1) and apply to v7.2 without fuzz.
+3. Phase 3 series: `../patches/0001`, `0003` to `0007` (0002 is step 2), applied with `git apply`. Since 2026-10-26 the file follows the v2 series (media-committers branch `ov7251-ir-v2`): patch 3 is the active-state conversion; the 7.2 delta is still only the `ci` argument of set_fmt/get_selection and the gain control ID. They were written against the media `next` branch (7.3.0-rc1) and apply to v7.2 without fuzz.
 
 | Patch | Change |
 |-------|--------|
 | 0001 | link frequency index: use the driver's table index (319.2 MHz on the Surface Book 2 instead of 240 MHz) |
 | 0002 | gain is `V4L2_CID_ANALOGUE_GAIN` (Daniel Scally, already in step 2) |
-| 0003 | control events on the subdev node (`v4l2-compliance -u`) |
+| 0003 | v2: use the sub-device active state (format and crop live in the state, driver mutex dropped; the core then handles control events, so `v4l2-compliance -u` passes). v1 instead declared the control event ops |
 | 0004 | reset VBLANK on frame-interval and format changes (60/90 fps really stream at 60/90) |
 | 0005 | `camera_orientation` and `camera_sensor_rotation` from firmware |
 | 0006 | strobe registers moved out of the mode tables (no functional change) |
