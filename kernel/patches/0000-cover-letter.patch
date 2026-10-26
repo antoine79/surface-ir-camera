@@ -4,22 +4,20 @@ Date: Sat, 24 Oct 2026 20:57:10 +0900
 Subject: [PATCH 0/7] media: i2c: ov7251: fixes and infrared strobe for Surface Book 2
 
 The Microsoft Surface Book 2 has an OV7251 infrared camera (used by
-Windows Hello) next to its front camera, both on the Intel IPU3 (image
-processing unit) camera interface. Its 850 nm emitter is wired to the
-sensor's STROBE output pin: the ACPI tables describe no LED, GPIO line
-or regulator for it. With the mainline driver the camera streams, but
-always unlit.
+Windows Hello) next to its front camera, both on the Intel IPU3 camera
+interface. Its 850 nm emitter is wired to the sensor's STROBE output
+pin: the ACPI tables describe no LED, GPIO line or regulator for it.
+With the mainline driver the camera streams, but always unlit.
 
-Patches 1 to 3 fix issues found while testing the driver on this
-machine, patch 4 adds the placement controls:
+Patches 1 to 3 fix bugs found while testing on this machine, patch 4
+adds the placement controls:
 
 - 1: the link frequency index is taken from the firmware list instead
   of the driver's table, so the sensor runs at 240 MHz while
   ipu-bridge asks for 319.2 MHz (Fixes, Cc stable).
 - 2: the 60 and 90 fps frame intervals are accepted but the sensor
-  keeps streaming at 30 fps, because the vertical blanking control is
-  not updated and rewrites the 30 fps frame length at stream start
-  (Fixes, Cc stable).
+  keeps streaming at 30 fps, the vertical blanking control not being
+  updated (Fixes, Cc stable).
 - 3: control events, the one v4l2-compliance failure on the sensor.
 - 4: orientation and rotation controls from firmware.
 
@@ -28,35 +26,33 @@ the three mode tables write identically, out of the tables without
 functional change. 6 adds a V4L2_CID_FLASH_STROBE_OE control that
 enables the STROBE pin, pulses it on alternate frames and makes the
 pulse follow the exposure, from 52 lines up to 45% of the frame and
-never more than 776 lines. This is what the Windows driver installed
-on this machine does (Intel ov7251.sys 30.18305.6.5127, read with a
+never more than 776 lines. This matches the Windows driver installed
+on this machine (Intel ov7251.sys 30.18305.6.5127, read with a
 decompiler): all four of its streaming modes enable the STROBE pin and
-set the pulse to the exposure clamped to 52 to 776 lines; its two
-648x488 modes at 30 and 60 fps, the ones Windows Hello uses, light
-alternate frames (0xaa), its two 640x480 modes light every frame
-(0xff). A register dump taken on a Surface Book 2 during a Windows
-Hello sign-in [1] matches the 30 fps alternate mode. User space tells
-lit frames from dark ones by their brightness, V4L2 having no
-per-frame illumination flag; the dark frames in between give it an
-ambient-light reference, which a face liveness check uses. Filmed with
-a phone at locked exposure, with every frame lit at the time, each
-pulse is 1.1x (default exposure) to 1.2x (776-line pulse) as bright as
-during a Windows Hello sign-in on the same unit; with alternate frames
-the average emission is within the same ratio of Windows'.
+clamp the pulse to the exposure within 52 to 776 lines; the two modes
+Windows Hello uses light alternate frames (0xaa), the other two every
+frame (0xff). A register dump taken on a Surface Book 2 during a
+Windows Hello sign-in [1] matches the 30 fps alternate mode. V4L2 has
+no per-frame illumination flag, so user space tells lit frames from
+dark ones by brightness; the dark frames give it the ambient-light
+reference a face liveness check uses. With every frame lit and filmed
+by a phone at locked exposure, each pulse is 1.1x (default exposure)
+to 1.2x (776-line pulse) as bright as during a Windows Hello sign-in
+on the same unit; with alternate frames the average emission is within
+the same ratio of Windows'.
 
 A linux-surface pull request for the Surface Pro 7+ [2] instead turns
 the emitter on unconditionally while the sensor streams, with a module
-parameter to disable it. This series leaves that choice to user space:
+parameter to disable it. This series leaves the choice to user space:
 the control is off by default, and the emitter is off whenever the
 sensor is not streaming.
 
 Patch 7 makes ipu-bridge report a rotation of 90 degrees for the
-infrared sensor, whose frames show an upright scene rotated 90 degrees
-clockwise while the firmware says 0. It adds a DMI (Desktop Management
-Interface) quirk table next to the existing one for sensors mounted
-upside down. A user-space project for the Surface Book 3 rotates that
-model's infrared frames by 90 degrees as well [3]; the quirk covers
-only the Book 2, the one checked.
+infrared sensor, whose frames show an upright scene turned 90 degrees
+clockwise while the firmware says 0. It adds a DMI quirk table next to
+the existing one for upside-down sensors. A user-space project for the
+Surface Book 3 rotates that model's infrared frames by 90 degrees as
+well [3]; the quirk covers only the Book 2, the one checked.
 
 [1] https://github.com/linux-surface/linux-surface/issues/739
 [2] https://github.com/linux-surface/linux-surface/pull/2252
