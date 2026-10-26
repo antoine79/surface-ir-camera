@@ -1,7 +1,7 @@
 From ebf7b6b0001a54bf4d44a3f0b01e76ae61bab676 Mon Sep 17 00:00:00 2001
 From: Antoine Pichot <antoine.pichot@gmail.com>
 Date: Sat, 24 Oct 2026 22:41:03 +0900
-Subject: [PATCH] media: ipu-bridge: Add a 90 degree rotation quirk for Surface
+Subject: [PATCH 7/7] media: ipu-bridge: Add a 90 degree rotation quirk for Surface
  Book 2
 
 The infrared camera of the Microsoft Surface Book 2, an OmniVision
