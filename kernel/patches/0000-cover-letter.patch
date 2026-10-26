@@ -63,7 +63,8 @@ only the Book 2, the one checked.
 [3] https://github.com/linux-surface/linux-surface/pull/2289
 
 Tested on a Surface Book 2 (i7-8650U) with the series built out of
-tree against linux-surface 7.2.12:
+tree against linux-surface 7.2.12 (test suite, logs and a v4l2loopback
+bridge for applications: https://github.com/antoine79/surface-ir-camera):
 
 - link frequency 319200000, pixel rate 63840000, 30.01 fps unchanged
 - v4l2-compliance -u on the sensor: 0 failures (was 1)
