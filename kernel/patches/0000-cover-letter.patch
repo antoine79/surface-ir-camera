@@ -38,10 +38,11 @@ alternate frames (0xaa), its two 640x480 modes light every frame
 Hello sign-in [1] matches the 30 fps alternate mode. User space tells
 lit frames from dark ones by their brightness, V4L2 having no
 per-frame illumination flag; the dark frames in between give it an
-ambient-light reference, which a face liveness check uses. Every frame
-is a one-line change if preferred. Filmed with a phone at locked
-exposure, the emitter is 1.1x (default exposure) to 1.2x (776-line
-pulse) as bright as during a Windows Hello sign-in on the same unit.
+ambient-light reference, which a face liveness check uses. Filmed with
+a phone at locked exposure, with every frame lit at the time, each
+pulse is 1.1x (default exposure) to 1.2x (776-line pulse) as bright as
+during a Windows Hello sign-in on the same unit; with alternate frames
+the average emission is within the same ratio of Windows'.
 
 A linux-surface pull request for the Surface Pro 7+ [2] instead turns
 the emitter on unconditionally while the sensor streams, with a module
