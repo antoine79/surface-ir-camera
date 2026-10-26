@@ -37,10 +37,11 @@ alternate frames (0xaa), its two 640x480 modes light every frame
 (0xff). A register dump taken on a Surface Book 2 during a Windows
 Hello sign-in [1] matches the 30 fps alternate mode. User space tells
 lit frames from dark ones by their brightness, V4L2 having no
-per-frame illumination flag; every frame is a one-line change if
-preferred. Filmed with a phone at locked exposure,
-the emitter is 1.1x (default exposure) to 1.2x (776-line pulse) as
-bright as during a Windows Hello sign-in on the same unit.
+per-frame illumination flag; the dark frames in between give it an
+ambient-light reference, which a face liveness check uses. Every frame
+is a one-line change if preferred. Filmed with a phone at locked
+exposure, the emitter is 1.1x (default exposure) to 1.2x (776-line
+pulse) as bright as during a Windows Hello sign-in on the same unit.
 
 A linux-surface pull request for the Surface Pro 7+ [2] instead turns
 the emitter on unconditionally while the sensor streams, with a module
@@ -76,6 +77,8 @@ tree against linux-surface 7.2.12:
   exposure 504 and 587 at 1704, the dark frames in between 18 to 20
 - strobe off and sensor suspended within 2 s of the stream stopping
 - 10 unbind/unload/load cycles: no warning in the kernel log
+- Howdy face login enrols and recognises through a v4l2loopback bridge
+  that passes the lit frames
 
 The remaining v4l2-compliance failures are in the ipu3-cio2 capture
 driver (buffer creation and mapping checks) and unchanged by this
