@@ -82,6 +82,12 @@ The remaining v4l2-compliance failures are in the ipu3-cio2 capture
 driver (buffer creation and mapping checks) and unchanged by this
 series.
 
+I developed this series with an AI coding assistant (Claude): the
+design choices (alternate frames, the pulse limits, the exact SKU
+match), the reading of the Windows driver and the measurements above
+are mine, and I reviewed and tested every patch on the hardware
+before signing it off.
+
 Antoine Pichot (7):
   media: i2c: ov7251: Fix link frequency index
   media: i2c: ov7251: Reset vblank when the frame interval changes
