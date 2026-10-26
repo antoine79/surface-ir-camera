@@ -1,8 +1,8 @@
-From 543f699f85d974b694f225e05e41bdfecd7bb6dc Mon Sep 17 00:00:00 2001
+From ebf7b6b0001a54bf4d44a3f0b01e76ae61bab676 Mon Sep 17 00:00:00 2001
 From: Antoine Pichot <antoine.pichot@gmail.com>
 Date: Sat, 24 Oct 2026 22:41:03 +0900
-Subject: [PATCH 7/7] media: ipu-bridge: Add a 90 degree rotation quirk for
- Surface Book 2
+Subject: [PATCH] media: ipu-bridge: Add a 90 degree rotation quirk for Surface
+ Book 2
 
 The infrared camera of the Microsoft Surface Book 2, an OmniVision
 OV7251 with ACPI ID INT347E, is mounted rotated by 90 degrees. An
@@ -37,7 +37,7 @@ Signed-off-by: Antoine Pichot <antoine.pichot@gmail.com>
  1 file changed, 22 insertions(+)
 
 diff --git a/drivers/media/pci/intel/ipu-bridge.c b/drivers/media/pci/intel/ipu-bridge.c
-index 3739c4a2a8..4e72288e49 100644
+index 3739c4a2a8..51ed4283ce 100644
 --- a/drivers/media/pci/intel/ipu-bridge.c
 +++ b/drivers/media/pci/intel/ipu-bridge.c
 @@ -281,6 +281,23 @@ static const struct dmi_system_id upside_down_sensor_dmi_ids[] = {
@@ -45,7 +45,7 @@ index 3739c4a2a8..4e72288e49 100644
  };
  
 +/*
-+ * DMI matches for laptops which have their sensor mounted rotated by 90°
++ * DMI matches for laptops which have their sensor mounted rotated by 90 degrees
 + * without reporting it in the SSDB.
 + */
 +static const struct dmi_system_id rotated_90_sensor_dmi_ids[] = {
@@ -77,5 +77,5 @@ index 3739c4a2a8..4e72288e49 100644
  	case IPU_SENSOR_ROTATION_NORMAL:
  		return 0;
 -- 
-2.53.0
+2.56.0
 

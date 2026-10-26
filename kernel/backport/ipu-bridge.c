@@ -156,7 +156,7 @@ static const struct dmi_system_id upside_down_sensor_dmi_ids[] = {
 };
 
 /*
- * DMI matches for laptops which have their sensor mounted rotated by 90°
+ * DMI matches for laptops which have their sensor mounted rotated by 90 degrees
  * without reporting it in the SSDB.
  */
 static const struct dmi_system_id rotated_90_sensor_dmi_ids[] = {
