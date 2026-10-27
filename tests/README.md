@@ -26,7 +26,7 @@ Markers (registered in `pytest.ini`): `needs_patch("n")` = expected red until ke
 | K2 | | `camera_sensor_rotation` = 90 (the sensor is mounted rotated) | red | patch 7 |
 | K2 | | an exposure change delivers a control event carrying the new value (`--wait-for-event=ctrl=exposure`) | red | patch 3 |
 | K2 | | `strobe_output_enable` is bool, default and value 0, not read-only, volatile or inactive | red | patch 6 |
-| K3 | `test_k3_timing.py` | `link_frequency` = 319200000, `pixel_rate` = 63840000 | red | patch 1 |
+| K3 | `test_k3_timing.py` | `link_frequency` = 319200000, `pixel_rate` = 48000000 | red | patch 1 |
 | K3 | | PLL1 registers 0x30b0-0x30b5 read back while streaming = the 19.2 MHz xclk, 319.2 MHz table (01 85 04 0a 05; stock programs the 240 MHz one, 03 4b 01 0a 05) | red | patch 1 |
 | K3 | | 90 frames at 30 fps take 2.6-3.6 s | green | |
 | K3 | | `--set-subdev-fps` 60 / 90 reads back and the stream really runs at that rate | red (reads back, streams at 30) | patch 2 |

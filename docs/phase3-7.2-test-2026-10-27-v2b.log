@@ -1,0 +1,24 @@
+# 2026-10-27T22:32:25+09:00 kernel 7.2.12-gcov, ov7251-ir-v2 HEAD 0d8c96111527, backport ov7251.c sha256 1688f1d263a9c669
+# v2b: backport carrying the new pixel-rate patch (V4L2_CID_PIXEL_RATE = 48 MHz at both link frequencies). Module built in the scratchpad from kernel/backport with KDIR=/home/antoine/build/kernel-gcov/kernel-ark, loaded with insmod after unbinding the sensor, then tests K3, K11, K12 and a kernel-journal check. Each command is shown as "$ command", its output, then "[exit N]".
+$ sh -c echo i2c-INT347E:00 | sudo -n tee /sys/bus/i2c/drivers/ov7251/unbind
+i2c-INT347E:00
+[exit 0]
+$ sudo -n modprobe -r ov7251
+[exit 0]
+$ sudo -n insmod /tmp/claude-1000/-home-antoine-projects-surface/3ccf287b-d9c6-4190-a42c-0b614d1d1d83/scratchpad/variants/v2b/ov7251.ko
+[exit 0]
+$ cat /sys/module/ov7251/taint
+OE
+[exit 0]
+$ sh -c for d in /sys/class/video4linux/v4l-subdev*; do grep -q ov7251 $d/name && v4l2-ctl -d /dev/$(basename $d) -l | grep -E "link_frequency|pixel_rate"; done
+                 link_frequency 0x009f0901 (intmenu): min=0 max=1 default=1 value=1 (319200000 0x13069b00) flags=read-only, has-min-max
+                     pixel_rate 0x009f0902 (int64)  : min=48000000 max=2147483647 step=48000000 default=48000000 value=48000000 flags=read-only, has-min-max
+[exit 1]  # exit status is the last grep -q of the loop, not an error
+$ pytest -q tests/test_k3_timing.py tests/test_k11_strobe_registers.py tests/test_k12_subdev_state.py
+....................................                                     [100%]
+36 passed in 100.47s (0:01:40)
+[exit 0]
+$ sh -c journalctl -k --since '2026-10-27 22:32:25' | grep -E 'WARNING|BUG|Oops|lockdep|Call Trace' || echo 'journal: nothing matching'
+journal: nothing matching
+[exit 0]
+# Module left loaded: this v2b build (taint OE).

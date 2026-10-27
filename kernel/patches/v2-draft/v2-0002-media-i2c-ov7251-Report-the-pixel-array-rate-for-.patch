@@ -1,0 +1,82 @@
+From 8733408c4fbe66815776d4c0fb9a0e407b6b29f0 Mon Sep 17 00:00:00 2001
+From: Antoine Pichot <antoine.pichot@gmail.com>
+Date: Tue, 27 Oct 2026 22:29:21 +0900
+Subject: [PATCH v2 2/8] media: i2c: ov7251: Report the pixel array rate for
+ both link frequencies
+
+pixel_rates[] gives V4L2_CID_PIXEL_RATE 48 MHz for the 240 MHz link and
+63.84 MHz for the 319.2 MHz link, which is the CSI-2 bus rate of each
+link (one lane, 10 bits per pixel). The control is the pixel array rate,
+and Documentation/driver-api/media/tx-rx.rst says the bus rate "is not
+the same thing as the pixel rate on the camera sensor's pixel array
+which is indicated by the V4L2_CID_PIXEL_RATE control".
+
+The pixel array runs from PLL2's 48 MHz system clock at both link
+frequencies: the PLL2 registers are the same in both tables, and the
+measured frame rate is 48000000 / (928 x VTS) with either link. On a
+Surface Book 2 at 319.2 MHz, VTS 1724 gives 30.0 fps; 63.84 MHz would
+give 39.9 fps. A Surface Pro 7+ measures 30.01, 60.16 and 90.45 fps at
+VTS 1724, 860 and 572, the same 48 MHz.
+
+Report 48 MHz for both link frequencies and drop the table.
+
+Fixes: ed9566ce1946 ("media: i2c: Add support for new frequencies to ov7251")
+Cc: stable@vger.kernel.org
+Signed-off-by: Antoine Pichot <antoine.pichot@gmail.com>
+---
+ drivers/media/i2c/ov7251.c | 15 ++++++---------
+ 1 file changed, 6 insertions(+), 9 deletions(-)
+
+diff --git a/drivers/media/i2c/ov7251.c b/drivers/media/i2c/ov7251.c
+index 1413f1856e3b..80df6d76cd04 100644
+--- a/drivers/media/i2c/ov7251.c
++++ b/drivers/media/i2c/ov7251.c
+@@ -22,6 +22,9 @@
+ #include <media/v4l2-fwnode.h>
+ #include <media/v4l2-subdev.h>
+ 
++/* PLL2 sys_clk: the pixel array clock at both link frequencies */
++#define OV7251_PIXEL_CLOCK 48000000
++
+ #define OV7251_SC_MODE_SELECT		0x0100
+ #define OV7251_SC_MODE_SELECT_SW_STANDBY	0x0
+ #define OV7251_SC_MODE_SELECT_STREAMING		0x1
+@@ -633,11 +636,6 @@ static const s64 link_freq[] = {
+ 	[OV7251_LINK_FREQ_319_2_MHZ] = 319200000,
+ };
+ 
+-static const s64 pixel_rates[] = {
+-	[OV7251_LINK_FREQ_240_MHZ] = 48000000,
+-	[OV7251_LINK_FREQ_319_2_MHZ] = 63840000,
+-};
+-
+ static const struct ov7251_mode_info ov7251_mode_info_data[] = {
+ 	{
+ 		.width = 640,
+@@ -1567,7 +1565,6 @@ static int ov7251_detect_chip(struct ov7251 *ov7251)
+ static int ov7251_init_ctrls(struct ov7251 *ov7251)
+ {
+ 	int vblank_max, vblank_def;
+-	s64 pixel_rate;
+ 	int hblank;
+ 
+ 	v4l2_ctrl_handler_init(&ov7251->ctrls, 7);
+@@ -1586,12 +1583,12 @@ static int ov7251_init_ctrls(struct ov7251 *ov7251)
+ 				     ARRAY_SIZE(ov7251_test_pattern_menu) - 1,
+ 				     0, 0, ov7251_test_pattern_menu);
+ 
+-	pixel_rate = pixel_rates[ov7251->link_freq_idx];
+ 	ov7251->pixel_clock = v4l2_ctrl_new_std(&ov7251->ctrls,
+ 						&ov7251_ctrl_ops,
+ 						V4L2_CID_PIXEL_RATE,
+-						pixel_rate, INT_MAX,
+-						pixel_rate, pixel_rate);
++						OV7251_PIXEL_CLOCK, INT_MAX,
++						OV7251_PIXEL_CLOCK,
++						OV7251_PIXEL_CLOCK);
+ 	ov7251->link_freq = v4l2_ctrl_new_int_menu(&ov7251->ctrls,
+ 						   &ov7251_ctrl_ops,
+ 						   V4L2_CID_LINK_FREQ,
+-- 
+2.56.0
+

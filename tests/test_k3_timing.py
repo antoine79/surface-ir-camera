@@ -20,9 +20,9 @@ def test_link_frequency_matches_firmware(graph):
 
 
 @pytest.mark.needs_patch("1")
-def test_pixel_rate_follows_link_frequency(graph):
+def test_pixel_rate_is_the_pixel_array_clock(graph):
     rate = ctrl_info("pixel_rate")["value"]
-    assert rate == 63840000, f"pixel_rate is {rate}; at 319.2 MHz (x2 DDR / 10 bpp) it must be 63840000"
+    assert rate == 48000000, f"pixel_rate is {rate}; the pixel array runs at PLL2's 48 MHz at both link frequencies"
 
 
 @pytest.mark.needs_patch("1")

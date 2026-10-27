@@ -1,0 +1,140 @@
+From 0d8c9611152750f5ddae053d124431facf98d3fe Mon Sep 17 00:00:00 2001
+From: Antoine Pichot <antoine.pichot@gmail.com>
+Date: Tue, 27 Oct 2026 22:36:33 +0900
+Subject: [PATCH v2 0/8] media: i2c: ov7251: fixes and infrared strobe for Surface Book 2
+
+The Microsoft Surface Book 2 has an OV7251 infrared camera (used by
+Windows Hello) next to its front camera, both on the Intel IPU3 camera
+interface. Its 850 nm emitter is wired to the sensor's STROBE output
+pin: the ACPI tables describe no LED, GPIO line or regulator for it.
+With the mainline driver the camera streams, but always unlit.
+
+Patches 1 to 3 fix bugs found while testing on this machine, 4 and 5
+rework the driver's state handling and add the placement controls:
+
+- 1: the link frequency index is taken from the firmware list instead
+  of the driver's table, so the sensor runs at 240 MHz while
+  ipu-bridge asks for 319.2 MHz (Fixes, Cc stable).
+- 2: V4L2_CID_PIXEL_RATE reports the CSI-2 bus rate instead of the
+  pixel array clock, which is 48 MHz at both link frequencies (Fixes,
+  Cc stable).
+- 3: the 60 and 90 fps frame intervals are accepted but the sensor
+  keeps streaming at 30 fps, the vertical blanking control not being
+  updated (Fixes, Cc stable).
+- 4: conversion to the sub-device active state, as Sakari asked on
+  v1. The core then handles control events, which v1's patch 3 added
+  by hand, and v4l2-compliance passes on the sensor.
+- 5: orientation and rotation controls from firmware.
+
+Patches 6 and 7 add the emitter. 6 moves the strobe registers, which
+the three mode tables write identically, out of the tables without
+functional change. 7 adds a V4L2_CID_FLASH_STROBE_OE control that
+enables the STROBE pin, pulses it on alternate frames and makes the
+pulse follow the exposure, from 52 lines up to 45% of the frame and
+never more than 776 lines. This matches the Windows driver installed
+on this machine (Intel ov7251.sys 30.18305.6.5127, read with a
+decompiler): all four of its streaming modes enable the STROBE pin and
+clamp the pulse to the exposure within 52 to 776 lines; the two modes
+Windows Hello uses light alternate frames (0xaa), the other two every
+frame (0xff). A register dump taken on a Surface Book 2 during a
+Windows Hello sign-in [1] matches the 30 fps alternate mode. V4L2 has
+no per-frame illumination flag, so user space tells lit frames from
+dark ones by brightness; the dark frames give it the ambient-light
+reference a face liveness check uses. With every frame lit and filmed
+by a phone at locked exposure, each pulse is 1.1x (default exposure)
+to 1.2x (776-line pulse) as bright as during a Windows Hello sign-in
+on the same unit; with alternate frames the average emission is within
+the same ratio of Windows'.
+
+A linux-surface pull request for the Surface Pro 7+ [2] instead turns
+the emitter on unconditionally while the sensor streams, with a module
+parameter to disable it. This series leaves the choice to user space:
+the control is off by default, and the emitter is off whenever the
+sensor is not streaming.
+
+Patch 8 makes ipu-bridge report a rotation of 90 degrees for the
+infrared sensor, whose frames show an upright scene turned 90 degrees
+clockwise while the firmware says 0. It adds a DMI quirk table next to
+the existing one for upside-down sensors. A user-space project for the
+Surface Book 3 rotates that model's infrared frames by 90 degrees as
+well [3]; the quirk covers only the Book 2, the one checked.
+
+Patch 7 needs V4L2_CID_FLASH_STROBE_OE, added in v7.0 by commit
+5be4154f6255 ("media: v4l: ctrls: add a control for enabling strobe
+output"), and is not meant for stable. Only patches 1 to 3, the ones
+with a stable tag, apply to older trees on their own.
+
+[1] https://github.com/linux-surface/linux-surface/issues/739
+[2] https://github.com/linux-surface/linux-surface/pull/2252
+[3] https://github.com/linux-surface/linux-surface/pull/2289
+
+Changes since v1 [4]:
+- New patch 2: report the pixel array rate, 48 MHz, for both link
+  frequencies. v1 reported 63.84 MHz at 319.2 MHz, the bus rate.
+- Patch 3 of v1 (control event support) dropped; patch 4 converts the
+  driver to the sub-device active state instead, following ov5645,
+  which gives the same result through the core (Sakari Ailus).
+- Patch 7: use PERCENT from linux/units.h and plain clamp(), clamp
+  the span to its limits before applying the duty limit (Andy
+  Shevchenko). The CCI register helpers are left for a follow-up
+  after this series.
+- Tested-by from D. Manresa on a Surface Pro 7+ (IPU6, kernel 6.19)
+  on patches 3, 5, 6 and 7. On that machine patch 1 makes an already
+  intermittent CSI-2 link drop most frames; the 319.2 MHz PLL1 table
+  runs the VCO at 2553.6 MHz against the 300 to 800 MHz the datasheet
+  allows, and the Surface Book 2 streams without a dropped frame
+  either way. A swap of the pre-divider and divider that keeps the
+  link frequency and brings the VCO to 638.4 MHz is being tested
+  there; it will be a separate patch if it helps.
+
+[4] https://lore.kernel.org/linux-media/20261026111032.88355-1-antoine.pichot@gmail.com/
+
+Tested on a Surface Book 2 (i7-8650U) with the series built out of
+tree against linux-surface 7.2.12 (test suite, logs and a v4l2loopback
+bridge for applications: https://github.com/antoine79/surface-ir-camera):
+
+- link frequency 319200000, pixel rate 48000000, 30.0 fps measured
+- v4l2-compliance -u on the sensor: 0 failures (was 1)
+- --set-subdev-fps 60 / 90: 60.16 / 90.45 fps measured (was 30.01)
+- orientation front, rotation 90 (0 before patch 8); the colour sensors
+  still report 180
+- dark frames and the sensor test pattern unchanged after patch 6
+- strobe span read back while streaming: 504 lines at exposure 504,
+  776 at exposure 1704 (30 fps), 258 at exposure 552 (90 fps)
+- mean pixel value of an indoor infrared frame at analogue gain 128:
+  19 unlit; with the strobe enabled the lit frames read 496 at
+  exposure 504 and 587 at 1704, the dark frames in between 18 to 20
+- strobe off and sensor suspended within 2 s of the stream stopping
+- 10 unbind/unload/load cycles: no warning in the kernel log
+- 3 x 155 frames at 30 fps at 319.2 MHz: 0 dropped, 0 CSI-2 errors
+- Howdy face login enrols and recognises through a v4l2loopback bridge
+  that passes the lit frames
+
+The remaining v4l2-compliance failures are in the ipu3-cio2 capture
+driver (buffer creation and mapping checks) and unchanged by this
+series.
+
+I developed this series with an AI coding assistant (Claude): the
+design choices (alternate frames, the pulse limits, the exact SKU
+match), the reading of the Windows driver and the measurements above
+are mine, and I reviewed and tested every patch on the hardware
+before signing it off.
+
+Antoine Pichot (8):
+  media: i2c: ov7251: Fix link frequency index
+  media: i2c: ov7251: Report the pixel array rate for both link
+    frequencies
+  media: i2c: ov7251: Reset vblank when the frame interval changes
+  media: i2c: ov7251: Use sub-device active state
+  media: i2c: ov7251: Add orientation and rotation controls
+  media: i2c: ov7251: Move the strobe registers out of the mode tables
+  media: i2c: ov7251: Add strobe output enable control
+  media: ipu-bridge: Add a 90 degree rotation quirk for Surface Book 2
+
+ drivers/media/i2c/ov7251.c           | 356 +++++++++++++--------------
+ drivers/media/pci/intel/ipu-bridge.c |  22 ++
+ 2 files changed, 198 insertions(+), 180 deletions(-)
+
+-- 
+2.56.0
+
