@@ -19,6 +19,7 @@
 #include <linux/slab.h>
 #include <linux/types.h>
 #include <linux/unaligned.h>
+#include <linux/units.h>
 #include <media/v4l2-ctrls.h>
 #include <media/v4l2-fwnode.h>
 #include <media/v4l2-subdev.h>
@@ -980,13 +981,13 @@ static int ov7251_set_test_pattern(struct ov7251 *ov7251, s32 value)
 
 static int ov7251_set_strobe_span(struct ov7251 *ov7251)
 {
-	u32 span = OV7251_STROBE_FRAME_SPAN_DEF;
-	u32 vts, max_span;
+	int span = OV7251_STROBE_FRAME_SPAN_DEF;
+	int vts, max_span;
 	u8 val[4];
 
 	/*
 	 * The pulse starts with the integration: make it cover the exposure,
-	 * from 52 lines up to 45% of the frame and never more than 776 lines.
+	 * from 52 lines up to 776 lines and never more than 45% of the frame.
 	 * The vendor driver caps it at 776 lines, 45% of the 1724 lines 30 fps
 	 * frame; the duty cycle limit keeps the emitter within that envelope
 	 * at higher frame rates, the absolute one with long vertical blanking.
@@ -994,10 +995,9 @@ static int ov7251_set_strobe_span(struct ov7251 *ov7251)
 	if (ov7251->strobe->val) {
 		vts = ov7251->current_mode->height + ov7251->vblank->val;
 		max_span = DIV_ROUND_UP(vts * OV7251_STROBE_MAX_DUTY_PERCENT,
-					100);
-		max_span = min(max_span, OV7251_STROBE_SPAN_MAX);
-		span = clamp_t(u32, ov7251->exposure->val,
-			       OV7251_STROBE_SPAN_MIN, max_span);
+					PERCENT);
+		span = min(clamp(ov7251->exposure->val, OV7251_STROBE_SPAN_MIN,
+				 OV7251_STROBE_SPAN_MAX), max_span);
 	}
 
 	put_unaligned_be32(span, val);

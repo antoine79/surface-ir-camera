@@ -1,0 +1,59 @@
+# 2026-10-27T09:19:40+09:00 kernel 7.2.12-gcov, module taint: OE, ov7251-ir-v2 HEAD 80c853124fa5, backport ov7251.c sha256 e40b8f877c841c0e
+...s.............................................sF..................... [ 90%]
+Fsss..ss                                                                 [100%]
+=================================== FAILURES ===================================
+____________________________ test_compliance[video] ____________________________
+
+graph = 'ov7251 3-0060', target = 'video'
+args = <function <lambda> at 0x7f4d83139170>
+
+    @pytest.mark.parametrize("target, args", [
+        pytest.param("subdev", lambda: ["-u", sd()], marks=pytest.mark.needs_patch("3")),
+        pytest.param("media", lambda: ["-m", MEDIA], marks=pytest.mark.disruptive(reason=MEDIA_OOPS)),
+        ("video", lambda: ["-d", VIDEO, "-s", "30"]),
+    ], ids=["subdev", "media", "video"])
+    def test_compliance(graph, target, args):
+        before = parse_ctrls(run("v4l2-ctl", "-d", sd(), "-l"))
+        try:
+            p = subprocess.run(["v4l2-compliance", *args()], capture_output=True, text=True, timeout=300)
+        finally:  # v4l2-compliance leaves controls (e.g. test_pattern), formats and the frame interval changed
+            set_fps(30)
+            setup_graph()  # resets exposure and gain, so restore the controls after it
+            for name, c in before.items():
+                if "read-only" not in c["flags"] and ctrl_info(name)["value"] != c["value"]:
+                    set_ctrl(name, c["value"])
+        out = p.stdout + p.stderr
+        log = BASELINE / f"k1-{target}-{os.uname().release}.log"
+        if not log.exists():
+            log.parent.mkdir(exist_ok=True)
+            log.write_text(f"$ v4l2-compliance {' '.join(args())}\n# exit status {p.returncode}\n{out}")
+        assert p.returncode >= 0, f"v4l2-compliance {target} crashed (signal {-p.returncode}) before finishing, see {log.name}"
+        totals = TOTAL.findall(out)
+        assert totals, f"v4l2-compliance {target} printed no final Total line (exit status {p.returncode}, a negative one is a crash)"
+        failed = [l.strip() for l in out.splitlines() if "FAIL" in l or "fail:" in l]
+>       assert int(totals[-1][2]) == 0, f"v4l2-compliance {target}: {totals[-1]} (total, ok, failed, warn); failures: {failed}"
+E       AssertionError: v4l2-compliance video: ('58', '51', '7', '30') (total, ok, failed, warn); failures: ['fail: v4l2-test-buffers.cpp(901): q.create_bufs(node, 1, &fmt) != EINVAL', 'test VIDIOC_REQBUFS/CREATE_BUFS/QUERYBUF: FAIL', 'fail: v4l2-test-buffers.cpp(1667): buf.g_length(p) < fmt.g_sizeimage(p)', 'test MMAP (no poll, REQBUFS): FAIL', 'fail: v4l2-test-buffers.cpp(1667): buf.g_length(p) < fmt.g_sizeimage(p)', 'test MMAP (select, REQBUFS): FAIL', 'fail: v4l2-test-buffers.cpp(1667): buf.g_length(p) < fmt.g_sizeimage(p)', 'test MMAP (epoll, REQBUFS): FAIL', 'fail: v4l2-test-buffers.cpp(1667): buf.g_length(p) < fmt.g_sizeimage(p)', 'test MMAP (no poll, CREATE_BUFS): FAIL', 'fail: v4l2-test-buffers.cpp(1667): buf.g_length(p) < fmt.g_sizeimage(p)', 'test MMAP (select, CREATE_BUFS): FAIL', 'fail: v4l2-test-buffers.cpp(1667): buf.g_length(p) < fmt.g_sizeimage(p)', 'test MMAP (epoll, CREATE_BUFS): FAIL', 'fail: v4l2-test-buffers.cpp(2065): data at 8 bytes before start of the buffer was touched', 'fail: v4l2-test-buffers.cpp(2065): data at 4 bytes before start of the buffer was touched', 'fail: v4l2-test-buffers.cpp(2065): data at 8 bytes before start of the buffer was touched', 'fail: v4l2-test-buffers.cpp(2065): data at 4 bytes before start of the buffer was touched', 'fail: v4l2-test-buffers.cpp(2065): data at 8 bytes before start of the buffer was touched', 'fail: v4l2-test-buffers.cpp(2065): data at 4 bytes before start of the buffer was touched', 'fail: v4l2-test-buffers.cpp(2065): data at 8 bytes before start of the buffer was touched', 'fail: v4l2-test-buffers.cpp(2065): data at 4 bytes before start of the buffer was touched']
+E       assert 7 == 0
+E        +  where 7 = int('7')
+
+tests/test_k1_compliance.py:43: AssertionError
+_____________________________ test_default_is_dark _____________________________
+
+dark_mean = 998.12499468316
+
+    def test_default_is_dark(dark_mean):
+>       assert dark_mean < DARK_MAX, \
+            f"mean {dark_mean:.1f} counts with the emitter off (exposure 1704, gain 128), expected < {DARK_MAX} (Phase 0: ~20): a bright room (close the blinds), or the emitter stuck on (K11 reads the strobe registers)"
+E       AssertionError: mean 998.1 counts with the emitter off (exposure 1704, gain 128), expected < 40 (Phase 0: ~20): a bright room (close the blinds), or the emitter stuck on (K11 reads the strobe registers)
+E       assert 998.12499468316 < 40
+
+tests/test_k4_dark.py:6: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_k1_compliance.py::test_compliance[video] - AssertionError: ...
+FAILED tests/test_k4_dark.py::test_default_is_dark - AssertionError: mean 998...
+2 failed, 71 passed, 7 skipped in 118.74s (0:01:58)
+# Follow-up checks on the same module (not part of the suite above)
+# K4 fails and K5/E2E skip because the run was in daylight (998 counts with the emitter off); K1 video is the known ipu3-cio2 failure
+# IRCAM_KO=kernel/build/ov7251.ko IRCAM_DISRUPTIVE=1 pytest tests/test_k9_reload.py (converted module, 10 reloads): 1 passed in 13.74s; module taint afterwards: OE
+# tests/test_k12_subdev_state.py on the stock 7.2.12 module (modprobe, taint empty): 6 passed in 7.75s
+# tests/test_k12_subdev_state.py on the converted module before the suite: 6 passed in 7.78s
