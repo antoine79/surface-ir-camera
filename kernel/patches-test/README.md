@@ -7,4 +7,4 @@ Two throwaway patches for D. Manresa's report on patch 1 of the series ("media: 
 
 Apply with `git am`, in order, on a tree that already has patch 1 of the series. Test the first patch alone, then both.
 
-Measured on a Surface Book 2 (kernel 7.2, IPU3): each build streamed 3 runs of 155/155 buffers at 30 fps with no dropped frame and no CSI-2 error line, the same as the unmodified driver, so this machine cannot tell the builds apart. Log: `docs/phase3-7.2-link-stress-2026-10-27.log` on `main`; script: `tools/link-stress.py` (IPU3 node names).
+Measured on a Surface Book 2 (kernel 7.2, IPU3): each build streamed 3 runs of 155/155 buffers at 30 fps with no dropped frame and no CSI-2 error line, the same as the unmodified driver, so this machine cannot tell the builds apart. Log: `docs/phase3-7.2-link-stress-2026-10-27.log`; script: `tools/link-stress.py` (IPU3 node names).
