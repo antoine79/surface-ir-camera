@@ -1,0 +1,694 @@
+# Phase 3, 7.2: CSI-2 link stress of the 319.2 MHz PLL variants (stock, V0, V1, V2)
+
+Machine: esteban, Surface Book 2 13" (i7-8650U), OV7251 infrared sensor on ipu3-cio2. Kernel: 7.2.12-gcov. Date: 2026-10-27T20:50:59+09:00. Operator: Claude (subagent), driven by tools/link-stress.py and the K9 reload procedure from tests/test_k9_reload.py.
+
+Variants of the 19.2 MHz external clock -> 319.2 MHz link frequency table (ov7251_pll1_cfg_19_2_mhz_319_2_mhz) in the project's converted driver kernel/backport/ov7251.c (the v2 series): V0 = kernel/backport/ov7251.c unchanged, mainline PLL1 values (pre_div 0x01, mult 0x85, div 0x04, pix_div 0x0a, mipi_div 0x05, three { 0x4837, 0x19 } mode-table entries), built as /tmp/claude-1000/-home-antoine-projects-surface/3ccf287b-d9c6-4190-a42c-0b614d1d1d83/scratchpad/variants/V0/ov7251.ko (sha256 0e4c1e7a146c87a7ef6b14bdb74110dd17f74ba09182ed3ec2a67c2ac0d728cb); V1 = V0 with .pre_div = 0x04 (was 0x01) and .div = 0x01 (was 0x04) in that one initializer and nothing else, the Windows Hello dividers, same 638.4 Mbps output with the PLL oscillator at 638.4 MHz, /tmp/claude-1000/-home-antoine-projects-surface/3ccf287b-d9c6-4190-a42c-0b614d1d1d83/scratchpad/variants/V1/ov7251.ko (sha256 96d96e221cc0a94b449db7aa489899d1c2b57b5317c222c2a3fa8bb759f967d0); V2 = V1 plus the three mode-table entries { 0x4837, 0x19 } changed to { 0x4837, 0x1f } (MIPI global timing), /tmp/claude-1000/-home-antoine-projects-surface/3ccf287b-d9c6-4190-a42c-0b614d1d1d83/scratchpad/variants/V2/ov7251.ko (sha256 b7837cb6d759fcfa67c5361238ca18576049ddad179d15580a4ac4a86484eea9); stock = the in-kernel module /lib/modules/7.2.12-gcov/kernel/drivers/media/i2c/ov7251.ko (sha256 7954b1d84cd65a2941cc961cc3e87cd1463fdb85a200b4b2ee8c7bc96d083c86), mainline 7.2's driver, which always runs the 240 MHz table because of the link-frequency index bug that patch 1 of the series fixes. All four report vermagic "7.2.12-gcov SMP preempt mod_unload ". The three variants were built against /home/antoine/build/kernel-gcov/kernel-ark (the configured tree 7.2.12-gcov was built from; /lib/modules/7.2.12-gcov/build does not exist here) with gcc 15.3.1 while the kernel was built with gcc 15.2.1 (kbuild's informational notice).
+
+Procedure, in this order: stock, V0, V1, V2, then V0 reloaded and left loaded (the state found at the start). Per variant: unbind i2c-INT347E:00 from the ov7251 driver, sudo -n modprobe -r ov7251, sudo -n insmod <variant>/ov7251.ko (or sudo -n modprobe ov7251 for stock), read /sys/module/ov7251/taint, wait for the sensor entity (conftest.subdev()), then python3 tools/link-stress.py --label <name> --runs 3 --frames 150 --fps 30 --out /tmp/claude-1000/-home-antoine-projects-surface/3ccf287b-d9c6-4190-a42c-0b614d1d1d83/scratchpad/link-stress-results.jsonl (its readback block, read over I2C while streaming, is the proof of which table runs); for V1 and V2 also pytest -q tests/test_k3_timing.py tests/test_k11_strobe_registers.py tests/test_k12_subdev_state.py; after each variant journalctl -k --since <variant start> filtered for WARNING, BUG, Oops, lockdep, "Call Trace". Expected readbacks: stock 0x30b4=0x03 0x30b3=0x4b 0x30b1=0x01, link_frequency 240000000; V0 0x30b4=0x01 0x30b3=0x85 0x30b1=0x04 0x4837=0x19, link_frequency 319200000; V1 0x30b4=0x04 0x30b3=0x85 0x30b1=0x01 0x4837=0x19; V2 like V1 with 0x4837=0x1f. Each command below is shown as "$ command", followed by its combined stdout+stderr and "[exit N]".
+
+## Initial state, before touching anything
+
+$ uname -r; date -Is
+7.2.12-gcov
+2026-10-27T20:50:59+09:00
+[exit 0]
+
+$ cat /sys/module/ov7251/taint
+OE
+[exit 0]
+
+$ lsmod | grep -E "^ov7251|^ipu3_cio2|^ipu_bridge"
+ov7251                 36864  1
+ipu3_cio2              53248  10
+ipu_bridge             28672  1 ipu3_cio2
+[exit 0]
+
+$ python3 /tmp/claude-1000/-home-antoine-projects-surface/3ccf287b-d9c6-4190-a42c-0b614d1d1d83/scratchpad/entity.py
+subdev: ('ov7251 3-0060', '/dev/v4l-subdev7')  runtime_status: suspended
+[exit 0]
+
+$ v4l2-ctl -d /dev/v4l-subdev7 --get-ctrl=link_frequency,pixel_rate
+link_frequency: 1 (319200000 0x13069b00)
+pixel_rate: 63840000
+[exit 0]
+
+$ media-ctl -d /dev/media0 -p | grep -A4 "ov7251"
+		<- "ov7251 3-0060":0 [ENABLED]
+	pad1: SOURCE
+		[stream:0 fmt:Y10_1X10/640x480 field:none]
+		-> "ipu3-cio2 2":0 [ENABLED,IMMUTABLE]
+
+--
+- entity 271: ov7251 3-0060 (1 pad, 1 link, 0 routes)
+              type V4L2 subdev subtype Sensor flags 0
+              device node name /dev/v4l-subdev7
+	pad0: SOURCE
+		[stream:0 fmt:Y10_1X10/640x480@100/3000 field:none colorspace:srgb xfer:srgb ycbcr:601 quantization:full-range
+[exit 0]
+
+$ sha256sum /tmp/claude-1000/-home-antoine-projects-surface/3ccf287b-d9c6-4190-a42c-0b614d1d1d83/scratchpad/variants/V0/ov7251.ko /tmp/claude-1000/-home-antoine-projects-surface/3ccf287b-d9c6-4190-a42c-0b614d1d1d83/scratchpad/variants/V1/ov7251.ko /tmp/claude-1000/-home-antoine-projects-surface/3ccf287b-d9c6-4190-a42c-0b614d1d1d83/scratchpad/variants/V2/ov7251.ko /lib/modules/7.2.12-gcov/kernel/drivers/media/i2c/ov7251.ko
+0e4c1e7a146c87a7ef6b14bdb74110dd17f74ba09182ed3ec2a67c2ac0d728cb  /tmp/claude-1000/-home-antoine-projects-surface/3ccf287b-d9c6-4190-a42c-0b614d1d1d83/scratchpad/variants/V0/ov7251.ko
+96d96e221cc0a94b449db7aa489899d1c2b57b5317c222c2a3fa8bb759f967d0  /tmp/claude-1000/-home-antoine-projects-surface/3ccf287b-d9c6-4190-a42c-0b614d1d1d83/scratchpad/variants/V1/ov7251.ko
+b7837cb6d759fcfa67c5361238ca18576049ddad179d15580a4ac4a86484eea9  /tmp/claude-1000/-home-antoine-projects-surface/3ccf287b-d9c6-4190-a42c-0b614d1d1d83/scratchpad/variants/V2/ov7251.ko
+7954b1d84cd65a2941cc961cc3e87cd1463fdb85a200b4b2ee8c7bc96d083c86  /lib/modules/7.2.12-gcov/kernel/drivers/media/i2c/ov7251.ko
+[exit 0]
+
+$ pgrep -a v4l2-ctl || echo "no v4l2-ctl running"
+no v4l2-ctl running
+[exit 0]
+
+## Variant: stock (sudo -n modprobe ov7251), start 2026-10-27 20:51:28
+
+$ pgrep -a v4l2-ctl || echo "no v4l2-ctl running"; cat /sys/bus/i2c/devices/i2c-INT347E:00/power/runtime_status
+no v4l2-ctl running
+suspended
+[exit 0]
+
+$ echo i2c-INT347E:00 | sudo -n tee /sys/bus/i2c/drivers/ov7251/unbind
+i2c-INT347E:00
+[exit 0]
+
+$ sudo -n modprobe -r ov7251
+[exit 0]
+
+$ lsmod | grep -E "^ov7251" || echo "ov7251 not loaded"
+ov7251 not loaded
+[exit 0]
+
+$ sudo -n modprobe ov7251
+[exit 0]
+
+$ cat /sys/module/ov7251/taint
+
+[exit 0]
+
+$ python3 /tmp/claude-1000/-home-antoine-projects-surface/3ccf287b-d9c6-4190-a42c-0b614d1d1d83/scratchpad/entity.py
+subdev: ('ov7251 3-0060', '/dev/v4l-subdev7')  runtime_status: active
+[exit 0]
+
+$ /tmp/claude-1000/-home-antoine-projects-surface/3ccf287b-d9c6-4190-a42c-0b614d1d1d83/scratchpad/linkfreq.sh
+subdev node: /dev/v4l-subdev7
+link_frequency: 0 (240000000 0xe4e1c00)
+pixel_rate: 48000000
+[exit 0]
+
+$ cd /home/antoine/projects/surface-ir-camera && python3 tools/link-stress.py --label stock --runs 3 --frames 150 --fps 30 --out /tmp/claude-1000/-home-antoine-projects-surface/3ccf287b-d9c6-4190-a42c-0b614d1d1d83/scratchpad/link-stress-results.jsonl
+readback: stock on 7.2.12-gcov, taint -
+  0x30b4=0x03 0x30b3=0x4b 0x30b1=0x01 0x30b0=0x0a 0x30b5=0x05 0x4837=0x19 0x3098=0x04 0x3099=0x32 0x309a=0x05 0x309b=0x04 0x309d=0x00
+  link_frequency: 0 (240000000 0xe4e1c00)  pixel_rate: 48000000
+
+| label | run | requested | received | dropped | fps | error lines | mean |
+|---|---|---|---|---|---|---|---|
+| stock | 1 | 155 | 155 | 0 | 30.01 | 0 | 16.2 |
+| stock | 2 | 155 | 155 | 0 | 30.0 | 0 | 16.5 |
+| stock | 3 | 155 | 155 | 0 | 30.01 | 0 | 16.3 |
+[exit 0]
+
+$ cat /sys/bus/i2c/devices/i2c-INT347E:00/power/runtime_status; pgrep -a v4l2-ctl || echo "no v4l2-ctl running"
+suspended
+no v4l2-ctl running
+[exit 0]
+
+$ journalctl -k --since '2026-10-27 20:51:28' | grep -E 'WARNING|BUG|Oops|lockdep|Call Trace' | tee /dev/stderr | wc -l
+0
+[exit 0]
+
+$ journalctl -k -q -o short-iso --since '2026-10-27 20:51:28' | wc -l
+4
+[exit 0]
+
+$ journalctl -k -q -o short-iso --since '2026-10-27 20:51:28'
+2026-10-27T20:51:28+09:00 esteban kernel: ov7251 i2c-INT347E:00: supply vdddo not found, using dummy regulator
+2026-10-27T20:51:28+09:00 esteban kernel: ov7251 i2c-INT347E:00: supply vddd not found, using dummy regulator
+2026-10-27T20:51:28+09:00 esteban kernel: ov7251 i2c-INT347E:00: supply vdda not found, using dummy regulator
+2026-10-27T20:51:28+09:00 esteban kernel: ov7251 i2c-INT347E:00: OV7251 revision 7 (1F) detected at address 0x60
+[exit 0]
+
+## Variant: V0 (sudo -n insmod /tmp/claude-1000/-home-antoine-projects-surface/3ccf287b-d9c6-4190-a42c-0b614d1d1d83/scratchpad/variants/V0/ov7251.ko), start 2026-10-27 20:52:07
+
+$ pgrep -a v4l2-ctl || echo "no v4l2-ctl running"; cat /sys/bus/i2c/devices/i2c-INT347E:00/power/runtime_status
+no v4l2-ctl running
+suspended
+[exit 0]
+
+$ echo i2c-INT347E:00 | sudo -n tee /sys/bus/i2c/drivers/ov7251/unbind
+i2c-INT347E:00
+[exit 0]
+
+$ sudo -n modprobe -r ov7251
+[exit 0]
+
+$ lsmod | grep -E "^ov7251" || echo "ov7251 not loaded"
+ov7251 not loaded
+[exit 0]
+
+$ sudo -n insmod /tmp/claude-1000/-home-antoine-projects-surface/3ccf287b-d9c6-4190-a42c-0b614d1d1d83/scratchpad/variants/V0/ov7251.ko
+[exit 0]
+
+$ cat /sys/module/ov7251/taint
+OE
+[exit 0]
+
+$ python3 /tmp/claude-1000/-home-antoine-projects-surface/3ccf287b-d9c6-4190-a42c-0b614d1d1d83/scratchpad/entity.py
+subdev: ('ov7251 3-0060', '/dev/v4l-subdev7')  runtime_status: active
+[exit 0]
+
+$ /tmp/claude-1000/-home-antoine-projects-surface/3ccf287b-d9c6-4190-a42c-0b614d1d1d83/scratchpad/linkfreq.sh
+subdev node: /dev/v4l-subdev7
+link_frequency: 1 (319200000 0x13069b00)
+pixel_rate: 63840000
+[exit 0]
+
+$ cd /home/antoine/projects/surface-ir-camera && python3 tools/link-stress.py --label V0 --runs 3 --frames 150 --fps 30 --out /tmp/claude-1000/-home-antoine-projects-surface/3ccf287b-d9c6-4190-a42c-0b614d1d1d83/scratchpad/link-stress-results.jsonl
+readback: V0 on 7.2.12-gcov, taint OE
+  0x30b4=0x01 0x30b3=0x85 0x30b1=0x04 0x30b0=0x0a 0x30b5=0x05 0x4837=0x19 0x3098=0x04 0x3099=0x32 0x309a=0x05 0x309b=0x04 0x309d=0x00
+  link_frequency: 1 (319200000 0x13069b00)  pixel_rate: 63840000
+
+| label | run | requested | received | dropped | fps | error lines | mean |
+|---|---|---|---|---|---|---|---|
+| V0 | 1 | 155 | 155 | 0 | 30.01 | 0 | 16.2 |
+| V0 | 2 | 155 | 155 | 0 | 30.01 | 0 | 16.5 |
+| V0 | 3 | 155 | 155 | 0 | 30.01 | 0 | 16.1 |
+[exit 0]
+
+$ cat /sys/bus/i2c/devices/i2c-INT347E:00/power/runtime_status; pgrep -a v4l2-ctl || echo "no v4l2-ctl running"
+suspended
+no v4l2-ctl running
+[exit 0]
+
+$ journalctl -k --since '2026-10-27 20:52:07' | grep -E 'WARNING|BUG|Oops|lockdep|Call Trace' | tee /dev/stderr | wc -l
+0
+[exit 0]
+
+$ journalctl -k -q -o short-iso --since '2026-10-27 20:52:07'
+2026-10-27T20:52:07+09:00 esteban kernel: ov7251 i2c-INT347E:00: supply vdddo not found, using dummy regulator
+2026-10-27T20:52:07+09:00 esteban kernel: ov7251 i2c-INT347E:00: supply vddd not found, using dummy regulator
+2026-10-27T20:52:07+09:00 esteban kernel: ov7251 i2c-INT347E:00: supply vdda not found, using dummy regulator
+2026-10-27T20:52:07+09:00 esteban kernel: ov7251 i2c-INT347E:00: OV7251 revision 7 (1F) detected at address 0x60
+[exit 0]
+
+## Variant: V1 (sudo -n insmod /tmp/claude-1000/-home-antoine-projects-surface/3ccf287b-d9c6-4190-a42c-0b614d1d1d83/scratchpad/variants/V1/ov7251.ko), start 2026-10-27 20:52:47
+
+$ pgrep -a v4l2-ctl || echo "no v4l2-ctl running"; cat /sys/bus/i2c/devices/i2c-INT347E:00/power/runtime_status
+no v4l2-ctl running
+suspended
+[exit 0]
+
+$ echo i2c-INT347E:00 | sudo -n tee /sys/bus/i2c/drivers/ov7251/unbind
+i2c-INT347E:00
+[exit 0]
+
+$ sudo -n modprobe -r ov7251
+[exit 0]
+
+$ lsmod | grep -E "^ov7251" || echo "ov7251 not loaded"
+ov7251 not loaded
+[exit 0]
+
+$ sudo -n insmod /tmp/claude-1000/-home-antoine-projects-surface/3ccf287b-d9c6-4190-a42c-0b614d1d1d83/scratchpad/variants/V1/ov7251.ko
+[exit 0]
+
+$ cat /sys/module/ov7251/taint
+OE
+[exit 0]
+
+$ python3 /tmp/claude-1000/-home-antoine-projects-surface/3ccf287b-d9c6-4190-a42c-0b614d1d1d83/scratchpad/entity.py
+subdev: ('ov7251 3-0060', '/dev/v4l-subdev7')  runtime_status: active
+[exit 0]
+
+$ /tmp/claude-1000/-home-antoine-projects-surface/3ccf287b-d9c6-4190-a42c-0b614d1d1d83/scratchpad/linkfreq.sh
+subdev node: /dev/v4l-subdev7
+link_frequency: 1 (319200000 0x13069b00)
+pixel_rate: 63840000
+[exit 0]
+
+$ cd /home/antoine/projects/surface-ir-camera && python3 tools/link-stress.py --label V1 --runs 3 --frames 150 --fps 30 --out /tmp/claude-1000/-home-antoine-projects-surface/3ccf287b-d9c6-4190-a42c-0b614d1d1d83/scratchpad/link-stress-results.jsonl
+readback: V1 on 7.2.12-gcov, taint OE
+  0x30b4=0x04 0x30b3=0x85 0x30b1=0x01 0x30b0=0x0a 0x30b5=0x05 0x4837=0x19 0x3098=0x04 0x3099=0x32 0x309a=0x05 0x309b=0x04 0x309d=0x00
+  link_frequency: 1 (319200000 0x13069b00)  pixel_rate: 63840000
+
+| label | run | requested | received | dropped | fps | error lines | mean |
+|---|---|---|---|---|---|---|---|
+| V1 | 1 | 155 | 155 | 0 | 30.01 | 0 | 16.3 |
+| V1 | 2 | 155 | 155 | 0 | 30.01 | 0 | 16.3 |
+| V1 | 3 | 155 | 155 | 0 | 30.01 | 0 | 16.3 |
+[exit 0]
+
+$ cat /sys/bus/i2c/devices/i2c-INT347E:00/power/runtime_status; pgrep -a v4l2-ctl || echo "no v4l2-ctl running"
+suspended
+no v4l2-ctl running
+[exit 0]
+
+$ cd /home/antoine/projects/surface-ir-camera && pytest -q tests/test_k3_timing.py tests/test_k11_strobe_registers.py tests/test_k12_subdev_state.py
+..F.................................                                     [100%]
+=================================== FAILURES ===================================
+______________________ test_pll1_programmed_for_319_2_mhz ______________________
+
+graph = 'ov7251 3-0060'
+
+    @pytest.mark.needs_patch("1")
+    def test_pll1_programmed_for_319_2_mhz(graph):
+        with streaming():
+            got = {name: read_reg(int(name.split()[1], 16)) for name in PLL1_319_2}
+>       assert got == PLL1_319_2, f"PLL1 registers {got}, expected the 19.2 MHz -> 319.2 MHz table {PLL1_319_2} (patch 1 index fix)"
+E       AssertionError: PLL1 registers {'pre_div 0x30b4': 4, 'mult 0x30b3': 133, 'div 0x30b1': 1, 'pix_div 0x30b0': 10, 'mipi_div 0x30b5': 5}, expected the 19.2 MHz -> 319.2 MHz table {'pre_div 0x30b4': 1, 'mult 0x30b3': 133, 'div 0x30b1': 4, 'pix_div 0x30b0': 10, 'mipi_div 0x30b5': 5} (patch 1 index fix)
+E       assert {'pre_div 0x3...0b0': 10, ...} == {'pre_div 0x3...0b0': 10, ...}
+E         
+E         Omitting 3 identical items, use -vv to show
+E         Differing items:
+E         {'pre_div 0x30b4': 4} != {'pre_div 0x30b4': 1}
+E         {'div 0x30b1': 1} != {'div 0x30b1': 4}
+E         Use -v to get more diff
+
+tests/test_k3_timing.py:32: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_k3_timing.py::test_pll1_programmed_for_319_2_mhz - Assertio...
+1 failed, 35 passed in 99.76s (0:01:39)
+[exit 1]
+
+$ cat /sys/bus/i2c/devices/i2c-INT347E:00/power/runtime_status; pgrep -a v4l2-ctl || echo "no v4l2-ctl running"
+suspended
+no v4l2-ctl running
+[exit 0]
+
+$ journalctl -k --since '2026-10-27 20:52:47' | grep -E 'WARNING|BUG|Oops|lockdep|Call Trace' | tee /dev/stderr | wc -l
+0
+[exit 0]
+
+$ journalctl -k -q -o short-iso --since '2026-10-27 20:52:47'
+2026-10-27T20:52:47+09:00 esteban kernel: ov7251 i2c-INT347E:00: supply vdddo not found, using dummy regulator
+2026-10-27T20:52:47+09:00 esteban kernel: ov7251 i2c-INT347E:00: supply vddd not found, using dummy regulator
+2026-10-27T20:52:47+09:00 esteban kernel: ov7251 i2c-INT347E:00: supply vdda not found, using dummy regulator
+2026-10-27T20:52:47+09:00 esteban kernel: ov7251 i2c-INT347E:00: OV7251 revision 7 (1F) detected at address 0x60
+[exit 0]
+
+## Variant: V2 (sudo -n insmod /tmp/claude-1000/-home-antoine-projects-surface/3ccf287b-d9c6-4190-a42c-0b614d1d1d83/scratchpad/variants/V2/ov7251.ko), start 2026-10-27 20:55:09
+
+$ pgrep -a v4l2-ctl || echo "no v4l2-ctl running"; cat /sys/bus/i2c/devices/i2c-INT347E:00/power/runtime_status
+no v4l2-ctl running
+suspended
+[exit 0]
+
+$ echo i2c-INT347E:00 | sudo -n tee /sys/bus/i2c/drivers/ov7251/unbind
+i2c-INT347E:00
+[exit 0]
+
+$ sudo -n modprobe -r ov7251
+[exit 0]
+
+$ lsmod | grep -E "^ov7251" || echo "ov7251 not loaded"
+ov7251 not loaded
+[exit 0]
+
+$ sudo -n insmod /tmp/claude-1000/-home-antoine-projects-surface/3ccf287b-d9c6-4190-a42c-0b614d1d1d83/scratchpad/variants/V2/ov7251.ko
+[exit 0]
+
+$ cat /sys/module/ov7251/taint
+OE
+[exit 0]
+
+$ python3 /tmp/claude-1000/-home-antoine-projects-surface/3ccf287b-d9c6-4190-a42c-0b614d1d1d83/scratchpad/entity.py
+subdev: ('ov7251 3-0060', '/dev/v4l-subdev7')  runtime_status: active
+[exit 0]
+
+$ /tmp/claude-1000/-home-antoine-projects-surface/3ccf287b-d9c6-4190-a42c-0b614d1d1d83/scratchpad/linkfreq.sh
+subdev node: /dev/v4l-subdev7
+link_frequency: 1 (319200000 0x13069b00)
+pixel_rate: 63840000
+[exit 0]
+
+$ cd /home/antoine/projects/surface-ir-camera && python3 tools/link-stress.py --label V2 --runs 3 --frames 150 --fps 30 --out /tmp/claude-1000/-home-antoine-projects-surface/3ccf287b-d9c6-4190-a42c-0b614d1d1d83/scratchpad/link-stress-results.jsonl
+readback: V2 on 7.2.12-gcov, taint OE
+  0x30b4=0x04 0x30b3=0x85 0x30b1=0x01 0x30b0=0x0a 0x30b5=0x05 0x4837=0x1f 0x3098=0x04 0x3099=0x32 0x309a=0x05 0x309b=0x04 0x309d=0x00
+  link_frequency: 1 (319200000 0x13069b00)  pixel_rate: 63840000
+
+| label | run | requested | received | dropped | fps | error lines | mean |
+|---|---|---|---|---|---|---|---|
+| V2 | 1 | 155 | 155 | 0 | 30.0 | 0 | 16.4 |
+| V2 | 2 | 155 | 155 | 0 | 30.01 | 0 | 16.3 |
+| V2 | 3 | 155 | 155 | 0 | 30.01 | 0 | 16.4 |
+[exit 0]
+
+$ cat /sys/bus/i2c/devices/i2c-INT347E:00/power/runtime_status; pgrep -a v4l2-ctl || echo "no v4l2-ctl running"
+suspended
+no v4l2-ctl running
+[exit 0]
+
+$ cd /home/antoine/projects/surface-ir-camera && pytest -q tests/test_k3_timing.py tests/test_k11_strobe_registers.py tests/test_k12_subdev_state.py
+..F.................................                                     [100%]
+=================================== FAILURES ===================================
+______________________ test_pll1_programmed_for_319_2_mhz ______________________
+
+graph = 'ov7251 3-0060'
+
+    @pytest.mark.needs_patch("1")
+    def test_pll1_programmed_for_319_2_mhz(graph):
+        with streaming():
+            got = {name: read_reg(int(name.split()[1], 16)) for name in PLL1_319_2}
+>       assert got == PLL1_319_2, f"PLL1 registers {got}, expected the 19.2 MHz -> 319.2 MHz table {PLL1_319_2} (patch 1 index fix)"
+E       AssertionError: PLL1 registers {'pre_div 0x30b4': 4, 'mult 0x30b3': 133, 'div 0x30b1': 1, 'pix_div 0x30b0': 10, 'mipi_div 0x30b5': 5}, expected the 19.2 MHz -> 319.2 MHz table {'pre_div 0x30b4': 1, 'mult 0x30b3': 133, 'div 0x30b1': 4, 'pix_div 0x30b0': 10, 'mipi_div 0x30b5': 5} (patch 1 index fix)
+E       assert {'pre_div 0x3...0b0': 10, ...} == {'pre_div 0x3...0b0': 10, ...}
+E         
+E         Omitting 3 identical items, use -vv to show
+E         Differing items:
+E         {'div 0x30b1': 1} != {'div 0x30b1': 4}
+E         {'pre_div 0x30b4': 4} != {'pre_div 0x30b4': 1}
+E         Use -v to get more diff
+
+tests/test_k3_timing.py:32: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_k3_timing.py::test_pll1_programmed_for_319_2_mhz - Assertio...
+1 failed, 35 passed in 99.79s (0:01:39)
+[exit 1]
+
+$ cat /sys/bus/i2c/devices/i2c-INT347E:00/power/runtime_status; pgrep -a v4l2-ctl || echo "no v4l2-ctl running"
+suspended
+no v4l2-ctl running
+[exit 0]
+
+$ journalctl -k --since '2026-10-27 20:55:09' | grep -E 'WARNING|BUG|Oops|lockdep|Call Trace' | tee /dev/stderr | wc -l
+0
+[exit 0]
+
+$ journalctl -k -q -o short-iso --since '2026-10-27 20:55:09'
+2026-10-27T20:55:09+09:00 esteban kernel: ov7251 i2c-INT347E:00: supply vdddo not found, using dummy regulator
+2026-10-27T20:55:09+09:00 esteban kernel: ov7251 i2c-INT347E:00: supply vddd not found, using dummy regulator
+2026-10-27T20:55:09+09:00 esteban kernel: ov7251 i2c-INT347E:00: supply vdda not found, using dummy regulator
+2026-10-27T20:55:09+09:00 esteban kernel: ov7251 i2c-INT347E:00: OV7251 revision 7 (1F) detected at address 0x60
+[exit 0]
+
+## Final: V0 reloaded and left loaded (sudo -n insmod /tmp/claude-1000/-home-antoine-projects-surface/3ccf287b-d9c6-4190-a42c-0b614d1d1d83/scratchpad/variants/V0/ov7251.ko), start 2026-10-27 20:57:36
+
+$ pgrep -a v4l2-ctl || echo "no v4l2-ctl running"; cat /sys/bus/i2c/devices/i2c-INT347E:00/power/runtime_status
+no v4l2-ctl running
+suspended
+[exit 0]
+
+$ echo i2c-INT347E:00 | sudo -n tee /sys/bus/i2c/drivers/ov7251/unbind
+i2c-INT347E:00
+[exit 0]
+
+$ sudo -n modprobe -r ov7251
+[exit 0]
+
+$ lsmod | grep -E "^ov7251" || echo "ov7251 not loaded"
+ov7251 not loaded
+[exit 0]
+
+$ sudo -n insmod /tmp/claude-1000/-home-antoine-projects-surface/3ccf287b-d9c6-4190-a42c-0b614d1d1d83/scratchpad/variants/V0/ov7251.ko
+[exit 0]
+
+$ cat /sys/module/ov7251/taint
+OE
+[exit 0]
+
+$ python3 /tmp/claude-1000/-home-antoine-projects-surface/3ccf287b-d9c6-4190-a42c-0b614d1d1d83/scratchpad/entity.py
+subdev: ('ov7251 3-0060', '/dev/v4l-subdev7')  runtime_status: active
+[exit 0]
+
+$ /tmp/claude-1000/-home-antoine-projects-surface/3ccf287b-d9c6-4190-a42c-0b614d1d1d83/scratchpad/linkfreq.sh
+subdev node: /dev/v4l-subdev7
+link_frequency: 1 (319200000 0x13069b00)
+pixel_rate: 63840000
+[exit 0]
+
+$ cd /home/antoine/projects/surface-ir-camera && python3 tools/link-stress.py --label final --runs 1 --frames 30 --fps 30 --out /tmp/claude-1000/-home-antoine-projects-surface/3ccf287b-d9c6-4190-a42c-0b614d1d1d83/scratchpad/link-stress-results.jsonl
+readback: final on 7.2.12-gcov, taint OE
+  0x30b4=0x01 0x30b3=0x85 0x30b1=0x04 0x30b0=0x0a 0x30b5=0x05 0x4837=0x19 0x3098=0x04 0x3099=0x32 0x309a=0x05 0x309b=0x04 0x309d=0x00
+  link_frequency: 1 (319200000 0x13069b00)  pixel_rate: 63840000
+
+| label | run | requested | received | dropped | fps | error lines | mean |
+|---|---|---|---|---|---|---|---|
+| final | 1 | 35 | 35 | 0 | 30.01 | 0 | 16.5 |
+[exit 0]
+
+$ cat /sys/bus/i2c/devices/i2c-INT347E:00/power/runtime_status; pgrep -a v4l2-ctl || echo "no v4l2-ctl running"
+suspended
+no v4l2-ctl running
+[exit 0]
+
+$ journalctl -k --since '2026-10-27 20:57:36' | grep -E 'WARNING|BUG|Oops|lockdep|Call Trace' | tee /dev/stderr | wc -l
+0
+[exit 0]
+
+$ journalctl -k -q -o short-iso --since '2026-10-27 20:57:36'
+2026-10-27T20:57:37+09:00 esteban kernel: ov7251 i2c-INT347E:00: supply vdddo not found, using dummy regulator
+2026-10-27T20:57:37+09:00 esteban kernel: ov7251 i2c-INT347E:00: supply vddd not found, using dummy regulator
+2026-10-27T20:57:37+09:00 esteban kernel: ov7251 i2c-INT347E:00: supply vdda not found, using dummy regulator
+2026-10-27T20:57:37+09:00 esteban kernel: ov7251 i2c-INT347E:00: OV7251 revision 7 (1F) detected at address 0x60
+[exit 0]
+
+$ cat /sys/module/ov7251/taint; lsmod | grep -E "^ov7251|^ipu3_cio2|^ipu_bridge"; media-ctl -d /dev/media0 -p | grep -E "^- entity .*ov7251"
+OE
+ov7251                 36864  1
+ipu3_cio2              53248  10
+ipu_bridge             28672  1 ipu3_cio2
+- entity 301: ov7251 3-0060 (1 pad, 1 link, 0 routes)
+[exit 0]
+
+$ wc -l /tmp/claude-1000/-home-antoine-projects-surface/3ccf287b-d9c6-4190-a42c-0b614d1d1d83/scratchpad/link-stress-results.jsonl; python3 -c "import json,sys; [print(r['label'], r['run'], r['requested'], r['received'], r['dropped'], r['fps'], r['error_lines'], r['mean'], r['complete'], r['readback']['taint'] or '-', r['readback']['ctrls']['link_frequency']) for r in map(json.loads, open('/tmp/claude-1000/-home-antoine-projects-surface/3ccf287b-d9c6-4190-a42c-0b614d1d1d83/scratchpad/link-stress-results.jsonl'))]"
+13 /tmp/claude-1000/-home-antoine-projects-surface/3ccf287b-d9c6-4190-a42c-0b614d1d1d83/scratchpad/link-stress-results.jsonl
+stock 1 155 155 0 30.01 0 16.2 True - 0 (240000000 0xe4e1c00)
+stock 2 155 155 0 30.0 0 16.5 True - 0 (240000000 0xe4e1c00)
+stock 3 155 155 0 30.01 0 16.3 True - 0 (240000000 0xe4e1c00)
+V0 1 155 155 0 30.01 0 16.2 True OE 1 (319200000 0x13069b00)
+V0 2 155 155 0 30.01 0 16.5 True OE 1 (319200000 0x13069b00)
+V0 3 155 155 0 30.01 0 16.1 True OE 1 (319200000 0x13069b00)
+V1 1 155 155 0 30.01 0 16.3 True OE 1 (319200000 0x13069b00)
+V1 2 155 155 0 30.01 0 16.3 True OE 1 (319200000 0x13069b00)
+V1 3 155 155 0 30.01 0 16.3 True OE 1 (319200000 0x13069b00)
+V2 1 155 155 0 30.0 0 16.4 True OE 1 (319200000 0x13069b00)
+V2 2 155 155 0 30.01 0 16.3 True OE 1 (319200000 0x13069b00)
+V2 3 155 155 0 30.01 0 16.4 True OE 1 (319200000 0x13069b00)
+final 1 35 35 0 30.01 0 16.5 True OE 1 (319200000 0x13069b00)
+[exit 0]
+
+## Summary (2026-10-27T20:58:19+09:00)
+
+Every readback matched its expectation: stock 0x30b4=0x03 0x30b3=0x4b 0x30b1=0x01 0x4837=0x19, link_frequency 0 (240000000), pixel_rate 48000000, taint empty; V0 0x30b4=0x01 0x30b3=0x85 0x30b1=0x04 0x4837=0x19, link_frequency 1 (319200000), pixel_rate 63840000, taint OE; V1 0x30b4=0x04 0x30b3=0x85 0x30b1=0x01 0x4837=0x19, same link_frequency, pixel_rate and taint as V0; V2 as V1 with 0x4837=0x1f; final (V0 reloaded) identical to V0. The other registers (0x30b0=0x0a 0x30b5=0x05 0x3098=0x04 0x3099=0x32 0x309a=0x05 0x309b=0x04 0x309d=0x00) were the same under all four modules.
+
+| label | run | requested | received | dropped | fps | error lines | mean |
+|---|---|---|---|---|---|---|---|
+| stock | 1 | 155 | 155 | 0 | 30.01 | 0 | 16.2 |
+| stock | 2 | 155 | 155 | 0 | 30.0 | 0 | 16.5 |
+| stock | 3 | 155 | 155 | 0 | 30.01 | 0 | 16.3 |
+| V0 | 1 | 155 | 155 | 0 | 30.01 | 0 | 16.2 |
+| V0 | 2 | 155 | 155 | 0 | 30.01 | 0 | 16.5 |
+| V0 | 3 | 155 | 155 | 0 | 30.01 | 0 | 16.1 |
+| V1 | 1 | 155 | 155 | 0 | 30.01 | 0 | 16.3 |
+| V1 | 2 | 155 | 155 | 0 | 30.01 | 0 | 16.3 |
+| V1 | 3 | 155 | 155 | 0 | 30.01 | 0 | 16.3 |
+| V2 | 1 | 155 | 155 | 0 | 30.0 | 0 | 16.4 |
+| V2 | 2 | 155 | 155 | 0 | 30.01 | 0 | 16.3 |
+| V2 | 3 | 155 | 155 | 0 | 30.01 | 0 | 16.4 |
+| final (V0) | 1 | 35 | 35 | 0 | 30.01 | 0 | 16.5 |
+
+pytest -q tests/test_k3_timing.py tests/test_k11_strobe_registers.py tests/test_k12_subdev_state.py: V1 "1 failed, 35 passed in 99.76s", V2 "1 failed, 35 passed in 99.79s"; the one failure in both is tests/test_k3_timing.py::test_pll1_programmed_for_319_2_mhz, which asserts the mainline table (pre_div 0x30b4=0x01, div 0x30b1=0x04) and read back 0x04 and 0x01, i.e. exactly the V1/V2 change, so it is the test's expectation that differs, not a driver fault. No test skipped (the room was dark enough for K11). Kernel log per variant (journalctl -k --since <start>, grep WARNING|BUG|Oops|lockdep|Call Trace): 0 lines for stock, V0, V1, V2 and final; the only kernel lines each reload produced were the three "supply ... not found, using dummy regulator" notices and "OV7251 revision 7 (1F) detected at address 0x60". No run timed out, no v4l2-ctl was left running, the sensor was back to runtime_status suspended after every stream and every test run.
+
+What this does not show: on this machine the four modules are indistinguishable by this measurement (155 of 155 buffers, 0 dropped, 30 fps, 0 link-related kernel lines, same frame mean, in every run), so the stress gives no evidence for or against the Windows Hello dividers (V1) or the 0x4837=0x1f timing (V2); it only shows that none of them breaks the link on esteban at 640x480, 30 fps. Raw per-run JSON: /tmp/claude-1000/-home-antoine-projects-surface/3ccf287b-d9c6-4190-a42c-0b614d1d1d83/scratchpad/link-stress-results.jsonl (13 rows). Final state: V0 (/tmp/claude-1000/-home-antoine-projects-surface/3ccf287b-d9c6-4190-a42c-0b614d1d1d83/scratchpad/variants/V0/ov7251.ko, sha256 0e4c1e7a...) loaded, taint OE, link_frequency 1 (319200000), pixel_rate 63840000, sensor suspended, ov7251 entity id 301 (271 at the start; the id changes on every reload, the node stayed /dev/v4l-subdev7). Nothing persistent was changed: no file under /lib/modules touched, no commit.
+
+## Variant: V3 (sudo -n insmod /tmp/claude-1000/-home-antoine-projects-surface/3ccf287b-d9c6-4190-a42c-0b614d1d1d83/scratchpad/variants/V3/ov7251.ko), start 2026-10-27 21:20:19
+
+V3 = kernel/backport/ov7251.c (V0) with .mipi_div = 0x01 (was 0x05) in the ov7251_pll1_cfg_19_2_mhz_319_2_mhz initializer and nothing else: the complete PLL1 setting of the Windows driver's first mode table (pre_div 0x01, mult 0x85, div 0x04, pix_div 0x0a, mipi_div 0x01) and what D. Manresa tried on his Surface Pro 7+, where it made the link far worse. The datasheet says register 0x30b5 (MIPI divider) values other than 2 and 4 all mean "divide by 1", so on paper V3 runs the same clocks as V0 and should behave like it. Built exactly like V0, V1 and V2 (same Makefile, same unchanged ipu-bridge.c, make -s against /home/antoine/build/kernel-gcov/kernel-ark because /lib/modules/7.2.12-gcov/build does not exist here, gcc 15.3.1 against the kernel's 15.2.1): /tmp/claude-1000/-home-antoine-projects-surface/3ccf287b-d9c6-4190-a42c-0b614d1d1d83/scratchpad/variants/V3/ov7251.ko, sha256 e2307c6437fbb862f954900c0d9c4e5d81ea47105e677503d79715527f4ea5b7, vermagic "7.2.12-gcov SMP preempt mod_unload ". Expected readback: V0's with 0x30b5=0x01, i.e. 0x30b4=0x01 0x30b3=0x85 0x30b1=0x04 0x30b5=0x01 0x4837=0x19, link_frequency 319200000. Procedure as above: build, K9 reload (unbind, modprobe -r, insmod), taint, entity, link-stress.py --label V3 --runs 3 --frames 150 --fps 30, journalctl since the start, then V0 reloaded and left loaded with a 1-run, 30-frame link-stress.py --label final2. No pytest for V3 (not requested).
+
+$ mkdir /tmp/claude-1000/-home-antoine-projects-surface/3ccf287b-d9c6-4190-a42c-0b614d1d1d83/scratchpad/variants/V3 && cp /home/antoine/projects/surface-ir-camera/kernel/build/Makefile /home/antoine/projects/surface-ir-camera/kernel/backport/ipu-bridge.c /home/antoine/projects/surface-ir-camera/kernel/backport/ov7251.c /tmp/claude-1000/-home-antoine-projects-surface/3ccf287b-d9c6-4190-a42c-0b614d1d1d83/scratchpad/variants/V3/ && ls -la /tmp/claude-1000/-home-antoine-projects-surface/3ccf287b-d9c6-4190-a42c-0b614d1d1d83/scratchpad/variants/V3
+total 76
+drwxr-xr-x. 2 antoine antoine   100 Oct 27 21:20 .
+drwxr-xr-x. 6 antoine antoine   120 Oct 27 21:20 ..
+-rw-r--r--. 1 antoine antoine 27583 Oct 27 21:20 ipu-bridge.c
+-rw-r--r--. 1 antoine antoine   698 Oct 27 21:20 Makefile
+-rw-r--r--. 1 antoine antoine 44749 Oct 27 21:20 ov7251.c
+[exit 0]
+
+$ sed -i "/^static const struct ov7251_pll1_cfg ov7251_pll1_cfg_19_2_mhz_319_2_mhz = {$/,/^};$/ s/\.mipi_div = 0x05,/.mipi_div = 0x01,/" /tmp/claude-1000/-home-antoine-projects-surface/3ccf287b-d9c6-4190-a42c-0b614d1d1d83/scratchpad/variants/V3/ov7251.c
+[exit 0]
+
+$ diff -u /home/antoine/projects/surface-ir-camera/kernel/backport/ov7251.c /tmp/claude-1000/-home-antoine-projects-surface/3ccf287b-d9c6-4190-a42c-0b614d1d1d83/scratchpad/variants/V3/ov7251.c > /tmp/claude-1000/-home-antoine-projects-surface/3ccf287b-d9c6-4190-a42c-0b614d1d1d83/scratchpad/variants/V3/variant.diff; cat /tmp/claude-1000/-home-antoine-projects-surface/3ccf287b-d9c6-4190-a42c-0b614d1d1d83/scratchpad/variants/V3/variant.diff; echo "changed lines: $(grep -cE '^[-+][^-+]' /tmp/claude-1000/-home-antoine-projects-surface/3ccf287b-d9c6-4190-a42c-0b614d1d1d83/scratchpad/variants/V3/variant.diff)"
+--- /home/antoine/projects/surface-ir-camera/kernel/backport/ov7251.c	2026-10-27 09:13:37.007767526 +0900
++++ /tmp/claude-1000/-home-antoine-projects-surface/3ccf287b-d9c6-4190-a42c-0b614d1d1d83/scratchpad/variants/V3/ov7251.c	2026-10-27 21:20:19.092720873 +0900
+@@ -188,7 +188,7 @@
+ 	.mult = 0x85,
+ 	.div = 0x04,
+ 	.pix_div = 0x0a,
+-	.mipi_div = 0x05,
++	.mipi_div = 0x01,
+ };
+ 
+ static const struct ov7251_pll1_cfg ov7251_pll1_cfg_24_mhz_240_mhz = {
+changed lines: 2
+[exit 0]
+
+$ cmp /home/antoine/projects/surface-ir-camera/kernel/backport/ipu-bridge.c /tmp/claude-1000/-home-antoine-projects-surface/3ccf287b-d9c6-4190-a42c-0b614d1d1d83/scratchpad/variants/V3/ipu-bridge.c && cmp /home/antoine/projects/surface-ir-camera/kernel/build/Makefile /tmp/claude-1000/-home-antoine-projects-surface/3ccf287b-d9c6-4190-a42c-0b614d1d1d83/scratchpad/variants/V3/Makefile && echo 'ipu-bridge.c and Makefile identical to the project copies'
+ipu-bridge.c and Makefile identical to the project copies
+[exit 0]
+
+$ ls -ld /lib/modules/7.2.12-gcov/build
+ls: cannot access '/lib/modules/7.2.12-gcov/build': No such file or directory
+[exit 2]
+
+$ make -s -C /tmp/claude-1000/-home-antoine-projects-surface/3ccf287b-d9c6-4190-a42c-0b614d1d1d83/scratchpad/variants/V3 KDIR=/home/antoine/build/kernel-gcov/kernel-ark 2>&1 | tee /tmp/claude-1000/-home-antoine-projects-surface/3ccf287b-d9c6-4190-a42c-0b614d1d1d83/scratchpad/variants/V3/build.log
+warning: the compiler differs from the one used to build the kernel
+  The kernel was built by: gcc (GCC) 15.2.1 20260123 (Red Hat 15.2.1-7)
+  You are using:           gcc (GCC) 15.3.1 20260722 (Red Hat 15.3.1-1)
+[exit 0]
+
+$ ls -la /tmp/claude-1000/-home-antoine-projects-surface/3ccf287b-d9c6-4190-a42c-0b614d1d1d83/scratchpad/variants/V3/ov7251.ko /tmp/claude-1000/-home-antoine-projects-surface/3ccf287b-d9c6-4190-a42c-0b614d1d1d83/scratchpad/variants/V3/ipu-bridge.ko && sha256sum /tmp/claude-1000/-home-antoine-projects-surface/3ccf287b-d9c6-4190-a42c-0b614d1d1d83/scratchpad/variants/V3/ov7251.ko && modinfo -F vermagic /tmp/claude-1000/-home-antoine-projects-surface/3ccf287b-d9c6-4190-a42c-0b614d1d1d83/scratchpad/variants/V3/ov7251.ko
+-rw-r--r--. 1 antoine antoine 47328 Oct 27 21:20 /tmp/claude-1000/-home-antoine-projects-surface/3ccf287b-d9c6-4190-a42c-0b614d1d1d83/scratchpad/variants/V3/ipu-bridge.ko
+-rw-r--r--. 1 antoine antoine 67568 Oct 27 21:20 /tmp/claude-1000/-home-antoine-projects-surface/3ccf287b-d9c6-4190-a42c-0b614d1d1d83/scratchpad/variants/V3/ov7251.ko
+e2307c6437fbb862f954900c0d9c4e5d81ea47105e677503d79715527f4ea5b7  /tmp/claude-1000/-home-antoine-projects-surface/3ccf287b-d9c6-4190-a42c-0b614d1d1d83/scratchpad/variants/V3/ov7251.ko
+7.2.12-gcov SMP preempt mod_unload 
+[exit 0]
+
+$ pgrep -a v4l2-ctl || echo "no v4l2-ctl running"; cat /sys/bus/i2c/devices/i2c-INT347E:00/power/runtime_status
+no v4l2-ctl running
+suspended
+[exit 0]
+
+$ echo i2c-INT347E:00 | sudo -n tee /sys/bus/i2c/drivers/ov7251/unbind
+i2c-INT347E:00
+[exit 0]
+
+$ sudo -n modprobe -r ov7251
+[exit 0]
+
+$ lsmod | grep -E "^ov7251" || echo "ov7251 not loaded"
+ov7251 not loaded
+[exit 0]
+
+$ sudo -n insmod /tmp/claude-1000/-home-antoine-projects-surface/3ccf287b-d9c6-4190-a42c-0b614d1d1d83/scratchpad/variants/V3/ov7251.ko
+[exit 0]
+
+$ cat /sys/module/ov7251/taint
+OE
+[exit 0]
+
+$ python3 /tmp/claude-1000/-home-antoine-projects-surface/3ccf287b-d9c6-4190-a42c-0b614d1d1d83/scratchpad/entity.py
+subdev: ('ov7251 3-0060', '/dev/v4l-subdev7')  runtime_status: active
+[exit 0]
+
+$ /tmp/claude-1000/-home-antoine-projects-surface/3ccf287b-d9c6-4190-a42c-0b614d1d1d83/scratchpad/linkfreq.sh
+subdev node: /dev/v4l-subdev7
+link_frequency: 1 (319200000 0x13069b00)
+pixel_rate: 63840000
+[exit 0]
+
+$ cd /home/antoine/projects/surface-ir-camera && python3 tools/link-stress.py --label V3 --runs 3 --frames 150 --fps 30 --out /tmp/claude-1000/-home-antoine-projects-surface/3ccf287b-d9c6-4190-a42c-0b614d1d1d83/scratchpad/link-stress-results.jsonl
+readback: V3 on 7.2.12-gcov, taint OE
+  0x30b4=0x01 0x30b3=0x85 0x30b1=0x04 0x30b0=0x0a 0x30b5=0x01 0x4837=0x19 0x3098=0x04 0x3099=0x32 0x309a=0x05 0x309b=0x04 0x309d=0x00
+  link_frequency: 1 (319200000 0x13069b00)  pixel_rate: 63840000
+
+| label | run | requested | received | dropped | fps | error lines | mean |
+|---|---|---|---|---|---|---|---|
+| V3 | 1 | 155 | 155 | 0 | 30.0 | 0 | 16.3 |
+| V3 | 2 | 155 | 155 | 0 | 30.0 | 0 | 16.4 |
+| V3 | 3 | 155 | 155 | 0 | 30.01 | 0 | 16.2 |
+[exit 0]
+
+$ cat /sys/bus/i2c/devices/i2c-INT347E:00/power/runtime_status; pgrep -a v4l2-ctl || echo "no v4l2-ctl running"
+suspended
+no v4l2-ctl running
+[exit 0]
+
+$ journalctl -k --since '2026-10-27 21:20:19' | grep -E 'WARNING|BUG|Oops|lockdep|Call Trace' | tee /dev/stderr | wc -l
+0
+[exit 0]
+
+$ journalctl -k -q -o short-iso --since '2026-10-27 21:20:19'
+2026-10-27T21:20:44+09:00 esteban kernel: ov7251 i2c-INT347E:00: supply vdddo not found, using dummy regulator
+2026-10-27T21:20:44+09:00 esteban kernel: ov7251 i2c-INT347E:00: supply vddd not found, using dummy regulator
+2026-10-27T21:20:44+09:00 esteban kernel: ov7251 i2c-INT347E:00: supply vdda not found, using dummy regulator
+2026-10-27T21:20:44+09:00 esteban kernel: ov7251 i2c-INT347E:00: OV7251 revision 7 (1F) detected at address 0x60
+[exit 0]
+
+## Final (after V3): V0 reloaded and left loaded (sudo -n insmod /tmp/claude-1000/-home-antoine-projects-surface/3ccf287b-d9c6-4190-a42c-0b614d1d1d83/scratchpad/variants/V0/ov7251.ko), start 2026-10-27 21:21:28
+
+$ pgrep -a v4l2-ctl || echo "no v4l2-ctl running"; cat /sys/bus/i2c/devices/i2c-INT347E:00/power/runtime_status
+no v4l2-ctl running
+suspended
+[exit 0]
+
+$ echo i2c-INT347E:00 | sudo -n tee /sys/bus/i2c/drivers/ov7251/unbind
+i2c-INT347E:00
+[exit 0]
+
+$ sudo -n modprobe -r ov7251
+[exit 0]
+
+$ lsmod | grep -E "^ov7251" || echo "ov7251 not loaded"
+ov7251 not loaded
+[exit 0]
+
+$ sudo -n insmod /tmp/claude-1000/-home-antoine-projects-surface/3ccf287b-d9c6-4190-a42c-0b614d1d1d83/scratchpad/variants/V0/ov7251.ko
+[exit 0]
+
+$ cat /sys/module/ov7251/taint
+OE
+[exit 0]
+
+$ python3 /tmp/claude-1000/-home-antoine-projects-surface/3ccf287b-d9c6-4190-a42c-0b614d1d1d83/scratchpad/entity.py
+subdev: ('ov7251 3-0060', '/dev/v4l-subdev7')  runtime_status: active
+[exit 0]
+
+$ /tmp/claude-1000/-home-antoine-projects-surface/3ccf287b-d9c6-4190-a42c-0b614d1d1d83/scratchpad/linkfreq.sh
+subdev node: /dev/v4l-subdev7
+link_frequency: 1 (319200000 0x13069b00)
+pixel_rate: 63840000
+[exit 0]
+
+$ cd /home/antoine/projects/surface-ir-camera && python3 tools/link-stress.py --label final2 --runs 1 --frames 30 --out /tmp/claude-1000/-home-antoine-projects-surface/3ccf287b-d9c6-4190-a42c-0b614d1d1d83/scratchpad/link-stress-results.jsonl
+readback: final2 on 7.2.12-gcov, taint OE
+  0x30b4=0x01 0x30b3=0x85 0x30b1=0x04 0x30b0=0x0a 0x30b5=0x05 0x4837=0x19 0x3098=0x04 0x3099=0x32 0x309a=0x05 0x309b=0x04 0x309d=0x00
+  link_frequency: 1 (319200000 0x13069b00)  pixel_rate: 63840000
+
+| label | run | requested | received | dropped | fps | error lines | mean |
+|---|---|---|---|---|---|---|---|
+| final2 | 1 | 35 | 35 | 0 | 30.0 | 0 | 16.3 |
+[exit 0]
+
+$ cat /sys/bus/i2c/devices/i2c-INT347E:00/power/runtime_status; pgrep -a v4l2-ctl || echo "no v4l2-ctl running"
+suspended
+no v4l2-ctl running
+[exit 0]
+
+$ journalctl -k --since '2026-10-27 21:21:28' | grep -E 'WARNING|BUG|Oops|lockdep|Call Trace' | tee /dev/stderr | wc -l
+0
+[exit 0]
+
+$ journalctl -k -q -o short-iso --since '2026-10-27 21:21:28'
+2026-10-27T21:21:28+09:00 esteban kernel: ov7251 i2c-INT347E:00: supply vdddo not found, using dummy regulator
+2026-10-27T21:21:28+09:00 esteban kernel: ov7251 i2c-INT347E:00: supply vddd not found, using dummy regulator
+2026-10-27T21:21:28+09:00 esteban kernel: ov7251 i2c-INT347E:00: supply vdda not found, using dummy regulator
+2026-10-27T21:21:28+09:00 esteban kernel: ov7251 i2c-INT347E:00: OV7251 revision 7 (1F) detected at address 0x60
+[exit 0]
+
+$ journalctl -k --since '2026-10-27 21:20:19' | grep -cE 'WARNING|BUG|Oops|lockdep|Call Trace'
+0
+[exit 1]
+
+$ cat /sys/module/ov7251/taint; lsmod | grep -E '^ov7251|^ipu3_cio2|^ipu_bridge'; media-ctl -d /dev/media0 -p | grep -E '^- entity .*ov7251'; sha256sum /tmp/claude-1000/-home-antoine-projects-surface/3ccf287b-d9c6-4190-a42c-0b614d1d1d83/scratchpad/variants/V0/ov7251.ko
+OE
+ov7251                 36864  1
+ipu3_cio2              53248  10
+ipu_bridge             28672  1 ipu3_cio2
+- entity 313: ov7251 3-0060 (1 pad, 1 link, 0 routes)
+0e4c1e7a146c87a7ef6b14bdb74110dd17f74ba09182ed3ec2a67c2ac0d728cb  /tmp/claude-1000/-home-antoine-projects-surface/3ccf287b-d9c6-4190-a42c-0b614d1d1d83/scratchpad/variants/V0/ov7251.ko
+[exit 0]
+
+$ wc -l /tmp/claude-1000/-home-antoine-projects-surface/3ccf287b-d9c6-4190-a42c-0b614d1d1d83/scratchpad/link-stress-results.jsonl; python3 -c "import json,sys; [print(r['label'], r['run'], r['requested'], r['received'], r['dropped'], r['fps'], r['error_lines'], r['mean'], r['complete'], r['readback']['taint'] or '-', r['readback']['regs']['0x30b5'], r['readback']['ctrls']['link_frequency']) for r in map(json.loads, open('/tmp/claude-1000/-home-antoine-projects-surface/3ccf287b-d9c6-4190-a42c-0b614d1d1d83/scratchpad/link-stress-results.jsonl')) if r['label'] in ('V3', 'final2')]"
+17 /tmp/claude-1000/-home-antoine-projects-surface/3ccf287b-d9c6-4190-a42c-0b614d1d1d83/scratchpad/link-stress-results.jsonl
+V3 1 155 155 0 30.0 0 16.3 True OE 0x01 1 (319200000 0x13069b00)
+V3 2 155 155 0 30.0 0 16.4 True OE 0x01 1 (319200000 0x13069b00)
+V3 3 155 155 0 30.01 0 16.2 True OE 0x01 1 (319200000 0x13069b00)
+final2 1 35 35 0 30.0 0 16.3 True OE 0x05 1 (319200000 0x13069b00)
+[exit 0]
+
+## Summary of V3 (2026-10-27T21:22:29+09:00)
+
+The V3 readback matched its expectation: 0x30b4=0x01 0x30b3=0x85 0x30b1=0x04 0x30b0=0x0a 0x30b5=0x01 0x4837=0x19, the other registers (0x3098=0x04 0x3099=0x32 0x309a=0x05 0x309b=0x04 0x309d=0x00) as under V0, link_frequency 1 (319200000), pixel_rate 63840000, taint OE; the only register that differs from V0's readback is 0x30b5 (0x01 instead of 0x05), which is the change itself. The three runs gave 155 of 155 buffers, 0 dropped, 30.0/30.0/30.01 fps, 0 link-related kernel lines and frame means 16.3/16.4/16.2, so on esteban V3 is indistinguishable from V0, V1 and V2 by this measurement, as the datasheet's "divide by 1" reading predicts; it does not reproduce the Surface Pro 7+ degradation. final2 (V0 back): 35 of 35, 0 dropped, 30.0 fps, 0 error lines, mean 16.3, readback identical to V0's earlier one (0x30b5=0x05). Kernel log: 0 WARNING/BUG/Oops/lockdep/Call Trace lines from the V3 start (21:20:19) through the final reload; each reload produced only the three "supply ... not found, using dummy regulator" notices and "OV7251 revision 7 (1F) detected at address 0x60". No run timed out, no v4l2-ctl was left running, the sensor was back to runtime_status suspended after every stream. Final state: V0 (/tmp/claude-1000/-home-antoine-projects-surface/3ccf287b-d9c6-4190-a42c-0b614d1d1d83/scratchpad/variants/V0/ov7251.ko, sha256 0e4c1e7a...) loaded, taint OE, link_frequency 1 (319200000), pixel_rate 63840000, sensor suspended, ov7251 entity id 313 (301 before V3; the node stayed /dev/v4l-subdev7). Nothing persistent was changed: no file under /lib/modules touched, no commit. Raw per-run JSON: /tmp/claude-1000/-home-antoine-projects-surface/3ccf287b-d9c6-4190-a42c-0b614d1d1d83/scratchpad/link-stress-results.jsonl, now 17 rows (the 13 above plus V3 x3 and final2).
+
+| label | run | requested | received | dropped | fps | error lines | mean |
+|---|---|---|---|---|---|---|---|
+| V3 | 1 | 155 | 155 | 0 | 30.0 | 0 | 16.3 |
+| V3 | 2 | 155 | 155 | 0 | 30.0 | 0 | 16.4 |
+| V3 | 3 | 155 | 155 | 0 | 30.01 | 0 | 16.2 |
+| final2 (V0) | 1 | 35 | 35 | 0 | 30.0 | 0 | 16.3 |
