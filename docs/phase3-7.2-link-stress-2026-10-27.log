@@ -1,4 +1,4 @@
-# Phase 3, 7.2: CSI-2 link stress of the 319.2 MHz PLL variants (stock, V0, V1, V2)
+# Phase 3, 7.2: CSI-2 link stress of the 319.2 MHz PLL variants (stock, V0, V1, V2, V3)
 
 Machine: esteban, Surface Book 2 13" (i7-8650U), OV7251 infrared sensor on ipu3-cio2. Kernel: 7.2.12-gcov. Date: 2026-10-27T20:50:59+09:00. Operator: Claude (subagent), driven by tools/link-stress.py and the K9 reload procedure from tests/test_k9_reload.py.
 
