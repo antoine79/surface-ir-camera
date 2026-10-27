@@ -1,0 +1,60 @@
+From bc5489b168046610eabafe6055b4a6e480e5e282 Mon Sep 17 00:00:00 2001
+From: Antoine Pichot <antoine.pichot@gmail.com>
+Date: Tue, 27 Oct 2026 20:45:10 +0900
+Subject: [PATCH 2/2] media: i2c: ov7251: Use the Windows MIPI pixel clock
+ period for 319.2 MHz
+
+Register 0x4837 is PCLK_PERIOD, documented in the OV7750/OV7251
+datasheet (rev 2.12) as "Period of Pclk2x, pclk_div = 1, and 1-bit
+Decimal", with a reset value of 0x19. The three mode tables all write
+0x19 to it, whatever the link frequency.
+
+The Intel ov7251 Windows driver (30.18305.6.5127) on the Surface Book 2
+writes 0x1f in its Windows Hello 30 fps mode, together with the PLL1
+dividers of the previous patch. Write the same value so the test runs
+the complete Windows register set for the 638.4 Mbps link. The mode
+tables are shared by both link frequencies, so the 240 MHz link gets
+the new value as well.
+
+Test patch for the Surface Pro 7+ link report on patch 1 of the series;
+not for merging as is.
+
+Signed-off-by: Antoine Pichot <antoine.pichot@gmail.com>
+---
+ drivers/media/i2c/ov7251.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/media/i2c/ov7251.c b/drivers/media/i2c/ov7251.c
+index 1f30a01c85b3..cf108c5481a1 100644
+--- a/drivers/media/i2c/ov7251.c
++++ b/drivers/media/i2c/ov7251.c
+@@ -358,7 +358,7 @@ static const struct reg_value ov7251_setting_vga_30fps[] = {
+ 	{ 0x4806, 0x0f },
+ 	{ 0x4819, 0xaa },
+ 	{ 0x4823, 0x3e },
+-	{ 0x4837, 0x19 },
++	{ 0x4837, 0x1f },
+ 	{ 0x4a0d, 0x00 },
+ 	{ 0x4a47, 0x7f },
+ 	{ 0x4a49, 0xf0 },
+@@ -486,7 +486,7 @@ static const struct reg_value ov7251_setting_vga_60fps[] = {
+ 	{ 0x4806, 0x0f },
+ 	{ 0x4819, 0xaa },
+ 	{ 0x4823, 0x3e },
+-	{ 0x4837, 0x19 },
++	{ 0x4837, 0x1f },
+ 	{ 0x4a0d, 0x00 },
+ 	{ 0x4a47, 0x7f },
+ 	{ 0x4a49, 0xf0 },
+@@ -614,7 +614,7 @@ static const struct reg_value ov7251_setting_vga_90fps[] = {
+ 	{ 0x4806, 0x0f },
+ 	{ 0x4819, 0xaa },
+ 	{ 0x4823, 0x3e },
+-	{ 0x4837, 0x19 },
++	{ 0x4837, 0x1f },
+ 	{ 0x4a0d, 0x00 },
+ 	{ 0x4a47, 0x7f },
+ 	{ 0x4a49, 0xf0 },
+-- 
+2.56.0
+

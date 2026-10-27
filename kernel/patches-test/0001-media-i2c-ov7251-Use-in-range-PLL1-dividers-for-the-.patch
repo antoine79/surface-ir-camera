@@ -1,0 +1,57 @@
+From 6fb2c2860cc352d510fc9809e55c484e8f836079 Mon Sep 17 00:00:00 2001
+From: Antoine Pichot <antoine.pichot@gmail.com>
+Date: Tue, 27 Oct 2026 20:44:55 +0900
+Subject: [PATCH 1/2] media: i2c: ov7251: Use in-range PLL1 dividers for the
+ 319.2 MHz link
+
+The 19.2 MHz PLL1 table for the 319.2 MHz link frequency sets the PLL1
+pre-divider (register 0x30B4, bits [3:0], a coded field where 0x04 means
+divide by 4) to 0x01, which the datasheet decodes as divide by 1, and
+the PLL1 divider (register 0x30B1, bits [4:0], a literal divisor from 1
+to 16) to 0x04. With a 19.2 MHz external clock and the multiplier of
+0x85 (133), the PLL1 multiplier output, the VCO of figure 2-12, runs at
+19.2 x 133 = 2553.6 MHz before the divider brings it down to 638.4 MHz.
+Table 2-11 of the OV7750/OV7251 datasheet (rev 2.12) limits the PLL1
+multiplier output to 300 to 800 MHz, so the current values run the
+oscillator at 3.2 times the datasheet maximum.
+
+Divide before multiplying instead: pre-divider 0x04 (divide by 4, a
+4.8 MHz reference) and divider 0x01. The multiplier output is then
+4.8 x 133 = 638.4 MHz, inside the allowed range, and the MIPI clock
+after the unchanged MIPI divider (0x30B5 = 0x05, divide by 1) is the
+same 638.4 Mbps as before, so the 319.2 MHz link frequency and the
+63.84 MHz pixel rate do not change.
+
+This is the arrangement the Intel ov7251 Windows driver
+(30.18305.6.5127) programs for its Windows Hello 30 fps mode on the
+Surface Book 2: 0x30B4 = 0x04, 0x30B3 = 0x85, 0x30B1 = 0x01,
+0x30B0 = 0x0a, 0x30B5 = 0x05. The 240 MHz tables, the 24 MHz tables
+and the PLL2 tables of the series are untouched.
+
+Test patch for the Surface Pro 7+ link report on patch 1 of the series;
+not for merging as is.
+
+Signed-off-by: Antoine Pichot <antoine.pichot@gmail.com>
+---
+ drivers/media/i2c/ov7251.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/media/i2c/ov7251.c b/drivers/media/i2c/ov7251.c
+index 1413f1856e3b..1f30a01c85b3 100644
+--- a/drivers/media/i2c/ov7251.c
++++ b/drivers/media/i2c/ov7251.c
+@@ -174,9 +174,9 @@ static const struct ov7251_pll1_cfg ov7251_pll1_cfg_19_2_mhz_240_mhz = {
+ };
+ 
+ static const struct ov7251_pll1_cfg ov7251_pll1_cfg_19_2_mhz_319_2_mhz = {
+-	.pre_div = 0x01,
++	.pre_div = 0x04,
+ 	.mult = 0x85,
+-	.div = 0x04,
++	.div = 0x01,
+ 	.pix_div = 0x0a,
+ 	.mipi_div = 0x05,
+ };
+-- 
+2.56.0
+
