@@ -1,4 +1,4 @@
-From 17d810518152503be8d2436a6f8bf986144ba9a7 Mon Sep 17 00:00:00 2001
+From b32c0cdc12bebe9cd683a76bed07db27619627ab Mon Sep 17 00:00:00 2001
 From: Antoine Pichot <antoine.pichot@gmail.com>
 Date: Tue, 27 Oct 2026 22:29:21 +0900
 Subject: [PATCH v2 3/9] media: i2c: ov7251: Report the pixel array rate for

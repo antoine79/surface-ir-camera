@@ -1,4 +1,4 @@
-From 1f9a9f20dbc4104c293830ceed7884cf28f5fbc1 Mon Sep 17 00:00:00 2001
+From b32a4a51a4007620433226b250d2589a87bb20de Mon Sep 17 00:00:00 2001
 From: Antoine Pichot <antoine.pichot@gmail.com>
 Date: Mon, 26 Oct 2026 21:26:58 +0900
 Subject: [PATCH v2 5/9] media: i2c: ov7251: Use sub-device active state

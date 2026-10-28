@@ -1,4 +1,4 @@
-From 94748b0a8a77d6fbbfb64abab85d0c1cd0d300cb Mon Sep 17 00:00:00 2001
+From 18ef07e84152113c00f3db867867833720ff0483 Mon Sep 17 00:00:00 2001
 From: Antoine Pichot <antoine.pichot@gmail.com>
 Date: Sat, 24 Oct 2026 20:42:31 +0900
 Subject: [PATCH v2 2/9] media: i2c: ov7251: Fix link frequency index

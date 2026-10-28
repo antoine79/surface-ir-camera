@@ -1,4 +1,4 @@
-From ec654747d99c1d6b369ce551a2ad14722eb405dc Mon Sep 17 00:00:00 2001
+From d7059326158dfc2a3164838e6e7ab1661bdeb906 Mon Sep 17 00:00:00 2001
 From: Antoine Pichot <antoine.pichot@gmail.com>
 Date: Sat, 24 Oct 2026 22:41:03 +0900
 Subject: [PATCH v2 9/9] media: ipu-bridge: Add a rotation quirk for the

@@ -1,6 +1,6 @@
-From ec654747d99c1d6b369ce551a2ad14722eb405dc Mon Sep 17 00:00:00 2001
+From d7059326158dfc2a3164838e6e7ab1661bdeb906 Mon Sep 17 00:00:00 2001
 From: Antoine Pichot <antoine.pichot@gmail.com>
-Date: Wed, 28 Oct 2026 19:31:01 +0900
+Date: Wed, 28 Oct 2026 20:20:06 +0900
 Subject: [PATCH v2 0/9] media: i2c: ov7251: fixes and infrared strobe for Surface Book 2
 
 The Microsoft Surface Book 2 has an OV7251 infrared camera (used by
