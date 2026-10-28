@@ -10,6 +10,7 @@
 
 | Patch | Change |
 |-------|--------|
+| v2 0001 | in-range PLL1 dividers for the 19.2 MHz / 319.2 MHz table: pre-divider 4, divider 1 (same 638.4 Mbps link, VCO 638.4 MHz instead of 2553.6 MHz; fixes the dropped frames and CSI-2 errors D. Manresa measured on a Surface Pro 7+ once patch 0001 selects this table) |
 | 0001 | link frequency index: use the driver's table index (319.2 MHz on the Surface Book 2 instead of 240 MHz) |
 | 0002 | gain is `V4L2_CID_ANALOGUE_GAIN` (Daniel Scally, already in step 2) |
 | 0003 | v2: use the sub-device active state (format and crop live in the state, driver mutex dropped; the core then handles control events, so `v4l2-compliance -u` passes). v1 instead declared the control event ops |
@@ -38,7 +39,7 @@ Then copy `drivers/media/i2c/ov7251.c` here.
 
 1. Base: `https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git/plain/drivers/media/pci/intel/ipu-bridge.c?h=v7.2.12` (sha256 `dfdca598bc76dfe3812abb7f6f8ab4332c361259f5f14e6e782052c2f7d8f600`). Mainline v7.2 differs from it by two stable fixes.
 2. linux-surface: the two hunks of `0013-cameras.patch` (same URL and sha256 as above) touching `drivers/media/pci/intel/ipu-bridge.c`: the Surface Pro 9 sensor entries and the Surface Pro 8 and 9 upside-down quirks. Applied with `git apply --include`, no fuzz.
-3. Patch 7, applied with `git apply` (it applies with an offset, no fuzz).
+3. Patch 7, applied with `git apply` (it applies with an offset, no fuzz). Since 2026-10-28 the quirk table also carries the Surface Pro 7+ entry (DMI product SKU `Surface_Pro_7+_1960`) of the v2 series, whose frames D. Manresa measured turned the same way.
 
 ```sh
 W=$(mktemp -d) && mkdir -p $W/drivers/media/pci/intel && cd $W

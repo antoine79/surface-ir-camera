@@ -169,6 +169,15 @@ static const struct dmi_system_id rotated_90_sensor_dmi_ids[] = {
 		},
 		.driver_data = "INT347E",
 	},
+	{
+		/* Microsoft Surface Pro 7+, infrared sensor */
+		.matches = {
+			DMI_EXACT_MATCH(DMI_SYS_VENDOR,
+					"Microsoft Corporation"),
+			DMI_EXACT_MATCH(DMI_PRODUCT_SKU, "Surface_Pro_7+_1960"),
+		},
+		.driver_data = "INT347E",
+	},
 	{} /* Terminating entry */
 };
 

@@ -1,0 +1,31 @@
+# Phase 3, 7.2: CSI-2 link stress of the v2 PLL1 table (pre-divider 4, multiplier 133, divider 1) at 30 and 90 fps
+
+Machine: esteban, Surface Book 2 13" (i7-8650U), OV7251 on ipu3-cio2. Kernel: 7.2.12-gcov. Date: 2026-10-28T19:26:53+09:00. Module: kernel/build/ov7251.ko from kernel/backport/ov7251.c (v2 series). Operator: Claude, tools/link-stress.py.
+
+readback: v2-30fps on 7.2.12-gcov, taint OE
+  0x30b4=0x04 0x30b3=0x85 0x30b1=0x01 0x30b0=0x0a 0x30b5=0x05 0x4837=0x19 0x3098=0x04 0x3099=0x32 0x309a=0x05 0x309b=0x04 0x309d=0x00
+  link_frequency: 1 (319200000 0x13069b00)  pixel_rate: 48000000
+
+| label | run | requested | received | dropped | fps | error lines | mean |
+|---|---|---|---|---|---|---|---|
+| v2-30fps | 1 | 155 | 155 | 0 | 30.01 | 0 | 16.3 |
+| v2-30fps | 2 | 155 | 155 | 0 | 30.0 | 0 | 16.1 |
+| v2-30fps | 3 | 155 | 155 | 0 | 30.0 | 0 | 16.3 |
+
+readback: v2-90fps on 7.2.12-gcov, taint OE
+  0x30b4=0x04 0x30b3=0x85 0x30b1=0x01 0x30b0=0x0a 0x30b5=0x05 0x4837=0x19 0x3098=0x04 0x3099=0x32 0x309a=0x05 0x309b=0x04 0x309d=0x00
+  link_frequency: 1 (319200000 0x13069b00)  pixel_rate: 48000000
+
+| label | run | requested | received | dropped | fps | error lines | mean |
+|---|---|---|---|---|---|---|---|
+| v2-90fps | 1 | 155 | 155 | 0 | 90.46 | 0 | 16.4 |
+| v2-90fps | 2 | 155 | 155 | 0 | 90.43 | 0 | 16.5 |
+| v2-90fps | 3 | 155 | 155 | 0 | 90.46 | 0 | 16.5 |
+
+## JSON lines
+{"label": "v2-30fps", "run": 1, "fps_set": 30.0, "start": "2026-10-28 19:26:56.827885", "end": "2026-10-28 19:27:02.071324", "requested": 155, "received": 155, "dropped": 0, "fps": 30.01, "error_lines": 0, "errors": [], "mean": 16.3, "complete": true, "readback": {"kernel": "7.2.12-gcov", "taint": "OE", "regs": {"0x30b4": "0x04", "0x30b3": "0x85", "0x30b1": "0x01", "0x30b0": "0x0a", "0x30b5": "0x05", "0x4837": "0x19", "0x3098": "0x04", "0x3099": "0x32", "0x309a": "0x05", "0x309b": "0x04", "0x309d": "0x00"}, "ctrls": {"link_frequency": "1 (319200000 0x13069b00)", "pixel_rate": "48000000"}}}
+{"label": "v2-30fps", "run": 2, "fps_set": 30.0, "start": "2026-10-28 19:27:02.211811", "end": "2026-10-28 19:27:07.446253", "requested": 155, "received": 155, "dropped": 0, "fps": 30.0, "error_lines": 0, "errors": [], "mean": 16.1, "complete": true, "readback": {"kernel": "7.2.12-gcov", "taint": "OE", "regs": {"0x30b4": "0x04", "0x30b3": "0x85", "0x30b1": "0x01", "0x30b0": "0x0a", "0x30b5": "0x05", "0x4837": "0x19", "0x3098": "0x04", "0x3099": "0x32", "0x309a": "0x05", "0x309b": "0x04", "0x309d": "0x00"}, "ctrls": {"link_frequency": "1 (319200000 0x13069b00)", "pixel_rate": "48000000"}}}
+{"label": "v2-30fps", "run": 3, "fps_set": 30.0, "start": "2026-10-28 19:27:07.549395", "end": "2026-10-28 19:27:12.781431", "requested": 155, "received": 155, "dropped": 0, "fps": 30.0, "error_lines": 0, "errors": [], "mean": 16.3, "complete": true, "readback": {"kernel": "7.2.12-gcov", "taint": "OE", "regs": {"0x30b4": "0x04", "0x30b3": "0x85", "0x30b1": "0x01", "0x30b0": "0x0a", "0x30b5": "0x05", "0x4837": "0x19", "0x3098": "0x04", "0x3099": "0x32", "0x309a": "0x05", "0x309b": "0x04", "0x309d": "0x00"}, "ctrls": {"link_frequency": "1 (319200000 0x13069b00)", "pixel_rate": "48000000"}}}
+{"label": "v2-90fps", "run": 1, "fps_set": 90.0, "start": "2026-10-28 19:27:16.331442", "end": "2026-10-28 19:27:18.120409", "requested": 155, "received": 155, "dropped": 0, "fps": 90.46, "error_lines": 0, "errors": [], "mean": 16.4, "complete": true, "readback": {"kernel": "7.2.12-gcov", "taint": "OE", "regs": {"0x30b4": "0x04", "0x30b3": "0x85", "0x30b1": "0x01", "0x30b0": "0x0a", "0x30b5": "0x05", "0x4837": "0x19", "0x3098": "0x04", "0x3099": "0x32", "0x309a": "0x05", "0x309b": "0x04", "0x309d": "0x00"}, "ctrls": {"link_frequency": "1 (319200000 0x13069b00)", "pixel_rate": "48000000"}}}
+{"label": "v2-90fps", "run": 2, "fps_set": 90.0, "start": "2026-10-28 19:27:18.192573", "end": "2026-10-28 19:27:19.970259", "requested": 155, "received": 155, "dropped": 0, "fps": 90.43, "error_lines": 0, "errors": [], "mean": 16.5, "complete": true, "readback": {"kernel": "7.2.12-gcov", "taint": "OE", "regs": {"0x30b4": "0x04", "0x30b3": "0x85", "0x30b1": "0x01", "0x30b0": "0x0a", "0x30b5": "0x05", "0x4837": "0x19", "0x3098": "0x04", "0x3099": "0x32", "0x309a": "0x05", "0x309b": "0x04", "0x309d": "0x00"}, "ctrls": {"link_frequency": "1 (319200000 0x13069b00)", "pixel_rate": "48000000"}}}
+{"label": "v2-90fps", "run": 3, "fps_set": 90.0, "start": "2026-10-28 19:27:20.064392", "end": "2026-10-28 19:27:21.845984", "requested": 155, "received": 155, "dropped": 0, "fps": 90.46, "error_lines": 0, "errors": [], "mean": 16.5, "complete": true, "readback": {"kernel": "7.2.12-gcov", "taint": "OE", "regs": {"0x30b4": "0x04", "0x30b3": "0x85", "0x30b1": "0x01", "0x30b0": "0x0a", "0x30b5": "0x05", "0x4837": "0x19", "0x3098": "0x04", "0x3099": "0x32", "0x309a": "0x05", "0x309b": "0x04", "0x309d": "0x00"}, "ctrls": {"link_frequency": "1 (319200000 0x13069b00)", "pixel_rate": "48000000"}}}

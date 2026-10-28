@@ -1,0 +1,6 @@
+# Phase 3, 7.2: v2 series with the PLL1 divider fix (pre-divider 4, divider 1) and the pixel-rate patch, K3 + K11 + K12
+
+Machine: esteban, Surface Book 2 13" (i7-8650U), OV7251 on ipu3-cio2. Kernel: 7.2.12-gcov. Date: 2026-10-28T19:25:12+09:00. Module: kernel/build/ov7251.ko built from kernel/backport/ov7251.c (taint OE). Operator: Claude.
+
+....................................                                     [100%]
+36 passed in 100.20s (0:01:40)

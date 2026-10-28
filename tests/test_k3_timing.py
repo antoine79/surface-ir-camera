@@ -8,8 +8,10 @@ from conftest import (H, INTEGRATION_MARGIN, MODE_VTS, VTS_REG, ctrl_info, get_f
                       set_ctrl, set_fps, setup_graph, stream, streaming)
 
 # PLL1 for a 19.2 MHz xclk (what ipu-bridge/INT3472 gives the sensor here; stock reads back 03 4b 01 0a 05, the 240 MHz
-# entry) and a 319.2 MHz link: ov7251_pll1_cfg_19_2_mhz_319_2_mhz in drivers/media/i2c/ov7251.c
-PLL1_319_2 = {"pre_div 0x30b4": 0x01, "mult 0x30b3": 0x85, "div 0x30b1": 0x04, "pix_div 0x30b0": 0x0a, "mipi_div 0x30b5": 0x05}
+# entry) and a 319.2 MHz link: ov7251_pll1_cfg_19_2_mhz_319_2_mhz in drivers/media/i2c/ov7251.c, with the v2 PLL fix
+# (pre-divider 4 before the multiplier, divider 1 after it: the VCO runs at 638.4 MHz instead of 2553.6 MHz; mainline
+# before the fix reads back 01 85 04 0a 05)
+PLL1_319_2 = {"pre_div 0x30b4": 0x04, "mult 0x30b3": 0x85, "div 0x30b1": 0x01, "pix_div 0x30b0": 0x0a, "mipi_div 0x30b5": 0x05}
 
 
 @pytest.mark.needs_patch("1")
