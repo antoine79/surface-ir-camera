@@ -1,7 +1,7 @@
-From 03244b9c67ca93384f8ddbb0653a693aad34efbe Mon Sep 17 00:00:00 2001
+From c7a7ce5ef6d741738008e293ac6148aead71fe60 Mon Sep 17 00:00:00 2001
 From: Antoine Pichot <antoine.pichot@gmail.com>
 Date: Sat, 24 Oct 2026 20:45:11 +0900
-Subject: [PATCH v2 5/8] media: i2c: ov7251: Add orientation and rotation
+Subject: [PATCH v2 6/9] media: i2c: ov7251: Add orientation and rotation
  controls
 
 Parse the firmware device properties and register the
@@ -23,7 +23,7 @@ Tested-by: D. Manresa <dmanresa@gmail.com> # Surface Pro 7+, IPU6 (8086:9a19)
  1 file changed, 10 insertions(+), 1 deletion(-)
 
 diff --git a/drivers/media/i2c/ov7251.c b/drivers/media/i2c/ov7251.c
-index 2bc460632c8f..79a7cf16dcad 100644
+index 8277e28ac645..d591b9169de8 100644
 --- a/drivers/media/i2c/ov7251.c
 +++ b/drivers/media/i2c/ov7251.c
 @@ -1512,10 +1512,16 @@ static int ov7251_detect_chip(struct ov7251 *ov7251)

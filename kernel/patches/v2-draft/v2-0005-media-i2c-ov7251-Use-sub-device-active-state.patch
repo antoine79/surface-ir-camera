@@ -1,7 +1,7 @@
-From 7bc7ea1179d725e0055cab10b00ef8350dc4829b Mon Sep 17 00:00:00 2001
+From 1f9a9f20dbc4104c293830ceed7884cf28f5fbc1 Mon Sep 17 00:00:00 2001
 From: Antoine Pichot <antoine.pichot@gmail.com>
 Date: Mon, 26 Oct 2026 21:26:58 +0900
-Subject: [PATCH v2 4/8] media: i2c: ov7251: Use sub-device active state
+Subject: [PATCH v2 5/9] media: i2c: ov7251: Use sub-device active state
 
 Port the ov7251 driver to the sub-device active state.
 
@@ -33,7 +33,7 @@ Signed-off-by: Antoine Pichot <antoine.pichot@gmail.com>
  1 file changed, 43 insertions(+), 111 deletions(-)
 
 diff --git a/drivers/media/i2c/ov7251.c b/drivers/media/i2c/ov7251.c
-index 277fb0e4f4c4..2bc460632c8f 100644
+index 859bf6c42341..8277e28ac645 100644
 --- a/drivers/media/i2c/ov7251.c
 +++ b/drivers/media/i2c/ov7251.c
 @@ -130,8 +130,6 @@ struct ov7251 {

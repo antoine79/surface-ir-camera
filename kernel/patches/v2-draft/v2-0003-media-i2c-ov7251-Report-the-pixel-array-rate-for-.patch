@@ -1,7 +1,7 @@
-From 8733408c4fbe66815776d4c0fb9a0e407b6b29f0 Mon Sep 17 00:00:00 2001
+From 17d810518152503be8d2436a6f8bf986144ba9a7 Mon Sep 17 00:00:00 2001
 From: Antoine Pichot <antoine.pichot@gmail.com>
 Date: Tue, 27 Oct 2026 22:29:21 +0900
-Subject: [PATCH v2 2/8] media: i2c: ov7251: Report the pixel array rate for
+Subject: [PATCH v2 3/9] media: i2c: ov7251: Report the pixel array rate for
  both link frequencies
 
 pixel_rates[] gives V4L2_CID_PIXEL_RATE 48 MHz for the 240 MHz link and
@@ -16,19 +16,22 @@ frequencies: the PLL2 registers are the same in both tables, and the
 measured frame rate is 48000000 / (928 x VTS) with either link. On a
 Surface Book 2 at 319.2 MHz, VTS 1724 gives 30.0 fps; 63.84 MHz would
 give 39.9 fps. A Surface Pro 7+ measures 30.01, 60.16 and 90.45 fps at
-VTS 1724, 860 and 572, the same 48 MHz.
+VTS 1724, 860 and 572, the same 48 MHz. Dave Stevenson saw the same on
+a Raspberry Pi with a 24 MHz clock, where libcamera asked for 100 fps
+and got 75, the ratio of the two rates.
 
 Report 48 MHz for both link frequencies and drop the table.
 
 Fixes: ed9566ce1946 ("media: i2c: Add support for new frequencies to ov7251")
 Cc: stable@vger.kernel.org
+Link: https://lore.kernel.org/linux-media/CAPY8ntBFJJPg3y46gC=bNq_55QifC7mKmeq8+pAEDVN42fGUXw@mail.gmail.com/
 Signed-off-by: Antoine Pichot <antoine.pichot@gmail.com>
 ---
  drivers/media/i2c/ov7251.c | 15 ++++++---------
  1 file changed, 6 insertions(+), 9 deletions(-)
 
 diff --git a/drivers/media/i2c/ov7251.c b/drivers/media/i2c/ov7251.c
-index 1413f1856e3b..80df6d76cd04 100644
+index 1f30a01c85b3..2db6c28a6e34 100644
 --- a/drivers/media/i2c/ov7251.c
 +++ b/drivers/media/i2c/ov7251.c
 @@ -22,6 +22,9 @@

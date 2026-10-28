@@ -1,7 +1,7 @@
-From d00bba6f9ecd1ecacc2a95ffa529d1a34893015d Mon Sep 17 00:00:00 2001
+From 9802d98f7afe0e2e66d458fe0fd4b30e94c100f5 Mon Sep 17 00:00:00 2001
 From: Antoine Pichot <antoine.pichot@gmail.com>
 Date: Sat, 24 Oct 2026 20:44:45 +0900
-Subject: [PATCH v2 3/8] media: i2c: ov7251: Reset vblank when the frame
+Subject: [PATCH v2 4/9] media: i2c: ov7251: Reset vblank when the frame
  interval changes
 
 Setting a 60 or 90 fps frame interval is accepted and read back, but
@@ -40,7 +40,7 @@ Tested-by: D. Manresa <dmanresa@gmail.com> # Surface Pro 7+, IPU6 (8086:9a19)
  1 file changed, 18 insertions(+)
 
 diff --git a/drivers/media/i2c/ov7251.c b/drivers/media/i2c/ov7251.c
-index 80df6d76cd04..277fb0e4f4c4 100644
+index 2db6c28a6e34..859bf6c42341 100644
 --- a/drivers/media/i2c/ov7251.c
 +++ b/drivers/media/i2c/ov7251.c
 @@ -1259,6 +1259,10 @@ static int ov7251_set_format(struct v4l2_subdev *sd,

@@ -1,0 +1,73 @@
+From 84f5fdce0afd3d5e8737d0b1e7dd1f8bae11c73a Mon Sep 17 00:00:00 2001
+From: Antoine Pichot <antoine.pichot@gmail.com>
+Date: Tue, 27 Oct 2026 20:44:55 +0900
+Subject: [PATCH v2 1/9] media: i2c: ov7251: Use in-range PLL1 dividers for the
+ 319.2 MHz link
+
+The 19.2 MHz PLL1 table for the 319.2 MHz link frequency divides after
+multiplying. Its pre-divider (register 0x30B4, bits [3:0], a coded
+field where 0x01 means divide by 1) is 0x01 and its divider (register
+0x30B1, bits [4:0], a literal divisor from 1 to 16) is 0x04, so with
+the multiplier of 0x85 (133) the PLL1 multiplier output, the VCO of
+figure 2-12 of the OV7750/OV7251 datasheet (rev 2.12), runs at
+19.2 x 133 = 2553.6 MHz before the divider brings it down to 638.4 MHz.
+Table 2-11 limits the multiplier output to 300 to 800 MHz: the table
+runs the oscillator at 3.2 times the datasheet maximum.
+
+Divide before multiplying instead: pre-divider 0x04 (divide by 4, a
+4.8 MHz reference, within the 4 to 27 MHz input range) and divider
+0x01. The multiplier output is then 4.8 x 133 = 638.4 MHz, inside the
+allowed range, and the MIPI clock after the unchanged MIPI divider
+(0x30B5 = 0x05, divide by 1) is the same 638.4 Mbps, so the 319.2 MHz
+link frequency does not change. The Intel ov7251 Windows driver
+(30.18305.6.5127) programs this arrangement for its Windows Hello 30
+fps mode on the Surface Book 2.
+
+On ACPI systems, where ipu-bridge lists a single link frequency, this
+table has been unreachable since it was added: ov7251_check_hwcfg()
+stores the wrong index and always selects the 240 MHz table. The next
+patch fixes the index and makes this table live, so it must not be
+applied without this one.
+
+On a Surface Pro 7+ (IPU6), with the index fix alone, 7 of 10
+150-frame runs at 30 fps had CSI-2 errors and 3 of them stalled. With
+this change 0 of 13 did: every run delivered 150 of 150 frames at
+30.00 fps with no dropped buffers and no CSI-2 error line, and an i2c
+readback mid-stream showed only 0x30B1 and 0x30B4 changed. A Surface
+Book 2 (IPU3) streams clean with either table, 3 runs of 155 frames
+each. On a Raspberry Pi with a 24 MHz clock, Dave Stevenson measured
+with an oscilloscope that the out-of-range tables do not produce their
+nominal frequency, and proposed these values independently.
+
+The 24 MHz tables have problems of their own (the 240 MHz one runs at
+400 MHz and the 319.2 MHz one has its VCO at 2128 MHz) and are left
+alone here, as nobody in the thread can test a change to them.
+
+Fixes: ed9566ce1946 ("media: i2c: Add support for new frequencies to ov7251")
+Cc: stable@vger.kernel.org
+Link: https://lore.kernel.org/linux-media/6ae0e944.b6db0abd.16b13d.d261@mx.google.com/
+Link: https://lore.kernel.org/linux-media/CAPY8ntBFJJPg3y46gC=bNq_55QifC7mKmeq8+pAEDVN42fGUXw@mail.gmail.com/
+Signed-off-by: Antoine Pichot <antoine.pichot@gmail.com>
+---
+ drivers/media/i2c/ov7251.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/media/i2c/ov7251.c b/drivers/media/i2c/ov7251.c
+index fce6344b5120..f429de5f1f7c 100644
+--- a/drivers/media/i2c/ov7251.c
++++ b/drivers/media/i2c/ov7251.c
+@@ -174,9 +174,9 @@ static const struct ov7251_pll1_cfg ov7251_pll1_cfg_19_2_mhz_240_mhz = {
+ };
+ 
+ static const struct ov7251_pll1_cfg ov7251_pll1_cfg_19_2_mhz_319_2_mhz = {
+-	.pre_div = 0x01,
++	.pre_div = 0x04,
+ 	.mult = 0x85,
+-	.div = 0x04,
++	.div = 0x01,
+ 	.pix_div = 0x0a,
+ 	.mipi_div = 0x05,
+ };
+-- 
+2.56.0
+

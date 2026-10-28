@@ -1,7 +1,7 @@
-From 7eb1661649a7d5525221213b3ace7a892ed868d9 Mon Sep 17 00:00:00 2001
+From 23fbc15d758efdfa8f930a8c87d5255a780ee14b Mon Sep 17 00:00:00 2001
 From: Antoine Pichot <antoine.pichot@gmail.com>
 Date: Sat, 24 Oct 2026 20:46:18 +0900
-Subject: [PATCH v2 6/8] media: i2c: ov7251: Move the strobe registers out of
+Subject: [PATCH v2 7/9] media: i2c: ov7251: Move the strobe registers out of
  the mode tables
 
 The three mode tables write the same values to the STROBE pad output
@@ -21,7 +21,7 @@ Tested-by: D. Manresa <dmanresa@gmail.com> # Surface Pro 7+, IPU6 (8086:9a19)
  1 file changed, 33 insertions(+), 60 deletions(-)
 
 diff --git a/drivers/media/i2c/ov7251.c b/drivers/media/i2c/ov7251.c
-index 79a7cf16dcad..cd8783e55830 100644
+index d591b9169de8..d08bd373b3f3 100644
 --- a/drivers/media/i2c/ov7251.c
 +++ b/drivers/media/i2c/ov7251.c
 @@ -55,6 +55,9 @@
