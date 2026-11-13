@@ -4,10 +4,10 @@ import pytest
 
 from conftest import DARK_MAX, STROBE, bench_exposure, capture, ctrl_info, frame_means, need_dark, set_ctrl
 
-pytestmark = pytest.mark.needs_patch("6")
+pytestmark = pytest.mark.needs_patch("8")
 
 
-MISSING = f"{STROBE} missing: patch 6 adds V4L2_CID_FLASH_STROBE_OE to light the emitter"
+MISSING = f"{STROBE} missing: patch 8 adds V4L2_CID_FLASH_STROBE_OE to light the emitter"
 
 
 @pytest.fixture(scope="module")

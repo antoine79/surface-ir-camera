@@ -4,13 +4,13 @@ One scenario, in the order a camera stack goes through it. On the stock driver i
 a patch; with the whole series it passes and leaves two pictures in $IRCAM_E2E_OUT/ircam-e2e (default under the system
 temp dir; the committed pair in docs/e2e/ is copied in by hand):
 
-1. the sensor reports the link frequency the firmware asks for (patch 1) and where it sits (patch 4), mounted rotated
-   by 90 degrees (patch 7, ipu-bridge DMI quirk: the ACPI _PLD says 0);
-2. a process can subscribe to control events, as libcamera does at start-up (patch 3);
-3. the stack selects 60 fps (patch 2), sets exposure and analogue gain and switches the emitter on (patch 6);
+1. the sensor reports the link frequency the firmware asks for (patch 2) and where it sits (patch 6), mounted rotated
+   by 90 degrees (patch 9, ipu-bridge DMI quirk: the ACPI _PLD says 0);
+2. a process can subscribe to control events, as libcamera does at start-up (patch 5);
+3. the stack selects 60 fps (patch 4), sets exposure and analogue gain and switches the emitter on (patch 8);
 4. 60 frames arrive in about one second, lit by the emitter, with a real image in them: aim the camera at the room
    before running, in the dark (daylight swamps the emitter), the lit frame is saved as the picture of the room;
-5. afterwards the emitter is off and the sensor powered down (patch 6).
+5. afterwards the emitter is off and the sensor powered down (patch 8).
 
 Run: pytest -v tests/test_e2e.py   (red on stock, green with kernel/build/ov7251.ko swapped in).
 """
@@ -53,20 +53,20 @@ def to_png(frame: np.ndarray, path: Path) -> None:
 def test_firmware_description(graph):
     link = ctrl_info("link_frequency")
     assert link and link["label"].split()[0] == str(FIRMWARE_LINK_FREQ), \
-        f"link_frequency is {link and link['label']}: the sensor must run at the {FIRMWARE_LINK_FREQ} Hz the firmware asks for (patch 1)"
+        f"link_frequency is {link and link['label']}: the sensor must run at the {FIRMWARE_LINK_FREQ} Hz the firmware asks for (patch 2)"
     assert ctrl_info("camera_orientation") and ctrl("camera_orientation") == 0, \
-        "camera_orientation must exist and read 0 (front), from the ACPI _PLD (patch 4)"
-    assert ctrl_info("camera_sensor_rotation"), "camera_sensor_rotation must exist (patch 4)"
+        "camera_orientation must exist and read 0 (front), from the ACPI _PLD (patch 6)"
+    assert ctrl_info("camera_sensor_rotation"), "camera_sensor_rotation must exist (patch 6)"
 
 
-@pytest.mark.needs_patch("7")
+@pytest.mark.needs_patch("9")
 def test_firmware_rotation(graph):
     assert ctrl_info("camera_sensor_rotation") and ctrl("camera_sensor_rotation") == 90, \
-        "camera_sensor_rotation must read 90: the sensor is mounted rotated, the ACPI _PLD says 0 (patch 7, ipu-bridge DMI quirk)"
+        "camera_sensor_rotation must read 90: the sensor is mounted rotated, the ACPI _PLD says 0 (patch 9, ipu-bridge DMI quirk)"
 
 
 def test_control_events(graph):
-    """libcamera subscribes to control events on every sensor it opens; the stock driver refuses (patch 3)."""
+    """libcamera subscribes to control events on every sensor it opens; the stock driver refuses (patch 5)."""
     waiter = subprocess.Popen(["v4l2-ctl", "-d", sd(), "--wait-for-event=ctrl=exposure"],
                               stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
     try:
@@ -78,12 +78,12 @@ def test_control_events(graph):
         waiter.kill()
         pytest.fail("no control event arrived within 5 s of changing exposure")
     assert waiter.returncode == 0 and "SUBSCRIBE_EVENT: failed" not in out, \
-        f"subscribing to the exposure control event failed (patch 3):\n{out.strip()}"
+        f"subscribing to the exposure control event failed (patch 5):\n{out.strip()}"
 
 
 def test_lit_60fps_capture(graph):
     """Steps 3 to 5: 60 fps, emitter on, one second of lit frames with an image in them, then everything off."""
-    assert ctrl_info(STROBE), f"{STROBE} missing: without patch 6 the emitter cannot be switched on"
+    assert ctrl_info(STROBE), f"{STROBE} missing: without patch 8 the emitter cannot be switched on"
     try:
         set_fps(FPS)
         assert abs(get_fps() - FPS) < 0.02 * FPS, f"frame interval read back {get_fps()} fps, asked {FPS}"  # driver reports the exact rate
@@ -101,10 +101,10 @@ def test_lit_60fps_capture(graph):
 
         need_dark(dark.mean())
         # judgement: 10 % covers v4l2-ctl's once-a-second fps estimate; the stock 30 fps is off by 50 %
-        assert fps and fps >= 0.9 * FPS, f"streamed at {fps} fps, asked {FPS}: the frame interval must change the frame length (patch 2)"
+        assert fps and fps >= 0.9 * FPS, f"streamed at {fps} fps, asked {FPS}: the frame interval must change the frame length (patch 4)"
         dark_mean, lit_mean = dark.mean(), lit.mean()
         assert lit_mean > 1.5 * dark_mean, \
-            f"lit mean {lit_mean:.1f} vs dark {dark_mean:.1f}: the emitter must light the scene on alternate frames (patch 6)"
+            f"lit mean {lit_mean:.1f} vs dark {dark_mean:.1f}: the emitter must light the scene on alternate frames (patch 8)"
         is_lit = lit.reshape(FPS, -1).mean(axis=1) > 2.5 * dark_mean
         assert is_lit[::2].all() != is_lit[1::2].all() and not (is_lit[::2].any() and is_lit[1::2].any()), \
             f"lit frames must alternate with dark ones (pattern 0xaa): {is_lit.astype(int)}"

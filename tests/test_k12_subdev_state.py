@@ -1,4 +1,4 @@
-"""K12: the active-state conversion (patch 3) kept the old behaviour. The format, the crop rectangle and the mode-derived
+"""K12: the active-state conversion (patch 5) kept the old behaviour. The format, the crop rectangle and the mode-derived
 control ranges now live in the core sub-device state under the control handler's lock; each test reads one of them back
 through user space the way the old driver-side copies answered. Every test passes on the stock 7.2 module too (that is
 the proof); control events are K2's test_exposure_change_sends_event_with_value.
@@ -79,7 +79,7 @@ def test_active_set_fmt_snaps_to_mode_and_resets_ranges(graph):
 
 
 def test_frame_interval_updates_exposure_range(graph):
-    """VBLANK following the interval is patch 2: K3 test_vblank_and_exposure_range_follow_frame_interval."""
+    """VBLANK following the interval is patch 4: K3 test_vblank_and_exposure_range_follow_frame_interval."""
     try:
         set_fps(90)
         assert abs(get_fps() - 90) < 1

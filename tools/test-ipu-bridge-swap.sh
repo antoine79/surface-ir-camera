@@ -1,5 +1,5 @@
 #!/bin/bash
-# Test patch 8 (ipu-bridge: 90 degree rotation for the Surface Book 2 infrared
+# Test patch 9 (ipu-bridge: 90 degree rotation for the Surface Book 2 infrared
 # sensor) on kernel-surface 7.2.12 with kernel/build/ipu-bridge.ko.
 #
 # Why this needs a reboot (no in-place module swap):
@@ -56,7 +56,7 @@ check)
 	# Restart the relay on every exit path, including a failed step.
 	trap '[ "$RELAY" = active ] && systemctl start mipi-camera-relay.service; systemctl is-active mipi-camera-relay.service || true' EXIT
 	systemctl stop mipi-camera-relay.service
-	# Stock 7.2.12 ov7251 has no rotation control (patch 5): swap in the
+	# Stock 7.2.12 ov7251 has no rotation control (patch 6): swap in the
 	# patched one the K9 way (unbind drops cio2's module reference first).
 	if ! grep -q E /sys/module/ov7251/taint; then
 		echo i2c-INT347E:00 > /sys/bus/i2c/drivers/ov7251/unbind

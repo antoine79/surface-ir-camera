@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Measure how well the OV7251 -> CSI-2 -> CIO2 link holds during a capture, so one measurement can be repeated for
 several driver builds and on other machines (D. Manresa saw dropped frames and CSI-2 error lines on a Surface Pro 7+
-with patch 1 of the series).
+with patch 2 of the series, the link frequency index fix, before patch 1 brought the PLL dividers in range).
 
 Per run: stream --skip + --frames buffers through `v4l2-ctl --verbose`, count the dequeued buffers and the gaps in
 their sequence numbers, the kernel-log lines about the link since the run started, and the mean of the last frame

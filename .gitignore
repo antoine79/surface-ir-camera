@@ -13,3 +13,4 @@ kernel/build/modules.order
 *.gcda
 kernel/build/*.gcov
 docs/props/
+tools/*.json

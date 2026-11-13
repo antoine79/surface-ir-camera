@@ -15,15 +15,18 @@ make -C kernel/build KDIR=... clean
 
 `C=1` (sparse) and `CHECK="smatch -p=kernel"` work against the 6.18 headers, but against 7.2 the kernel's checker gate silently disables them: Fedora 43's sparse 0.6.4 and smatch 1.73 do not understand `__typeof_unqual__`, which 7.x headers use. A sparse/smatch built from git is needed for 7.x.
 
-## 6.18 test module (patches 1 to 5)
+## 6.18 test module (v3 patches 1 to 7)
 
-Patch 6 needs `V4L2_CID_FLASH_STROBE_OE`, which the 6.18 control framework does not know, so `../backport/ov7251.c` does not build against 6.18. To test the rest of the series on the running 6.18.8 kernel, build a module from the pristine backport base (v7.2 + the gain patch, i.e. `ov7251.c` as of commit e996431) plus patches 0001 to 0005. The v7.2 driver builds against the 6.18 headers unchanged.
+Patch 8 needs `V4L2_CID_FLASH_STROBE_OE`, which the 6.18 control framework does not know, so `../backport/ov7251.c` does not build against 6.18. To test the rest of the series on the 6.18.8 kernel, build a module from the pristine backport base (v7.2 + the gain patch, i.e. `ov7251.c` as of commit e996431) plus v3 patches 1 to 7, filtered the way `../backport/README.md` explains (two hunks of patch 5 carry 7.3's `ci` argument and mainline's gain control name). The v7.2 driver builds against the 6.18 headers unchanged. Replayed 2026-10-30: the result builds with W=1 against 6.18.8 with no warning besides the compiler-version note.
 
 ```sh
 T=$(mktemp -d) && cd ~/projects/surface-ir-camera
 git show e996431:kernel/backport/ov7251.c > $T/ov7251.c
-cp kernel/build/Makefile $T/
-for n in 0001 0002 0003 0004 0005; do (cd $T && git apply -p4 ~/projects/surface-ir-camera/kernel/patches/$n-*.patch); done
+cp kernel/build/Makefile $T/ && sed -i 's/^obj-m := .*/obj-m := ov7251.o/' $T/Makefile   # no ipu-bridge.c there
+for n in 0001 0002 0003 0004 0005 0006 0007; do
+  sed -e 's/ov7251_set_format(subdev, NULL, sd_state/ov7251_set_format(subdev, sd_state/' \
+      -e 's/V4L2_CID_GAIN\b/V4L2_CID_ANALOGUE_GAIN/' kernel/patches/v3-$n-*.patch | (cd $T && git apply -p4)
+done
 make -C $T KDIR=/lib/modules/6.18.8-1.surface.fc43.x86_64/build W=1
 modinfo $T/ov7251.ko | grep vermagic     # 6.18.8-1.surface.fc43.x86_64
 ```
@@ -49,9 +52,9 @@ echo i2c-INT347E:00 | sudo tee /sys/bus/i2c/drivers/ov7251/unbind && sudo rmmod 
 
 This restores the distro module. A reboot does the same.
 
-## ipu-bridge.ko (patch 7)
+## ipu-bridge.ko (patch 9)
 
-`ipu-bridge.ko` is the 7.2.12 kernel-surface ipu-bridge plus patch 7, which makes the bridge report a rotation of 90 degrees for the infrared sensor (INT347E) on the Surface Book 2. Its module name is `ipu_bridge`, the same as the stock one, and it is unsigned. It builds clean with W=1 against the 7.2.12 headers. How the source was put together is in `../backport/README.md`.
+`ipu-bridge.ko` is the 7.2.12 kernel-surface ipu-bridge plus patch 9 of the v3 series, which makes the bridge report a rotation of 90 degrees for the infrared sensor (INT347E) on the Surface Book 2 and the Surface Pro 7+. Its module name is `ipu_bridge`, the same as the stock one, and it is unsigned. It builds clean with W=1 against the 7.2.12 headers. How the source was put together is in `../backport/README.md`.
 
 It cannot be swapped in without a reboot. ipu3-cio2 calls `ipu_bridge_init()` at probe, and the software nodes it creates (they carry the sensors' `rotation` property) are deliberately never freed. When ipu3-cio2 probes again, `ipu_bridge_init()` finds those nodes still attached to the cio2 device and returns without building new ones, so a reloaded bridge never gets to set a new rotation. The new module has to be the one loaded at boot.
 
