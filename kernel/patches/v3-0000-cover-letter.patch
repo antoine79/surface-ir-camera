@@ -61,9 +61,9 @@ all three rates (rate, black level, test pattern, no CSI-2 errors).
 Clearing the gates, in [4] and then one at a time, changed only two
 blocks the driver does not use (OTP load, group hold) and the timing
 control gate, which stops the frames when cleared. Power was not
-measured. Whether one set moves to the init table is left to a
-follow-up; the rest of Dave's branch (CCI register helpers among them)
-waits for this series to land, as agreed on the v2 thread.
+measured. Whether one set moves to the init table, as [4] proposed, is
+left to a follow-up; the rest of Dave's branch (CCI register helpers
+among them) waits for this series to land, as agreed on the v2 thread.
 
 Patch 8 adds a V4L2_CID_FLASH_STROBE_OE control that enables the
 STROBE pin, pulses it on alternate frames and makes the pulse follow
@@ -169,17 +169,20 @@ tested, and both files build on the base with W=1 without warnings.
 - strobe span read back while streaming: 504 lines at exposure 504 and
   776 at exposure 1704 (30 fps), 258 at exposure 552 (90 fps); it
   follows exposure changes mid-stream
-- mean pixel value of an indoor infrared frame at analogue gain 128:
-  18 to 19 unlit; with the strobe enabled the lit frames read 517 at
-  exposure 504 and 681 at 1704, the dark frames in between 18 to 21
+- mean pixel value of an indoor infrared frame at analogue gain 128
+  (12 Nov run; patch 8's message quotes the 25 Oct run): 18 to 19 unlit;
+  with the strobe enabled the lit frames read 517 at exposure 504 and
+  681 at 1704, the dark frames in between 18 to 21
 - Howdy face login recognises the enrolled face through a v4l2loopback
   bridge that passes the lit frames
 - strobe off and sensor suspended within 2 s of the stream stopping
 
-D. Manresa's Tested-by tags on patches 4 and 6 are from v2; the
-Surface Pro 7+ has not run patches 7 and 8 of v3. The remaining
-v4l2-compliance failures are in the ipu3-cio2 capture driver (buffer
-creation and mapping checks) and unchanged by this series.
+D. Manresa's Tested-by tags on patches 4 and 6 date from v1; the changes
+those patches make are the same since. The Surface Pro 7+ ran v1 and the
+divider fix of patch 1 as a test patch (13 clean 150-frame runs of 13),
+not v2 or v3. The remaining v4l2-compliance failures are in the
+ipu3-cio2 capture driver (buffer creation and mapping checks) and
+unchanged by this series.
 
 I developed this series with an AI coding assistant (Claude) over
 interactive sessions: it drafted the code, the commit messages, the
