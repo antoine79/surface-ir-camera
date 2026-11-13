@@ -1,0 +1,96 @@
+From 7e4bbe081cecd7bc80c7a0332b221ce13f3d5af5 Mon Sep 17 00:00:00 2001
+From: Antoine Pichot <antoine.pichot@gmail.com>
+Date: Sat, 24 Oct 2026 22:41:03 +0900
+Subject: [PATCH v3 9/9] media: ipu-bridge: Add a rotation quirk for the
+ Surface Book 2 and Pro 7+
+
+The infrared camera of the Microsoft Surface Book 2, an OmniVision
+OV7251 with ACPI ID INT347E, is mounted rotated by 90 degrees. An
+upright scene appears rotated 90 degrees clockwise in its frames, with
+the top of the scene at the right edge of the image, while a frame
+taken at the same moment by the colour camera next to it shows the
+scene upright. The degree field of the sensor's SSDB buffer in the ACPI
+tables is 0, and so is the rotation field of its _PLD, so
+ipu_bridge_parse_rotation() sets the rotation property to 0 and
+userspace has no way to know that the image needs correcting.
+
+The firmware is wrong here, and ipu-bridge is where the firmware data
+is turned into the rotation property: it already carries DMI (Desktop
+Management Interface) quirks for sensors mounted upside down without
+the firmware saying so. Add a second table for sensors rotated by 90
+degrees, checked the same way, with entries for the Surface Book 2 and
+Surface Pro 7+ infrared sensors. Following
+V4L2_CID_CAMERA_SENSOR_ROTATION, 90 is the counter-clockwise rotation
+to apply to correct the image. The Book 2 entry matches on the SKU of
+the 13 inch model, the one checked; the 15 inch model has its own SKU
+and has not been checked. The colour sensors of this machine (INT33BE
+and INT347A) already report 180 degrees and are unchanged.
+
+D. Manresa measured the same rotation on a Surface Pro 7+ (IPU6), whose
+infrared sensor is also an INT347E: an upright scene comes out rotated
+90 degrees clockwise, with both flip controls at 0 and the firmware
+reporting a rotation of 0 [1], so the Pro 7+ gets an entry too.
+
+Tested on a 13 inch Surface Book 2 (SKU Surface_Book_1832) with a
+7.2.12 kernel: V4L2_CID_CAMERA_SENSOR_ROTATION on the OV7251 reads 90
+instead of 0, the colour sensors still read 180 and the orientation
+controls are unchanged.
+
+Link: https://lore.kernel.org/linux-media/6ae0f151.0f9a9df6.1cace3.5239@mx.google.com/ [1]
+Signed-off-by: Antoine Pichot <antoine.pichot@gmail.com>
+---
+ drivers/media/pci/intel/ipu-bridge.c | 31 ++++++++++++++++++++++++++++
+ 1 file changed, 31 insertions(+)
+
+diff --git a/drivers/media/pci/intel/ipu-bridge.c b/drivers/media/pci/intel/ipu-bridge.c
+index 5e419c7b9287..cdc6c8fe30af 100644
+--- a/drivers/media/pci/intel/ipu-bridge.c
++++ b/drivers/media/pci/intel/ipu-bridge.c
+@@ -303,6 +303,32 @@ static const struct dmi_system_id upside_down_sensor_dmi_ids[] = {
+ 	{} /* Terminating entry */
+ };
+ 
++/*
++ * DMI matches for laptops which have their sensor mounted rotated by 90 degrees
++ * without reporting it in the SSDB.
++ */
++static const struct dmi_system_id rotated_90_sensor_dmi_ids[] = {
++	{
++		/* Microsoft Surface Book 2 13 inch, infrared sensor */
++		.matches = {
++			DMI_EXACT_MATCH(DMI_SYS_VENDOR,
++					"Microsoft Corporation"),
++			DMI_EXACT_MATCH(DMI_PRODUCT_SKU, "Surface_Book_1832"),
++		},
++		.driver_data = "INT347E",
++	},
++	{
++		/* Microsoft Surface Pro 7+, infrared sensor */
++		.matches = {
++			DMI_EXACT_MATCH(DMI_SYS_VENDOR,
++					"Microsoft Corporation"),
++			DMI_EXACT_MATCH(DMI_PRODUCT_SKU, "Surface_Pro_7+_1960"),
++		},
++		.driver_data = "INT347E",
++	},
++	{} /* Terminating entry */
++};
++
+ static const struct ipu_property_names prop_names = {
+ 	.clock_frequency = "clock-frequency",
+ 	.rotation = "rotation",
+@@ -496,6 +522,11 @@ static u32 ipu_bridge_parse_rotation(struct acpi_device *adev,
+ 		if (acpi_dev_hid_match(adev, dmi_id->driver_data))
+ 			return 180;
+ 
++	for (dmi_id = dmi_first_match(rotated_90_sensor_dmi_ids); dmi_id;
++	     dmi_id = dmi_first_match(dmi_id + 1))
++		if (acpi_dev_hid_match(adev, dmi_id->driver_data))
++			return 90;
++
+ 	switch (ssdb->degree) {
+ 	case IPU_SENSOR_ROTATION_NORMAL:
+ 		return 0;
+-- 
+2.56.0
+

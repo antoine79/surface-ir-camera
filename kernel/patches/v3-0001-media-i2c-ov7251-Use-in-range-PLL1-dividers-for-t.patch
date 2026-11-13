@@ -1,0 +1,57 @@
+From 338ad387c7816afbd3b363e32c72a96788092d1f Mon Sep 17 00:00:00 2001
+From: Antoine Pichot <antoine.pichot@gmail.com>
+Date: Tue, 27 Oct 2026 20:44:55 +0900
+Subject: [PATCH v3 1/9] media: i2c: ov7251: Use in-range PLL1 dividers for the
+ 319.2 MHz link
+
+The 19.2 MHz PLL1 table for the 319.2 MHz link frequency puts a
+pre-divider of 1 before the multiplier of 133 and a divider of 4 after
+it, so the PLL1 multiplier output (the VCO) runs at 19.2 x 133 =
+2553.6 MHz before being divided down to 638.4 MHz. The OV7750/OV7251
+datasheet (rev 2.12, table 2-11) limits it to 300 to 800 MHz.
+
+Use pre-divider 4 (register 0x30B4 = 0x04) and divider 1 (0x30B1 =
+0x01). The multiplier output is then 4.8 x 133 = 638.4 MHz, inside the
+range, and the MIPI clock stays 638.4 Mbps, so the link frequency does
+not change. The Windows driver programs these values for the Surface
+Book 2's Windows Hello mode.
+
+On ACPI systems this table has been unreachable since it was added,
+because ov7251_check_hwcfg() selects the wrong index. The next patch
+fixes the index, so the two must go in together. With the index fix
+alone, D. Manresa's Surface Pro 7+ (IPU6) had CSI-2 errors in 7 of 10
+150-frame runs, 3 of them stalls; with this change 0 of 13. A Surface
+Book 2 (IPU3) streams clean with either table. Dave Stevenson measured
+on a 24 MHz Raspberry Pi board that the out-of-range tables miss their
+nominal frequency and proposed the same values [1]. The 24 MHz tables
+have problems of their own and are left to a separate change.
+
+Fixes: ed9566ce1946 ("media: i2c: Add support for new frequencies to ov7251")
+Cc: stable@vger.kernel.org
+Reported-by: D. Manresa <dmanresa@gmail.com>
+Closes: https://lore.kernel.org/linux-media/6ae0e944.b6db0abd.16b13d.d261@mx.google.com/
+Link: https://lore.kernel.org/linux-media/CAPY8ntBFJJPg3y46gC=bNq_55QifC7mKmeq8+pAEDVN42fGUXw@mail.gmail.com/ [1]
+Signed-off-by: Antoine Pichot <antoine.pichot@gmail.com>
+---
+ drivers/media/i2c/ov7251.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/media/i2c/ov7251.c b/drivers/media/i2c/ov7251.c
+index fce6344b5120..f429de5f1f7c 100644
+--- a/drivers/media/i2c/ov7251.c
++++ b/drivers/media/i2c/ov7251.c
+@@ -174,9 +174,9 @@ static const struct ov7251_pll1_cfg ov7251_pll1_cfg_19_2_mhz_240_mhz = {
+ };
+ 
+ static const struct ov7251_pll1_cfg ov7251_pll1_cfg_19_2_mhz_319_2_mhz = {
+-	.pre_div = 0x01,
++	.pre_div = 0x04,
+ 	.mult = 0x85,
+-	.div = 0x04,
++	.div = 0x01,
+ 	.pix_div = 0x0a,
+ 	.mipi_div = 0x05,
+ };
+-- 
+2.56.0
+

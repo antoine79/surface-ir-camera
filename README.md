@@ -6,26 +6,28 @@ The emitter is wired to the sensor's STROBE pin, not to any LED or GPIO the firm
 
 ## Status (October 2026)
 
-- Kernel series of seven patches, ready to post to linux-media (`kernel/patches/`, cover letter included). All tested on the machine with the modules built out of tree against linux-surface 7.2.
+- Kernel series of nine patches. v2 was posted to linux-media on 28 Oct 2026 (`kernel/patches/v2-posted/`, cover letter included); v3 is in preparation in `kernel/patches/`, with the table merge from Dave Stevenson as patch 7 and no cover letter written yet. All tested on the machine with the modules built out of tree against linux-surface 7.2.
 - A bridge (`tools/ir-bridge.py`) that streams the camera with the emitter on and exposes upright 8-bit frames on a v4l2loopback device, so any webcam application sees it. Installed as a confined systemd service.
 - Howdy face login works through the bridge. It recognises a face in about 3 s, but accepts a photo of it: a liveness check using both cameras is being designed.
 - libcamera support is not started; the bridge is the stopgap until it exists.
 
 ## What the patches do
 
-1. Fix the link frequency index, which made the sensor run at 240 MHz while the firmware asks for 319.2 MHz.
-2. Make 60 and 90 fps actually change the frame rate.
-3. Add control events, the one v4l2-compliance failure on the sensor.
-4. Report orientation and rotation from firmware.
-5. Move the strobe registers out of the mode tables, no functional change.
-6. Add the `strobe_output_enable` control: lights the emitter on alternate frames while streaming, with a pulse that follows the exposure and stays within what the Windows driver uses on the same hardware. Off by default, off whenever the sensor is idle.
-7. Make ipu-bridge report a 90 degree rotation for this model's infrared sensor, whose frames come out sideways.
+1. Use in-range PLL1 dividers for the 319.2 MHz link: same link rate, VCO at 638.4 MHz instead of 2553.6 MHz (a Surface Pro 7+ dropped frames at the out-of-range setting).
+2. Fix the link frequency index, which made the sensor run at 240 MHz while the firmware asks for 319.2 MHz.
+3. Report the pixel array rate, 48 MHz, at both link frequencies.
+4. Make 60 and 90 fps actually change the frame rate.
+5. Use the sub-device active state for the format and crop; the core then delivers control events, the one v4l2-compliance failure on the sensor.
+6. Report orientation and rotation from firmware.
+7. Move the registers common to the three mode tables into the global init table written at power-on (Dave Stevenson), so they are written once per power-on instead of at every stream start.
+8. Add the `strobe_output_enable` control: lights the emitter on alternate frames while streaming, with a pulse that follows the exposure and stays within what the Windows driver uses on the same hardware. Off by default, off whenever the sensor is idle.
+9. Make ipu-bridge report a 90 degree rotation for the infrared sensor of this model and of the Surface Pro 7+, whose frames come out sideways.
 
 `docs/windows-driver-notes.md` records what the Windows driver does with these registers, read with a decompiler: facts only, no code.
 
 ## Layout
 
-- `kernel/patches/`: the series as `git format-patch` output. `kernel/build/`: out-of-tree build of the patched modules. `kernel/backport/`: the patched sources for the linux-surface 7.2 kernel.
+- `kernel/patches/`: the v3 series as `git format-patch` output, the posted v1 and v2 under `v1-posted/` and `v2-posted/`. `kernel/build/`: out-of-tree build of the patched modules. `kernel/backport/`: the patched sources for the linux-surface 7.2 kernel.
 - `tests/`: acceptance tests (pytest + numpy, shelling out to `media-ctl`, `v4l2-ctl`, `v4l2-compliance`). `tests/README.md` has the test matrix and how to run it, plus the bridge installation and undo steps.
 - `tools/`: bench script that proved the emitter mechanism, the bridge, the phone glow comparison, cover letter number extraction, print props for spoof tests.
 - `docs/`: test logs attached to the submission, measurements, Windows driver notes, line coverage of the driver under test.
