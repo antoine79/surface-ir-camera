@@ -125,12 +125,12 @@ Changes since v2 [6]:
   tested them: they are left to a separate change (Dave Stevenson).
 - Patch 3: the pixel clock is defined as 48 * HZ_PER_MHZ, and Dave's
   report carries Reported-by and Closes tags (Andy Shevchenko).
-- Patch 5: unchanged. V4L2 has no guard class for the state lock, so
-  the explicit lock and unlock pair stays, as imx290, imx415, ov2740
-  and ov8858 do in s_stream (Andy Shevchenko, answered on the thread).
-  The move to enable_streams and disable_streams, which removes the
-  pair, is left to a follow-up to keep this series to the fixes and
-  the camera.
+- Patch 5: code unchanged; Suggested-by and Link added for Sakari's v1
+  request. V4L2 has no guard class for the state lock, so the explicit
+  lock and unlock pair stays, as imx290, imx415, ov2740 and ov8858 do in
+  s_stream (Andy Shevchenko, answered on the thread). The move to
+  enable_streams and disable_streams, which removes the pair, is left to
+  a follow-up to keep this series to the fixes and the camera.
 - Patch 7: replaced by Dave Stevenson's patch described above, which
   answers his question on v1 about where the strobe registers belong;
   v2's patch moved only the strobe registers out of the mode tables.

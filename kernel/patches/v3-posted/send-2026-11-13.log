@@ -1,0 +1,368 @@
+/home/antoine/projects/surface-ir-camera/kernel/patches/v3-0000-cover-letter.patch
+/home/antoine/projects/surface-ir-camera/kernel/patches/v3-0001-media-i2c-ov7251-Use-in-range-PLL1-dividers-for-t.patch
+/home/antoine/projects/surface-ir-camera/kernel/patches/v3-0002-media-i2c-ov7251-Fix-link-frequency-index.patch
+/home/antoine/projects/surface-ir-camera/kernel/patches/v3-0003-media-i2c-ov7251-Report-the-pixel-array-rate-for-.patch
+/home/antoine/projects/surface-ir-camera/kernel/patches/v3-0004-media-i2c-ov7251-Reset-vblank-when-the-frame-inte.patch
+/home/antoine/projects/surface-ir-camera/kernel/patches/v3-0005-media-i2c-ov7251-Use-sub-device-active-state.patch
+/home/antoine/projects/surface-ir-camera/kernel/patches/v3-0006-media-i2c-ov7251-Add-orientation-and-rotation-con.patch
+/home/antoine/projects/surface-ir-camera/kernel/patches/v3-0007-media-i2c-ov7251-Move-the-common-registers-into-t.patch
+/home/antoine/projects/surface-ir-camera/kernel/patches/v3-0008-media-i2c-ov7251-Add-strobe-output-enable-control.patch
+/home/antoine/projects/surface-ir-camera/kernel/patches/v3-0009-media-ipu-bridge-Add-a-rotation-quirk-for-the-Sur.patch
+OK. Log says:
+Server: smtp.gmail.com
+MAIL FROM:<antoine.pichot@gmail.com>
+RCPT TO:<linux-media@vger.kernel.org>
+RCPT TO:<sakari.ailus@linux.intel.com>
+RCPT TO:<mchehab@kernel.org>
+RCPT TO:<hansg@kernel.org>
+RCPT TO:<andriy.shevchenko@linux.intel.com>
+RCPT TO:<dan.scally@ideasonboard.com>
+RCPT TO:<djrscally@gmail.com>
+RCPT TO:<dmanresa@gmail.com>
+RCPT TO:<dave.stevenson@raspberrypi.com>
+RCPT TO:<linux-kernel@vger.kernel.org>
+From: Antoine Pichot <antoine.pichot@gmail.com>
+To: linux-media@vger.kernel.org
+Cc: sakari.ailus@linux.intel.com,
+	mchehab@kernel.org,
+	hansg@kernel.org,
+	andriy.shevchenko@linux.intel.com,
+	dan.scally@ideasonboard.com,
+	djrscally@gmail.com,
+	dmanresa@gmail.com,
+	dave.stevenson@raspberrypi.com,
+	linux-kernel@vger.kernel.org
+Subject: [PATCH v3 0/9] media: i2c: ov7251: fixes and infrared strobe for Surface Book 2
+Date: Fri, 13 Nov 2026 11:40:50 +0900
+Message-ID: <20261113024059.1087031-1-antoine.pichot@gmail.com>
+X-Mailer: git-send-email 2.56.0
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+
+Result: 250 
+(body) Adding cc: stable@vger.kernel.org from line 'Cc: stable@vger.kernel.org'
+(body) Adding cc: "D. Manresa" <dmanresa@gmail.com> from line 'Reported-by: D. Manresa <dmanresa@gmail.com>'
+OK. Log says:
+Server: smtp.gmail.com
+MAIL FROM:<antoine.pichot@gmail.com>
+RCPT TO:<linux-media@vger.kernel.org>
+RCPT TO:<sakari.ailus@linux.intel.com>
+RCPT TO:<mchehab@kernel.org>
+RCPT TO:<hansg@kernel.org>
+RCPT TO:<andriy.shevchenko@linux.intel.com>
+RCPT TO:<dan.scally@ideasonboard.com>
+RCPT TO:<djrscally@gmail.com>
+RCPT TO:<dmanresa@gmail.com>
+RCPT TO:<dave.stevenson@raspberrypi.com>
+RCPT TO:<linux-kernel@vger.kernel.org>
+RCPT TO:<stable@vger.kernel.org>
+From: Antoine Pichot <antoine.pichot@gmail.com>
+To: linux-media@vger.kernel.org
+Cc: sakari.ailus@linux.intel.com,
+	mchehab@kernel.org,
+	hansg@kernel.org,
+	andriy.shevchenko@linux.intel.com,
+	dan.scally@ideasonboard.com,
+	djrscally@gmail.com,
+	dmanresa@gmail.com,
+	dave.stevenson@raspberrypi.com,
+	linux-kernel@vger.kernel.org,
+	stable@vger.kernel.org
+Subject: [PATCH v3 1/9] media: i2c: ov7251: Use in-range PLL1 dividers for the 319.2 MHz link
+Date: Fri, 13 Nov 2026 11:40:51 +0900
+Message-ID: <20261113024059.1087031-2-antoine.pichot@gmail.com>
+X-Mailer: git-send-email 2.56.0
+In-Reply-To: <20261113024059.1087031-1-antoine.pichot@gmail.com>
+References: <20261113024059.1087031-1-antoine.pichot@gmail.com>
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+
+Result: 250 
+(body) Adding cc: stable@vger.kernel.org from line 'Cc: stable@vger.kernel.org'
+(body) Adding cc: Daniel Scally <dan.scally@ideasonboard.com> from line 'Reviewed-by: Daniel Scally <dan.scally@ideasonboard.com>'
+OK. Log says:
+Server: smtp.gmail.com
+MAIL FROM:<antoine.pichot@gmail.com>
+RCPT TO:<linux-media@vger.kernel.org>
+RCPT TO:<sakari.ailus@linux.intel.com>
+RCPT TO:<mchehab@kernel.org>
+RCPT TO:<hansg@kernel.org>
+RCPT TO:<andriy.shevchenko@linux.intel.com>
+RCPT TO:<dan.scally@ideasonboard.com>
+RCPT TO:<djrscally@gmail.com>
+RCPT TO:<dmanresa@gmail.com>
+RCPT TO:<dave.stevenson@raspberrypi.com>
+RCPT TO:<linux-kernel@vger.kernel.org>
+RCPT TO:<stable@vger.kernel.org>
+From: Antoine Pichot <antoine.pichot@gmail.com>
+To: linux-media@vger.kernel.org
+Cc: sakari.ailus@linux.intel.com,
+	mchehab@kernel.org,
+	hansg@kernel.org,
+	andriy.shevchenko@linux.intel.com,
+	dan.scally@ideasonboard.com,
+	djrscally@gmail.com,
+	dmanresa@gmail.com,
+	dave.stevenson@raspberrypi.com,
+	linux-kernel@vger.kernel.org,
+	stable@vger.kernel.org
+Subject: [PATCH v3 2/9] media: i2c: ov7251: Fix link frequency index
+Date: Fri, 13 Nov 2026 11:40:52 +0900
+Message-ID: <20261113024059.1087031-3-antoine.pichot@gmail.com>
+X-Mailer: git-send-email 2.56.0
+In-Reply-To: <20261113024059.1087031-1-antoine.pichot@gmail.com>
+References: <20261113024059.1087031-1-antoine.pichot@gmail.com>
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+
+Result: 250 
+(body) Adding cc: stable@vger.kernel.org from line 'Cc: stable@vger.kernel.org'
+(body) Adding cc: Dave Stevenson <dave.stevenson@raspberrypi.com> from line 'Reported-by: Dave Stevenson <dave.stevenson@raspberrypi.com>'
+OK. Log says:
+Server: smtp.gmail.com
+MAIL FROM:<antoine.pichot@gmail.com>
+RCPT TO:<linux-media@vger.kernel.org>
+RCPT TO:<sakari.ailus@linux.intel.com>
+RCPT TO:<mchehab@kernel.org>
+RCPT TO:<hansg@kernel.org>
+RCPT TO:<andriy.shevchenko@linux.intel.com>
+RCPT TO:<dan.scally@ideasonboard.com>
+RCPT TO:<djrscally@gmail.com>
+RCPT TO:<dmanresa@gmail.com>
+RCPT TO:<dave.stevenson@raspberrypi.com>
+RCPT TO:<linux-kernel@vger.kernel.org>
+RCPT TO:<stable@vger.kernel.org>
+From: Antoine Pichot <antoine.pichot@gmail.com>
+To: linux-media@vger.kernel.org
+Cc: sakari.ailus@linux.intel.com,
+	mchehab@kernel.org,
+	hansg@kernel.org,
+	andriy.shevchenko@linux.intel.com,
+	dan.scally@ideasonboard.com,
+	djrscally@gmail.com,
+	dmanresa@gmail.com,
+	dave.stevenson@raspberrypi.com,
+	linux-kernel@vger.kernel.org,
+	stable@vger.kernel.org
+Subject: [PATCH v3 3/9] media: i2c: ov7251: Report the pixel array rate for both link frequencies
+Date: Fri, 13 Nov 2026 11:40:53 +0900
+Message-ID: <20261113024059.1087031-4-antoine.pichot@gmail.com>
+X-Mailer: git-send-email 2.56.0
+In-Reply-To: <20261113024059.1087031-1-antoine.pichot@gmail.com>
+References: <20261113024059.1087031-1-antoine.pichot@gmail.com>
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+
+Result: 250 
+(body) Adding cc: stable@vger.kernel.org from line 'Cc: stable@vger.kernel.org'
+(body) Adding cc: "D. Manresa" <dmanresa@gmail.com> from line 'Tested-by: D. Manresa <dmanresa@gmail.com> # Surface Pro 7+, IPU6 (8086:9a19)'
+OK. Log says:
+Server: smtp.gmail.com
+MAIL FROM:<antoine.pichot@gmail.com>
+RCPT TO:<linux-media@vger.kernel.org>
+RCPT TO:<sakari.ailus@linux.intel.com>
+RCPT TO:<mchehab@kernel.org>
+RCPT TO:<hansg@kernel.org>
+RCPT TO:<andriy.shevchenko@linux.intel.com>
+RCPT TO:<dan.scally@ideasonboard.com>
+RCPT TO:<djrscally@gmail.com>
+RCPT TO:<dmanresa@gmail.com>
+RCPT TO:<dave.stevenson@raspberrypi.com>
+RCPT TO:<linux-kernel@vger.kernel.org>
+RCPT TO:<stable@vger.kernel.org>
+From: Antoine Pichot <antoine.pichot@gmail.com>
+To: linux-media@vger.kernel.org
+Cc: sakari.ailus@linux.intel.com,
+	mchehab@kernel.org,
+	hansg@kernel.org,
+	andriy.shevchenko@linux.intel.com,
+	dan.scally@ideasonboard.com,
+	djrscally@gmail.com,
+	dmanresa@gmail.com,
+	dave.stevenson@raspberrypi.com,
+	linux-kernel@vger.kernel.org,
+	stable@vger.kernel.org
+Subject: [PATCH v3 4/9] media: i2c: ov7251: Reset vblank when the frame interval changes
+Date: Fri, 13 Nov 2026 11:40:54 +0900
+Message-ID: <20261113024059.1087031-5-antoine.pichot@gmail.com>
+X-Mailer: git-send-email 2.56.0
+In-Reply-To: <20261113024059.1087031-1-antoine.pichot@gmail.com>
+References: <20261113024059.1087031-1-antoine.pichot@gmail.com>
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+
+Result: 250 
+(body) Adding cc: Sakari Ailus <sakari.ailus@linux.intel.com> from line 'Suggested-by: Sakari Ailus <sakari.ailus@linux.intel.com>'
+OK. Log says:
+Server: smtp.gmail.com
+MAIL FROM:<antoine.pichot@gmail.com>
+RCPT TO:<linux-media@vger.kernel.org>
+RCPT TO:<sakari.ailus@linux.intel.com>
+RCPT TO:<mchehab@kernel.org>
+RCPT TO:<hansg@kernel.org>
+RCPT TO:<andriy.shevchenko@linux.intel.com>
+RCPT TO:<dan.scally@ideasonboard.com>
+RCPT TO:<djrscally@gmail.com>
+RCPT TO:<dmanresa@gmail.com>
+RCPT TO:<dave.stevenson@raspberrypi.com>
+RCPT TO:<linux-kernel@vger.kernel.org>
+From: Antoine Pichot <antoine.pichot@gmail.com>
+To: linux-media@vger.kernel.org
+Cc: sakari.ailus@linux.intel.com,
+	mchehab@kernel.org,
+	hansg@kernel.org,
+	andriy.shevchenko@linux.intel.com,
+	dan.scally@ideasonboard.com,
+	djrscally@gmail.com,
+	dmanresa@gmail.com,
+	dave.stevenson@raspberrypi.com,
+	linux-kernel@vger.kernel.org
+Subject: [PATCH v3 5/9] media: i2c: ov7251: Use sub-device active state
+Date: Fri, 13 Nov 2026 11:40:55 +0900
+Message-ID: <20261113024059.1087031-6-antoine.pichot@gmail.com>
+X-Mailer: git-send-email 2.56.0
+In-Reply-To: <20261113024059.1087031-1-antoine.pichot@gmail.com>
+References: <20261113024059.1087031-1-antoine.pichot@gmail.com>
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+
+Result: 250 
+(body) Adding cc: "D. Manresa" <dmanresa@gmail.com> from line 'Tested-by: D. Manresa <dmanresa@gmail.com> # Surface Pro 7+, IPU6 (8086:9a19)'
+OK. Log says:
+Server: smtp.gmail.com
+MAIL FROM:<antoine.pichot@gmail.com>
+RCPT TO:<linux-media@vger.kernel.org>
+RCPT TO:<sakari.ailus@linux.intel.com>
+RCPT TO:<mchehab@kernel.org>
+RCPT TO:<hansg@kernel.org>
+RCPT TO:<andriy.shevchenko@linux.intel.com>
+RCPT TO:<dan.scally@ideasonboard.com>
+RCPT TO:<djrscally@gmail.com>
+RCPT TO:<dmanresa@gmail.com>
+RCPT TO:<dave.stevenson@raspberrypi.com>
+RCPT TO:<linux-kernel@vger.kernel.org>
+From: Antoine Pichot <antoine.pichot@gmail.com>
+To: linux-media@vger.kernel.org
+Cc: sakari.ailus@linux.intel.com,
+	mchehab@kernel.org,
+	hansg@kernel.org,
+	andriy.shevchenko@linux.intel.com,
+	dan.scally@ideasonboard.com,
+	djrscally@gmail.com,
+	dmanresa@gmail.com,
+	dave.stevenson@raspberrypi.com,
+	linux-kernel@vger.kernel.org
+Subject: [PATCH v3 6/9] media: i2c: ov7251: Add orientation and rotation controls
+Date: Fri, 13 Nov 2026 11:40:56 +0900
+Message-ID: <20261113024059.1087031-7-antoine.pichot@gmail.com>
+X-Mailer: git-send-email 2.56.0
+In-Reply-To: <20261113024059.1087031-1-antoine.pichot@gmail.com>
+References: <20261113024059.1087031-1-antoine.pichot@gmail.com>
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+
+Result: 250 
+(mbox) Adding cc: Dave Stevenson <dave.stevenson@raspberrypi.com> from line 'From: Dave Stevenson <dave.stevenson@raspberrypi.com>'
+(body) Adding cc: Dave Stevenson <dave.stevenson@raspberrypi.com> from line 'Signed-off-by: Dave Stevenson <dave.stevenson@raspberrypi.com>'
+OK. Log says:
+Server: smtp.gmail.com
+MAIL FROM:<antoine.pichot@gmail.com>
+RCPT TO:<linux-media@vger.kernel.org>
+RCPT TO:<sakari.ailus@linux.intel.com>
+RCPT TO:<mchehab@kernel.org>
+RCPT TO:<hansg@kernel.org>
+RCPT TO:<andriy.shevchenko@linux.intel.com>
+RCPT TO:<dan.scally@ideasonboard.com>
+RCPT TO:<djrscally@gmail.com>
+RCPT TO:<dmanresa@gmail.com>
+RCPT TO:<dave.stevenson@raspberrypi.com>
+RCPT TO:<linux-kernel@vger.kernel.org>
+From: Antoine Pichot <antoine.pichot@gmail.com>
+To: linux-media@vger.kernel.org
+Cc: sakari.ailus@linux.intel.com,
+	mchehab@kernel.org,
+	hansg@kernel.org,
+	andriy.shevchenko@linux.intel.com,
+	dan.scally@ideasonboard.com,
+	djrscally@gmail.com,
+	dmanresa@gmail.com,
+	dave.stevenson@raspberrypi.com,
+	linux-kernel@vger.kernel.org
+Subject: [PATCH v3 7/9] media: i2c: ov7251: Move the common registers into the global init table
+Date: Fri, 13 Nov 2026 11:40:57 +0900
+Message-ID: <20261113024059.1087031-8-antoine.pichot@gmail.com>
+X-Mailer: git-send-email 2.56.0
+In-Reply-To: <20261113024059.1087031-1-antoine.pichot@gmail.com>
+References: <20261113024059.1087031-1-antoine.pichot@gmail.com>
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+
+Result: 250 
+OK. Log says:
+Server: smtp.gmail.com
+MAIL FROM:<antoine.pichot@gmail.com>
+RCPT TO:<linux-media@vger.kernel.org>
+RCPT TO:<sakari.ailus@linux.intel.com>
+RCPT TO:<mchehab@kernel.org>
+RCPT TO:<hansg@kernel.org>
+RCPT TO:<andriy.shevchenko@linux.intel.com>
+RCPT TO:<dan.scally@ideasonboard.com>
+RCPT TO:<djrscally@gmail.com>
+RCPT TO:<dmanresa@gmail.com>
+RCPT TO:<dave.stevenson@raspberrypi.com>
+RCPT TO:<linux-kernel@vger.kernel.org>
+From: Antoine Pichot <antoine.pichot@gmail.com>
+To: linux-media@vger.kernel.org
+Cc: sakari.ailus@linux.intel.com,
+	mchehab@kernel.org,
+	hansg@kernel.org,
+	andriy.shevchenko@linux.intel.com,
+	dan.scally@ideasonboard.com,
+	djrscally@gmail.com,
+	dmanresa@gmail.com,
+	dave.stevenson@raspberrypi.com,
+	linux-kernel@vger.kernel.org
+Subject: [PATCH v3 8/9] media: i2c: ov7251: Add strobe output enable control
+Date: Fri, 13 Nov 2026 11:40:58 +0900
+Message-ID: <20261113024059.1087031-9-antoine.pichot@gmail.com>
+X-Mailer: git-send-email 2.56.0
+In-Reply-To: <20261113024059.1087031-1-antoine.pichot@gmail.com>
+References: <20261113024059.1087031-1-antoine.pichot@gmail.com>
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+
+Result: 250 
+OK. Log says:
+Server: smtp.gmail.com
+MAIL FROM:<antoine.pichot@gmail.com>
+RCPT TO:<linux-media@vger.kernel.org>
+RCPT TO:<sakari.ailus@linux.intel.com>
+RCPT TO:<mchehab@kernel.org>
+RCPT TO:<hansg@kernel.org>
+RCPT TO:<andriy.shevchenko@linux.intel.com>
+RCPT TO:<dan.scally@ideasonboard.com>
+RCPT TO:<djrscally@gmail.com>
+RCPT TO:<dmanresa@gmail.com>
+RCPT TO:<dave.stevenson@raspberrypi.com>
+RCPT TO:<linux-kernel@vger.kernel.org>
+From: Antoine Pichot <antoine.pichot@gmail.com>
+To: linux-media@vger.kernel.org
+Cc: sakari.ailus@linux.intel.com,
+	mchehab@kernel.org,
+	hansg@kernel.org,
+	andriy.shevchenko@linux.intel.com,
+	dan.scally@ideasonboard.com,
+	djrscally@gmail.com,
+	dmanresa@gmail.com,
+	dave.stevenson@raspberrypi.com,
+	linux-kernel@vger.kernel.org
+Subject: [PATCH v3 9/9] media: ipu-bridge: Add a rotation quirk for the Surface Book 2 and Pro 7+
+Date: Fri, 13 Nov 2026 11:40:59 +0900
+Message-ID: <20261113024059.1087031-10-antoine.pichot@gmail.com>
+X-Mailer: git-send-email 2.56.0
+In-Reply-To: <20261113024059.1087031-1-antoine.pichot@gmail.com>
+References: <20261113024059.1087031-1-antoine.pichot@gmail.com>
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+
+Result: 250 

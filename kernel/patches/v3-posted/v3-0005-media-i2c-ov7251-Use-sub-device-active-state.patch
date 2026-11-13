@@ -27,6 +27,8 @@ reports V4L2_SUBDEV_FL_HAS_EVENTS for the sub-device and handles control
 event subscription, so v4l2-compliance's VIDIOC_(UN)SUBSCRIBE_EVENT test
 passes without the driver having to declare the event operations.
 
+Suggested-by: Sakari Ailus <sakari.ailus@linux.intel.com>
+Link: https://lore.kernel.org/linux-media/at863XdUDea7JDA8@kekkonen.localdomain/
 Signed-off-by: Antoine Pichot <antoine.pichot@gmail.com>
 ---
  drivers/media/i2c/ov7251.c | 154 +++++++++++--------------------------
