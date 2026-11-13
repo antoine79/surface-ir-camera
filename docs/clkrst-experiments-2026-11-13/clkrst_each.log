@@ -1,0 +1,26 @@
+sclk_fc         0x3016 b7  n=110  fps=['30.01']  mean before/cleared/gain128/restored=324.2/321.5/791.2/294.8  bars=10/11  rb=70->f0  kern=0  
+sclk_aec        0x3016 b5  n=110  fps=['30.00']  mean before/cleared/gain128/restored=268.3/263.4/677.4/274.7  bars=10/11  rb=d0->f0  kern=0  
+sclk_tc         0x3016 b4  n=110  fps=['17.99']  mean before/cleared/gain128/restored=323.3/369.1/394.7/395.1  bars=0/11  rb=e0->f0  kern=0  
+sclk_blc        0x3017 b7  n=110  fps=['30.01']  mean before/cleared/gain128/restored=389.0/388.3/832.3/387.0  bars=10/11  rb=70->f0  kern=0  
+sclk_isp        0x3017 b6  n=110  fps=['30.01']  mean before/cleared/gain128/restored=369.3/358.9/810.3/321.1  bars=10/11  rb=b0->f0  kern=0  
+sclk_vfifo      0x3017 b4  n=110  fps=['30.00']  mean before/cleared/gain128/restored=288.7/273.8/732.1/209.2  bars=10/11  rb=e0->f0  kern=0  
+sclk_mipi       0x3018 b6  n=110  fps=['30.01']  mean before/cleared/gain128/restored=195.9/194.5/653.3/191.0  bars=10/11  rb=b0->f0  kern=0  
+sclk_ac         0x3018 b5  n=110  fps=['30.00']  mean before/cleared/gain128/restored=188.1/188.5/646.2/188.8  bars=10/11  rb=d0->f0  kern=0  
+sclk_otp        0x3018 b4  n=110  fps=['30.01']  mean before/cleared/gain128/restored=187.5/187.5/644.5/186.9  bars=10/11  rb=e0->f0  kern=0  
+pclk_vfifo      0x301a b5  n=110  fps=['30.00']  mean before/cleared/gain128/restored=188.6/189.8/651.4/180.6  bars=10/11  rb=d0->f0  kern=0  
+pclk_mipi       0x301a b4  n=110  fps=['30.00']  mean before/cleared/gain128/restored=209.4/225.6/731.0/343.3  bars=10/11  rb=e0->f0  kern=0  
+sclk_src        0x301b b7  n=110  fps=['30.00']  mean before/cleared/gain128/restored=383.9/384.2/775.3/390.4  bars=9/11  rb=70->f0  kern=0  
+sclk_asram_tst  0x301b b5  n=110  fps=['30.01']  mean before/cleared/gain128/restored=365.4/350.8/806.7/331.1  bars=10/11  rb=d0->f0  kern=0  
+sclk_snr_sync   0x301b b4  n=110  fps=['30.00']  mean before/cleared/gain128/restored=343.7/346.1/814.4/364.1  bars=10/11  rb=e0->f0  kern=0  
+sclk_bist       0x301c b7  n=110  fps=['30.00']  mean before/cleared/gain128/restored=364.2/364.6/822.1/366.0  bars=10/11  rb=70->f0  kern=0  
+sclk_srb        0x301c b6  n=110  fps=['30.01']  mean before/cleared/gain128/restored=355.8/353.7/815.3/352.9  bars=10/11  rb=b0->f0  kern=0  
+sclk_grp        0x301c b5  n=110  fps=['30.01']  mean before/cleared/gain128/restored=344.6/344.3/811.2/344.3  bars=10/11  rb=d0->f0  kern=0  
+saved /home/antoine/projects/surface-ir-camera/docs/clkrst-experiments-2026-11-13/clkrst_each.json
+--- rerun of sclk_src (and sclk_bist as a control), 3 passes each
+sclk_src   n=110 fps=['30.00'] before/cleared/gain128/restored=373.9/380.4/829.6/356.7 bars=10/11 rb=70->f0 kern=0
+sclk_bist  n=110 fps=['30.01'] before/cleared/gain128/restored=339.3/340.3/807.3/358.4 bars=10/11 rb=70->f0 kern=0
+sclk_src   n=110 fps=['30.01'] before/cleared/gain128/restored=356.8/355.4/814.0/350.5 bars=9/11 rb=70->f0 kern=0
+sclk_bist  n=110 fps=['30.00'] before/cleared/gain128/restored=315.4/299.4/701.2/284.2 bars=10/11 rb=70->f0 kern=0
+sclk_src   n=110 fps=['30.01'] before/cleared/gain128/restored=340.0/354.7/819.3/380.7 bars=10/11 rb=70->f0 kern=0
+sclk_bist  n=110 fps=['30.01'] before/cleared/gain128/restored=378.3/377.1/825.7/368.9 bars=10/11 rb=70->f0 kern=0
+saved

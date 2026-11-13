@@ -1,0 +1,492 @@
+{
+ "date": "2026-11-13 09:17 JST",
+ "kernel": "7.2.15-1.surface.fc45.x86_64",
+ "duration_s": 84,
+ "results": [
+  {
+   "gate": "sclk_fc",
+   "reg": "0x3016",
+   "bit": 7,
+   "frames": 110,
+   "requested": 110,
+   "fps_reported": [
+    "30.01",
+    "30.01"
+   ],
+   "timeout": false,
+   "mean_before": 324.2,
+   "mean_cleared": 321.5,
+   "mean_gain128": 791.2,
+   "bars_cleared": "10/11",
+   "mean_restored": 294.8,
+   "readback_cleared": "70",
+   "readback_restored": "f0",
+   "ctrl_errors": {},
+   "kernel": []
+  },
+  {
+   "gate": "sclk_aec",
+   "reg": "0x3016",
+   "bit": 5,
+   "frames": 110,
+   "requested": 110,
+   "fps_reported": [
+    "30.01",
+    "30.00"
+   ],
+   "timeout": false,
+   "mean_before": 268.3,
+   "mean_cleared": 263.4,
+   "mean_gain128": 677.4,
+   "bars_cleared": "10/11",
+   "mean_restored": 274.7,
+   "readback_cleared": "d0",
+   "readback_restored": "f0",
+   "ctrl_errors": {},
+   "kernel": []
+  },
+  {
+   "gate": "sclk_tc",
+   "reg": "0x3016",
+   "bit": 4,
+   "frames": 110,
+   "requested": 110,
+   "fps_reported": [
+    "15.59",
+    "17.99"
+   ],
+   "timeout": false,
+   "mean_before": 323.3,
+   "mean_cleared": 369.1,
+   "mean_gain128": 394.7,
+   "bars_cleared": "0/11",
+   "mean_restored": 395.1,
+   "readback_cleared": "e0",
+   "readback_restored": "f0",
+   "ctrl_errors": {},
+   "kernel": []
+  },
+  {
+   "gate": "sclk_blc",
+   "reg": "0x3017",
+   "bit": 7,
+   "frames": 110,
+   "requested": 110,
+   "fps_reported": [
+    "30.01",
+    "30.01"
+   ],
+   "timeout": false,
+   "mean_before": 389.0,
+   "mean_cleared": 388.3,
+   "mean_gain128": 832.3,
+   "bars_cleared": "10/11",
+   "mean_restored": 387.0,
+   "readback_cleared": "70",
+   "readback_restored": "f0",
+   "ctrl_errors": {},
+   "kernel": []
+  },
+  {
+   "gate": "sclk_isp",
+   "reg": "0x3017",
+   "bit": 6,
+   "frames": 110,
+   "requested": 110,
+   "fps_reported": [
+    "30.01",
+    "30.01"
+   ],
+   "timeout": false,
+   "mean_before": 369.3,
+   "mean_cleared": 358.9,
+   "mean_gain128": 810.3,
+   "bars_cleared": "10/11",
+   "mean_restored": 321.1,
+   "readback_cleared": "b0",
+   "readback_restored": "f0",
+   "ctrl_errors": {},
+   "kernel": []
+  },
+  {
+   "gate": "sclk_vfifo",
+   "reg": "0x3017",
+   "bit": 4,
+   "frames": 110,
+   "requested": 110,
+   "fps_reported": [
+    "30.01",
+    "30.00"
+   ],
+   "timeout": false,
+   "mean_before": 288.7,
+   "mean_cleared": 273.8,
+   "mean_gain128": 732.1,
+   "bars_cleared": "10/11",
+   "mean_restored": 209.2,
+   "readback_cleared": "e0",
+   "readback_restored": "f0",
+   "ctrl_errors": {},
+   "kernel": []
+  },
+  {
+   "gate": "sclk_mipi",
+   "reg": "0x3018",
+   "bit": 6,
+   "frames": 110,
+   "requested": 110,
+   "fps_reported": [
+    "30.00",
+    "30.01"
+   ],
+   "timeout": false,
+   "mean_before": 195.9,
+   "mean_cleared": 194.5,
+   "mean_gain128": 653.3,
+   "bars_cleared": "10/11",
+   "mean_restored": 191.0,
+   "readback_cleared": "b0",
+   "readback_restored": "f0",
+   "ctrl_errors": {},
+   "kernel": []
+  },
+  {
+   "gate": "sclk_ac",
+   "reg": "0x3018",
+   "bit": 5,
+   "frames": 110,
+   "requested": 110,
+   "fps_reported": [
+    "30.00",
+    "30.00"
+   ],
+   "timeout": false,
+   "mean_before": 188.1,
+   "mean_cleared": 188.5,
+   "mean_gain128": 646.2,
+   "bars_cleared": "10/11",
+   "mean_restored": 188.8,
+   "readback_cleared": "d0",
+   "readback_restored": "f0",
+   "ctrl_errors": {},
+   "kernel": []
+  },
+  {
+   "gate": "sclk_otp",
+   "reg": "0x3018",
+   "bit": 4,
+   "frames": 110,
+   "requested": 110,
+   "fps_reported": [
+    "30.01",
+    "30.01"
+   ],
+   "timeout": false,
+   "mean_before": 187.5,
+   "mean_cleared": 187.5,
+   "mean_gain128": 644.5,
+   "bars_cleared": "10/11",
+   "mean_restored": 186.9,
+   "readback_cleared": "e0",
+   "readback_restored": "f0",
+   "ctrl_errors": {},
+   "kernel": []
+  },
+  {
+   "gate": "pclk_vfifo",
+   "reg": "0x301a",
+   "bit": 5,
+   "frames": 110,
+   "requested": 110,
+   "fps_reported": [
+    "30.01",
+    "30.00"
+   ],
+   "timeout": false,
+   "mean_before": 188.6,
+   "mean_cleared": 189.8,
+   "mean_gain128": 651.4,
+   "bars_cleared": "10/11",
+   "mean_restored": 180.6,
+   "readback_cleared": "d0",
+   "readback_restored": "f0",
+   "ctrl_errors": {},
+   "kernel": []
+  },
+  {
+   "gate": "pclk_mipi",
+   "reg": "0x301a",
+   "bit": 4,
+   "frames": 110,
+   "requested": 110,
+   "fps_reported": [
+    "30.00",
+    "30.00"
+   ],
+   "timeout": false,
+   "mean_before": 209.4,
+   "mean_cleared": 225.6,
+   "mean_gain128": 731.0,
+   "bars_cleared": "10/11",
+   "mean_restored": 343.3,
+   "readback_cleared": "e0",
+   "readback_restored": "f0",
+   "ctrl_errors": {},
+   "kernel": []
+  },
+  {
+   "gate": "sclk_src",
+   "reg": "0x301b",
+   "bit": 7,
+   "frames": 110,
+   "requested": 110,
+   "fps_reported": [
+    "30.00",
+    "30.00"
+   ],
+   "timeout": false,
+   "mean_before": 383.9,
+   "mean_cleared": 384.2,
+   "mean_gain128": 775.3,
+   "bars_cleared": "9/11",
+   "mean_restored": 390.4,
+   "readback_cleared": "70",
+   "readback_restored": "f0",
+   "ctrl_errors": {},
+   "kernel": []
+  },
+  {
+   "gate": "sclk_asram_tst",
+   "reg": "0x301b",
+   "bit": 5,
+   "frames": 110,
+   "requested": 110,
+   "fps_reported": [
+    "30.01",
+    "30.01"
+   ],
+   "timeout": false,
+   "mean_before": 365.4,
+   "mean_cleared": 350.8,
+   "mean_gain128": 806.7,
+   "bars_cleared": "10/11",
+   "mean_restored": 331.1,
+   "readback_cleared": "d0",
+   "readback_restored": "f0",
+   "ctrl_errors": {},
+   "kernel": []
+  },
+  {
+   "gate": "sclk_snr_sync",
+   "reg": "0x301b",
+   "bit": 4,
+   "frames": 110,
+   "requested": 110,
+   "fps_reported": [
+    "30.01",
+    "30.00"
+   ],
+   "timeout": false,
+   "mean_before": 343.7,
+   "mean_cleared": 346.1,
+   "mean_gain128": 814.4,
+   "bars_cleared": "10/11",
+   "mean_restored": 364.1,
+   "readback_cleared": "e0",
+   "readback_restored": "f0",
+   "ctrl_errors": {},
+   "kernel": []
+  },
+  {
+   "gate": "sclk_bist",
+   "reg": "0x301c",
+   "bit": 7,
+   "frames": 110,
+   "requested": 110,
+   "fps_reported": [
+    "30.01",
+    "30.00"
+   ],
+   "timeout": false,
+   "mean_before": 364.2,
+   "mean_cleared": 364.6,
+   "mean_gain128": 822.1,
+   "bars_cleared": "10/11",
+   "mean_restored": 366.0,
+   "readback_cleared": "70",
+   "readback_restored": "f0",
+   "ctrl_errors": {},
+   "kernel": []
+  },
+  {
+   "gate": "sclk_srb",
+   "reg": "0x301c",
+   "bit": 6,
+   "frames": 110,
+   "requested": 110,
+   "fps_reported": [
+    "30.00",
+    "30.01"
+   ],
+   "timeout": false,
+   "mean_before": 355.8,
+   "mean_cleared": 353.7,
+   "mean_gain128": 815.3,
+   "bars_cleared": "10/11",
+   "mean_restored": 352.9,
+   "readback_cleared": "b0",
+   "readback_restored": "f0",
+   "ctrl_errors": {},
+   "kernel": []
+  },
+  {
+   "gate": "sclk_grp",
+   "reg": "0x301c",
+   "bit": 5,
+   "frames": 110,
+   "requested": 110,
+   "fps_reported": [
+    "30.01",
+    "30.01"
+   ],
+   "timeout": false,
+   "mean_before": 344.6,
+   "mean_cleared": 344.3,
+   "mean_gain128": 811.2,
+   "bars_cleared": "10/11",
+   "mean_restored": 344.3,
+   "readback_cleared": "d0",
+   "readback_restored": "f0",
+   "ctrl_errors": {},
+   "kernel": []
+  }
+ ],
+ "rerun_src_bist": [
+  {
+   "gate": "sclk_src",
+   "reg": "0x301b",
+   "bit": 7,
+   "frames": 110,
+   "requested": 110,
+   "fps_reported": [
+    "30.01",
+    "30.00"
+   ],
+   "timeout": false,
+   "mean_before": 373.9,
+   "mean_cleared": 380.4,
+   "mean_gain128": 829.6,
+   "bars_cleared": "10/11",
+   "mean_restored": 356.7,
+   "readback_cleared": "70",
+   "readback_restored": "f0",
+   "ctrl_errors": {},
+   "kernel": []
+  },
+  {
+   "gate": "sclk_bist",
+   "reg": "0x301c",
+   "bit": 7,
+   "frames": 110,
+   "requested": 110,
+   "fps_reported": [
+    "30.01",
+    "30.01"
+   ],
+   "timeout": false,
+   "mean_before": 339.3,
+   "mean_cleared": 340.3,
+   "mean_gain128": 807.3,
+   "bars_cleared": "10/11",
+   "mean_restored": 358.4,
+   "readback_cleared": "70",
+   "readback_restored": "f0",
+   "ctrl_errors": {},
+   "kernel": []
+  },
+  {
+   "gate": "sclk_src",
+   "reg": "0x301b",
+   "bit": 7,
+   "frames": 110,
+   "requested": 110,
+   "fps_reported": [
+    "30.01",
+    "30.01"
+   ],
+   "timeout": false,
+   "mean_before": 356.8,
+   "mean_cleared": 355.4,
+   "mean_gain128": 814.0,
+   "bars_cleared": "9/11",
+   "mean_restored": 350.5,
+   "readback_cleared": "70",
+   "readback_restored": "f0",
+   "ctrl_errors": {},
+   "kernel": []
+  },
+  {
+   "gate": "sclk_bist",
+   "reg": "0x301c",
+   "bit": 7,
+   "frames": 110,
+   "requested": 110,
+   "fps_reported": [
+    "30.01",
+    "30.00"
+   ],
+   "timeout": false,
+   "mean_before": 315.4,
+   "mean_cleared": 299.4,
+   "mean_gain128": 701.2,
+   "bars_cleared": "10/11",
+   "mean_restored": 284.2,
+   "readback_cleared": "70",
+   "readback_restored": "f0",
+   "ctrl_errors": {},
+   "kernel": []
+  },
+  {
+   "gate": "sclk_src",
+   "reg": "0x301b",
+   "bit": 7,
+   "frames": 110,
+   "requested": 110,
+   "fps_reported": [
+    "30.01",
+    "30.01"
+   ],
+   "timeout": false,
+   "mean_before": 340.0,
+   "mean_cleared": 354.7,
+   "mean_gain128": 819.3,
+   "bars_cleared": "10/11",
+   "mean_restored": 380.7,
+   "readback_cleared": "70",
+   "readback_restored": "f0",
+   "ctrl_errors": {},
+   "kernel": []
+  },
+  {
+   "gate": "sclk_bist",
+   "reg": "0x301c",
+   "bit": 7,
+   "frames": 110,
+   "requested": 110,
+   "fps_reported": [
+    "30.00",
+    "30.01"
+   ],
+   "timeout": false,
+   "mean_before": 378.3,
+   "mean_cleared": 377.1,
+   "mean_gain128": 825.7,
+   "bars_cleared": "10/11",
+   "mean_restored": 368.9,
+   "readback_cleared": "70",
+   "readback_restored": "f0",
+   "ctrl_errors": {},
+   "kernel": []
+  }
+ ]
+}

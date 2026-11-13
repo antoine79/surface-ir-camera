@@ -43,3 +43,7 @@ The driver also exposes a property (id 0x27 in its get/set property handlers, ad
 - Patch 6's rule "span = exposure, clamped to 52..776" is the Windows rule. The 45% duty cap on top is ours, stricter than Windows at 60 and 90 fps.
 - The cover letter's two Windows facts are both from this driver: 0xaa is the Windows Hello mode on the Book 2, 0xff is a different (short frame, 640 x 480) mode. Keeping 0xff as our default is a defensible choice (Windows uses it), but the mode Windows Hello actually uses on this unit is the alternate one.
 - The 648 x 488 window and the 20-line exposure margin are differences from the Linux driver that do not affect the strobe.
+
+## Clock control registers in the mode tables (checked 13 Nov 2026)
+
+All four mode tables of ov7251.sys 30.18305.6.5127 write the same six values: 0x3016 = 0x10, and 0x00 to 0x3017, 0x3018, 0x301a, 0x301b and 0x301c, followed by 0x3023 = 0x05 and 0x3037 = 0xf0. The tables are arrays of 16-byte entries (32-bit register address, 32-bit value, two more 32-bit words reading 0 and 1) at file offsets 0x17664, 0x17f24, 0x187e4 and 0x190a4 of the .sys; read with a plain byte search for the little-endian address 0x3016, no decompilation. This is the source of the "Windows writes the 60/90 fps values in all its modes" statement in the 30 Oct 2026 mail on the v2 thread and in the v3 cover letter.

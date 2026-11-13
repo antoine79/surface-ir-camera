@@ -1,0 +1,1241 @@
+# Phase 3, 7.2: full suite on the v3 series, evening run in a dark room (K4 dark frames, K5 emitter and the end-to-end lit capture need it), non-disruptive tests
+
+Machine: esteban, Surface Book 2 13" (i7-8650U), OV7251 on ipu3-cio2. Kernel: 7.2.12-gcov. Date: 2026-10-30T19:08:44+0900. Module: plain v3 build of kernel/backport/ov7251.c (branch ov7251-ir-v3, tip fda722d71846, taint OE), loaded by Antoine with swap-to-v3.sh; symbol check: ov7251_s_stream present, no enable_streams symbol. Suite run by Claude.
+
+...F....................FFFFFFF..................sF..................... [ 87%]
+......ss..                                                               [100%]
+=================================== FAILURES ===================================
+____________________________ test_lit_60fps_capture ____________________________
+
+graph = 'ov7251 3-0060'
+
+    def test_lit_60fps_capture(graph):
+        """Steps 3 to 5: 60 fps, emitter on, one second of lit frames with an image in them, then everything off."""
+        assert ctrl_info(STROBE), f"{STROBE} missing: without patch 8 the emitter cannot be switched on"
+        try:
+            set_fps(FPS)
+            assert abs(get_fps() - FPS) < 0.02 * FPS, f"frame interval read back {get_fps()} fps, asked {FPS}"  # driver reports the exact rate
+            set_ctrl("exposure", EXPOSURE)
+            set_ctrl("analogue_gain", GAIN)  # named by linux-surface's rename to ANALOGUE_GAIN, not part of the series
+    
+            set_ctrl(STROBE, 0)
+            dark, _ = grab(30)
+            set_ctrl(STROBE, 1)
+            lit, fps = grab(FPS)
+            set_ctrl(STROBE, 0)
+            mid = max(lit[FPS // 2], lit[FPS // 2 + 1], key=lambda f: f.mean())  # the lit one of a lit/dark pair
+            to_png(dark[len(dark) // 2], OUT / f"ir-{FPS}fps-emitter-off.png")  # written before the asserts: a failed run
+            to_png(mid, OUT / f"ir-{FPS}fps-emitter-on.png")  # still shows what the camera saw
+    
+            need_dark(dark.mean())
+            # judgement: 10 % covers v4l2-ctl's once-a-second fps estimate; the stock 30 fps is off by 50 %
+            assert fps and fps >= 0.9 * FPS, f"streamed at {fps} fps, asked {FPS}: the frame interval must change the frame length (patch 4)"
+            dark_mean, lit_mean = dark.mean(), lit.mean()
+            assert lit_mean > 1.5 * dark_mean, \
+                f"lit mean {lit_mean:.1f} vs dark {dark_mean:.1f}: the emitter must light the scene on alternate frames (patch 8)"
+            is_lit = lit.reshape(FPS, -1).mean(axis=1) > 2.5 * dark_mean
+>           assert is_lit[::2].all() != is_lit[1::2].all() and not (is_lit[::2].any() and is_lit[1::2].any()), \
+                f"lit frames must alternate with dark ones (pattern 0xaa): {is_lit.astype(int)}"
+E               AssertionError: lit frames must alternate with dark ones (pattern 0xaa): [1 1 0 1 0 1 0 1 0 1 0 1 0 1 0 1 0 1 0 1 0 1 0 1 0 1 0 1 0 1 0 1 0 1 0 1 0
+E                  1 0 1 0 1 0 1 0 1 0 1 0 1 0 1 0 1 0 1 0 1 0 1]
+E               assert (np.False_ != np.True_ and not (np.True_ and np.True_))
+E                +  where np.False_ = <built-in method all of numpy.ndarray object at 0x7f6c194e70f0>()
+E                +    where <built-in method all of numpy.ndarray object at 0x7f6c194e70f0> = array([ True, False, False, False, False, False, False, False, False,\n       False, False, False, False, False, False, False, False, False,\n       False, False, False, False, False, False, False, False, False,\n       False, False, False]).all
+E                +  and   np.True_ = <built-in method all of numpy.ndarray object at 0x7f6c194e74b0>()
+E                +    where <built-in method all of numpy.ndarray object at 0x7f6c194e74b0> = array([ True,  True,  True,  True,  True,  True,  True,  True,  True,\n        True,  True,  True,  True,  True,  True,  True,  True,  True,\n        True,  True,  True,  True,  True,  True,  True,  True,  True,\n        True,  True,  True]).all
+E                +  and   np.True_ = <built-in method any of numpy.ndarray object at 0x7f6c194e7150>()
+E                +    where <built-in method any of numpy.ndarray object at 0x7f6c194e7150> = array([ True, False, False, False, False, False, False, False, False,\n       False, False, False, False, False, False, False, False, False,\n       False, False, False, False, False, False, False, False, False,\n       False, False, False]).any
+E                +  and   np.True_ = <built-in method any of numpy.ndarray object at 0x7f6c194e72d0>()
+E                +    where <built-in method any of numpy.ndarray object at 0x7f6c194e72d0> = array([ True,  True,  True,  True,  True,  True,  True,  True,  True,\n        True,  True,  True,  True,  True,  True,  True,  True,  True,\n        True,  True,  True,  True,  True,  True,  True,  True,  True,\n        True,  True,  True]).any
+
+tests/test_e2e.py:109: AssertionError
+_______________ test_strobe_block_unchanged_with_strobe_off[30] ________________
+
+cmd = ('sudo', '-n', 'i2ctransfer', '-f', '-y', '3', ...), kw = {}
+
+    def run(*cmd, **kw) -> str:
+        try:
+>           return subprocess.run(cmd, check=True, capture_output=True, text=True, **kw).stdout
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/conftest.py:58: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+input = None, capture_output = True, timeout = None, check = True
+popenargs = (('sudo', '-n', 'i2ctransfer', '-f', '-y', '3', ...),)
+kwargs = {'text': True, 'stdout': -1, 'stderr': -1}
+
+    def run(*popenargs,
+            input=None, capture_output=False, timeout=None, check=False, **kwargs):
+        """Run command with arguments and return a CompletedProcess instance.
+    
+        The returned instance will have attributes args, returncode, stdout and
+        stderr. By default, stdout and stderr are not captured, and those attributes
+        will be None. Pass stdout=PIPE and/or stderr=PIPE in order to capture them,
+        or pass capture_output=True to capture both.
+    
+        If check is True and the exit code was non-zero, it raises a
+        CalledProcessError. The CalledProcessError object will have the return code
+        in the returncode attribute, and output & stderr attributes if those streams
+        were captured.
+    
+        If timeout (seconds) is given and the process takes too long,
+         a TimeoutExpired exception will be raised.
+    
+        There is an optional argument "input", allowing you to
+        pass bytes or a string to the subprocess's stdin.  If you use this argument
+        you may not also use the Popen constructor's "stdin" argument, as
+        it will be used internally.
+    
+        By default, all communication is in bytes, and therefore any "input" should
+        be bytes, and the stdout and stderr will be bytes. If in text mode, any
+        "input" should be a string, and stdout and stderr will be strings decoded
+        according to locale encoding, or by "encoding" if set. Text mode is
+        triggered by setting any of text, encoding, errors or universal_newlines.
+    
+        The other arguments are the same as for the Popen constructor.
+        """
+        if input is not None:
+            if kwargs.get('stdin') is not None:
+                raise ValueError('stdin and input arguments may not both be used.')
+            kwargs['stdin'] = PIPE
+    
+        if capture_output:
+            if kwargs.get('stdout') is not None or kwargs.get('stderr') is not None:
+                raise ValueError('stdout and stderr arguments may not be used '
+                                 'with capture_output.')
+            kwargs['stdout'] = PIPE
+            kwargs['stderr'] = PIPE
+    
+        with Popen(*popenargs, **kwargs) as process:
+            try:
+                stdout, stderr = process.communicate(input, timeout=timeout)
+            except TimeoutExpired as exc:
+                process.kill()
+                if _mswindows:
+                    # Windows accumulates the output in a single blocking
+                    # read() call run on child threads, with the timeout
+                    # being done in a join() on those threads.  communicate()
+                    # _after_ kill() is required to collect that and add it
+                    # to the exception.
+                    exc.stdout, exc.stderr = process.communicate()
+                else:
+                    # POSIX _communicate already populated the output so
+                    # far into the TimeoutExpired exception.
+                    process.wait()
+                raise
+            except:  # Including KeyboardInterrupt, communicate handled that.
+                process.kill()
+                # We don't call process.wait() as .__exit__ does that for us.
+                raise
+            retcode = process.poll()
+            if check and retcode:
+>               raise CalledProcessError(retcode, process.args,
+                                         output=stdout, stderr=stderr)
+E               subprocess.CalledProcessError: Command '('sudo', '-n', 'i2ctransfer', '-f', '-y', '3', 'w2@0x60', '0x3b', '0x84', 'r1')' returned non-zero exit status 1.
+
+/usr/lib64/python3.14/subprocess.py:577: CalledProcessError
+
+The above exception was the direct cause of the following exception:
+
+graph = 'ov7251 3-0060', clean = None, fps = 30
+
+    @pytest.mark.parametrize("fps", [30, 60, 90])
+    def test_strobe_block_unchanged_with_strobe_off(graph, clean, fps):
+        strobe_off_if_present()
+        set_fps(fps)
+        with streaming():
+>           got = {a: read_reg(a) for a in STOCK_STROBE_REGS}
+                      ^^^^^^^^^^^
+
+tests/test_k11_strobe_registers.py:48: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/conftest.py:150: in read_reg
+    out = run("sudo", "-n", "i2ctransfer", "-f", "-y", bus, f"w2@0x{int(dev, 16):02x}", f"0x{a >> 8:02x}", f"0x{a & 0xff:02x}", "r1")
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+cmd = ('sudo', '-n', 'i2ctransfer', '-f', '-y', '3', ...), kw = {}
+
+    def run(*cmd, **kw) -> str:
+        try:
+            return subprocess.run(cmd, check=True, capture_output=True, text=True, **kw).stdout
+        except subprocess.CalledProcessError as e:
+>           raise RuntimeError(f"{' '.join(cmd)} failed ({e.returncode}): {e.stderr.strip()}") from e
+E           RuntimeError: sudo -n i2ctransfer -f -y 3 w2@0x60 0x3b 0x84 r1 failed (1): Error: Sending messages failed: Remote I/O error
+
+tests/conftest.py:60: RuntimeError
+
+During handling of the above exception, another exception occurred:
+
+graph = 'ov7251 3-0060', clean = None, fps = 30
+
+    @pytest.mark.parametrize("fps", [30, 60, 90])
+    def test_strobe_block_unchanged_with_strobe_off(graph, clean, fps):
+        strobe_off_if_present()
+        set_fps(fps)
+>       with streaming():
+             ^^^^^^^^^^^
+
+tests/test_k11_strobe_registers.py:47: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/usr/lib64/python3.14/contextlib.py:162: in __exit__
+    self.gen.throw(value)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+seconds = 3
+
+    @contextmanager
+    def streaming(seconds: float = 3):
+        """Stream about `seconds` at the current frame rate in a background stream() (fixed frame count, so it always
+        ends), enter the block 1 s in, while the sensor is powered and streaming, and wait for the stream to end after it."""
+        with ThreadPoolExecutor(1) as ex:
+            done = ex.submit(stream, int(seconds * get_fps()), "/dev/null")
+            time.sleep(1)
+            try:
+                assert runtime_status() == "active", f"sensor {runtime_status()} 1 s into a stream"
+                yield
+            finally:
+>               assert runtime_status() == "active", \
+                    f"sensor {runtime_status()}: stream ended before the block finished, register reads after this point are not the driver's values"
+E               AssertionError: sensor suspended: stream ended before the block finished, register reads after this point are not the driver's values
+E               assert 'suspended' == 'active'
+E                 
+E                 - active
+E                 + suspended
+
+tests/conftest.py:166: AssertionError
+_______________ test_strobe_block_unchanged_with_strobe_off[60] ________________
+
+cmd = ('sudo', '-n', 'i2ctransfer', '-f', '-y', '3', ...), kw = {}
+
+    def run(*cmd, **kw) -> str:
+        try:
+>           return subprocess.run(cmd, check=True, capture_output=True, text=True, **kw).stdout
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/conftest.py:58: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+input = None, capture_output = True, timeout = None, check = True
+popenargs = (('sudo', '-n', 'i2ctransfer', '-f', '-y', '3', ...),)
+kwargs = {'text': True, 'stdout': -1, 'stderr': -1}
+
+    def run(*popenargs,
+            input=None, capture_output=False, timeout=None, check=False, **kwargs):
+        """Run command with arguments and return a CompletedProcess instance.
+    
+        The returned instance will have attributes args, returncode, stdout and
+        stderr. By default, stdout and stderr are not captured, and those attributes
+        will be None. Pass stdout=PIPE and/or stderr=PIPE in order to capture them,
+        or pass capture_output=True to capture both.
+    
+        If check is True and the exit code was non-zero, it raises a
+        CalledProcessError. The CalledProcessError object will have the return code
+        in the returncode attribute, and output & stderr attributes if those streams
+        were captured.
+    
+        If timeout (seconds) is given and the process takes too long,
+         a TimeoutExpired exception will be raised.
+    
+        There is an optional argument "input", allowing you to
+        pass bytes or a string to the subprocess's stdin.  If you use this argument
+        you may not also use the Popen constructor's "stdin" argument, as
+        it will be used internally.
+    
+        By default, all communication is in bytes, and therefore any "input" should
+        be bytes, and the stdout and stderr will be bytes. If in text mode, any
+        "input" should be a string, and stdout and stderr will be strings decoded
+        according to locale encoding, or by "encoding" if set. Text mode is
+        triggered by setting any of text, encoding, errors or universal_newlines.
+    
+        The other arguments are the same as for the Popen constructor.
+        """
+        if input is not None:
+            if kwargs.get('stdin') is not None:
+                raise ValueError('stdin and input arguments may not both be used.')
+            kwargs['stdin'] = PIPE
+    
+        if capture_output:
+            if kwargs.get('stdout') is not None or kwargs.get('stderr') is not None:
+                raise ValueError('stdout and stderr arguments may not be used '
+                                 'with capture_output.')
+            kwargs['stdout'] = PIPE
+            kwargs['stderr'] = PIPE
+    
+        with Popen(*popenargs, **kwargs) as process:
+            try:
+                stdout, stderr = process.communicate(input, timeout=timeout)
+            except TimeoutExpired as exc:
+                process.kill()
+                if _mswindows:
+                    # Windows accumulates the output in a single blocking
+                    # read() call run on child threads, with the timeout
+                    # being done in a join() on those threads.  communicate()
+                    # _after_ kill() is required to collect that and add it
+                    # to the exception.
+                    exc.stdout, exc.stderr = process.communicate()
+                else:
+                    # POSIX _communicate already populated the output so
+                    # far into the TimeoutExpired exception.
+                    process.wait()
+                raise
+            except:  # Including KeyboardInterrupt, communicate handled that.
+                process.kill()
+                # We don't call process.wait() as .__exit__ does that for us.
+                raise
+            retcode = process.poll()
+            if check and retcode:
+>               raise CalledProcessError(retcode, process.args,
+                                         output=stdout, stderr=stderr)
+E               subprocess.CalledProcessError: Command '('sudo', '-n', 'i2ctransfer', '-f', '-y', '3', 'w2@0x60', '0x3b', '0x83', 'r1')' returned non-zero exit status 1.
+
+/usr/lib64/python3.14/subprocess.py:577: CalledProcessError
+
+The above exception was the direct cause of the following exception:
+
+graph = 'ov7251 3-0060', clean = None, fps = 60
+
+    @pytest.mark.parametrize("fps", [30, 60, 90])
+    def test_strobe_block_unchanged_with_strobe_off(graph, clean, fps):
+        strobe_off_if_present()
+        set_fps(fps)
+        with streaming():
+>           got = {a: read_reg(a) for a in STOCK_STROBE_REGS}
+                      ^^^^^^^^^^^
+
+tests/test_k11_strobe_registers.py:48: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/conftest.py:150: in read_reg
+    out = run("sudo", "-n", "i2ctransfer", "-f", "-y", bus, f"w2@0x{int(dev, 16):02x}", f"0x{a >> 8:02x}", f"0x{a & 0xff:02x}", "r1")
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+cmd = ('sudo', '-n', 'i2ctransfer', '-f', '-y', '3', ...), kw = {}
+
+    def run(*cmd, **kw) -> str:
+        try:
+            return subprocess.run(cmd, check=True, capture_output=True, text=True, **kw).stdout
+        except subprocess.CalledProcessError as e:
+>           raise RuntimeError(f"{' '.join(cmd)} failed ({e.returncode}): {e.stderr.strip()}") from e
+E           RuntimeError: sudo -n i2ctransfer -f -y 3 w2@0x60 0x3b 0x83 r1 failed (1): Error: Sending messages failed: Remote I/O error
+
+tests/conftest.py:60: RuntimeError
+
+During handling of the above exception, another exception occurred:
+
+graph = 'ov7251 3-0060', clean = None, fps = 60
+
+    @pytest.mark.parametrize("fps", [30, 60, 90])
+    def test_strobe_block_unchanged_with_strobe_off(graph, clean, fps):
+        strobe_off_if_present()
+        set_fps(fps)
+>       with streaming():
+             ^^^^^^^^^^^
+
+tests/test_k11_strobe_registers.py:47: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/usr/lib64/python3.14/contextlib.py:162: in __exit__
+    self.gen.throw(value)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+seconds = 3
+
+    @contextmanager
+    def streaming(seconds: float = 3):
+        """Stream about `seconds` at the current frame rate in a background stream() (fixed frame count, so it always
+        ends), enter the block 1 s in, while the sensor is powered and streaming, and wait for the stream to end after it."""
+        with ThreadPoolExecutor(1) as ex:
+            done = ex.submit(stream, int(seconds * get_fps()), "/dev/null")
+            time.sleep(1)
+            try:
+                assert runtime_status() == "active", f"sensor {runtime_status()} 1 s into a stream"
+                yield
+            finally:
+>               assert runtime_status() == "active", \
+                    f"sensor {runtime_status()}: stream ended before the block finished, register reads after this point are not the driver's values"
+E               AssertionError: sensor suspended: stream ended before the block finished, register reads after this point are not the driver's values
+E               assert 'suspended' == 'active'
+E                 
+E                 - active
+E                 + suspended
+
+tests/conftest.py:166: AssertionError
+_______________ test_strobe_block_unchanged_with_strobe_off[90] ________________
+
+cmd = ('sudo', '-n', 'i2ctransfer', '-f', '-y', '3', ...), kw = {}
+
+    def run(*cmd, **kw) -> str:
+        try:
+>           return subprocess.run(cmd, check=True, capture_output=True, text=True, **kw).stdout
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/conftest.py:58: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+input = None, capture_output = True, timeout = None, check = True
+popenargs = (('sudo', '-n', 'i2ctransfer', '-f', '-y', '3', ...),)
+kwargs = {'text': True, 'stdout': -1, 'stderr': -1}
+
+    def run(*popenargs,
+            input=None, capture_output=False, timeout=None, check=False, **kwargs):
+        """Run command with arguments and return a CompletedProcess instance.
+    
+        The returned instance will have attributes args, returncode, stdout and
+        stderr. By default, stdout and stderr are not captured, and those attributes
+        will be None. Pass stdout=PIPE and/or stderr=PIPE in order to capture them,
+        or pass capture_output=True to capture both.
+    
+        If check is True and the exit code was non-zero, it raises a
+        CalledProcessError. The CalledProcessError object will have the return code
+        in the returncode attribute, and output & stderr attributes if those streams
+        were captured.
+    
+        If timeout (seconds) is given and the process takes too long,
+         a TimeoutExpired exception will be raised.
+    
+        There is an optional argument "input", allowing you to
+        pass bytes or a string to the subprocess's stdin.  If you use this argument
+        you may not also use the Popen constructor's "stdin" argument, as
+        it will be used internally.
+    
+        By default, all communication is in bytes, and therefore any "input" should
+        be bytes, and the stdout and stderr will be bytes. If in text mode, any
+        "input" should be a string, and stdout and stderr will be strings decoded
+        according to locale encoding, or by "encoding" if set. Text mode is
+        triggered by setting any of text, encoding, errors or universal_newlines.
+    
+        The other arguments are the same as for the Popen constructor.
+        """
+        if input is not None:
+            if kwargs.get('stdin') is not None:
+                raise ValueError('stdin and input arguments may not both be used.')
+            kwargs['stdin'] = PIPE
+    
+        if capture_output:
+            if kwargs.get('stdout') is not None or kwargs.get('stderr') is not None:
+                raise ValueError('stdout and stderr arguments may not be used '
+                                 'with capture_output.')
+            kwargs['stdout'] = PIPE
+            kwargs['stderr'] = PIPE
+    
+        with Popen(*popenargs, **kwargs) as process:
+            try:
+                stdout, stderr = process.communicate(input, timeout=timeout)
+            except TimeoutExpired as exc:
+                process.kill()
+                if _mswindows:
+                    # Windows accumulates the output in a single blocking
+                    # read() call run on child threads, with the timeout
+                    # being done in a join() on those threads.  communicate()
+                    # _after_ kill() is required to collect that and add it
+                    # to the exception.
+                    exc.stdout, exc.stderr = process.communicate()
+                else:
+                    # POSIX _communicate already populated the output so
+                    # far into the TimeoutExpired exception.
+                    process.wait()
+                raise
+            except:  # Including KeyboardInterrupt, communicate handled that.
+                process.kill()
+                # We don't call process.wait() as .__exit__ does that for us.
+                raise
+            retcode = process.poll()
+            if check and retcode:
+>               raise CalledProcessError(retcode, process.args,
+                                         output=stdout, stderr=stderr)
+E               subprocess.CalledProcessError: Command '('sudo', '-n', 'i2ctransfer', '-f', '-y', '3', 'w2@0x60', '0x3b', '0x83', 'r1')' returned non-zero exit status 1.
+
+/usr/lib64/python3.14/subprocess.py:577: CalledProcessError
+
+The above exception was the direct cause of the following exception:
+
+graph = 'ov7251 3-0060', clean = None, fps = 90
+
+    @pytest.mark.parametrize("fps", [30, 60, 90])
+    def test_strobe_block_unchanged_with_strobe_off(graph, clean, fps):
+        strobe_off_if_present()
+        set_fps(fps)
+        with streaming():
+>           got = {a: read_reg(a) for a in STOCK_STROBE_REGS}
+                      ^^^^^^^^^^^
+
+tests/test_k11_strobe_registers.py:48: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/conftest.py:150: in read_reg
+    out = run("sudo", "-n", "i2ctransfer", "-f", "-y", bus, f"w2@0x{int(dev, 16):02x}", f"0x{a >> 8:02x}", f"0x{a & 0xff:02x}", "r1")
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+cmd = ('sudo', '-n', 'i2ctransfer', '-f', '-y', '3', ...), kw = {}
+
+    def run(*cmd, **kw) -> str:
+        try:
+            return subprocess.run(cmd, check=True, capture_output=True, text=True, **kw).stdout
+        except subprocess.CalledProcessError as e:
+>           raise RuntimeError(f"{' '.join(cmd)} failed ({e.returncode}): {e.stderr.strip()}") from e
+E           RuntimeError: sudo -n i2ctransfer -f -y 3 w2@0x60 0x3b 0x83 r1 failed (1): Error: Sending messages failed: Remote I/O error
+
+tests/conftest.py:60: RuntimeError
+
+During handling of the above exception, another exception occurred:
+
+graph = 'ov7251 3-0060', clean = None, fps = 90
+
+    @pytest.mark.parametrize("fps", [30, 60, 90])
+    def test_strobe_block_unchanged_with_strobe_off(graph, clean, fps):
+        strobe_off_if_present()
+        set_fps(fps)
+>       with streaming():
+             ^^^^^^^^^^^
+
+tests/test_k11_strobe_registers.py:47: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/usr/lib64/python3.14/contextlib.py:162: in __exit__
+    self.gen.throw(value)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+seconds = 3
+
+    @contextmanager
+    def streaming(seconds: float = 3):
+        """Stream about `seconds` at the current frame rate in a background stream() (fixed frame count, so it always
+        ends), enter the block 1 s in, while the sensor is powered and streaming, and wait for the stream to end after it."""
+        with ThreadPoolExecutor(1) as ex:
+            done = ex.submit(stream, int(seconds * get_fps()), "/dev/null")
+            time.sleep(1)
+            try:
+                assert runtime_status() == "active", f"sensor {runtime_status()} 1 s into a stream"
+                yield
+            finally:
+>               assert runtime_status() == "active", \
+                    f"sensor {runtime_status()}: stream ended before the block finished, register reads after this point are not the driver's values"
+E               AssertionError: sensor suspended: stream ended before the block finished, register reads after this point are not the driver's values
+E               assert 'suspended' == 'active'
+E                 
+E                 - active
+E                 + suspended
+
+tests/conftest.py:166: AssertionError
+____________________ test_strobe_on_at_stream_start[30-10] _____________________
+
+cmd = ('sudo', '-n', 'i2ctransfer', '-f', '-y', '3', ...), kw = {}
+
+    def run(*cmd, **kw) -> str:
+        try:
+>           return subprocess.run(cmd, check=True, capture_output=True, text=True, **kw).stdout
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/conftest.py:58: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+input = None, capture_output = True, timeout = None, check = True
+popenargs = (('sudo', '-n', 'i2ctransfer', '-f', '-y', '3', ...),)
+kwargs = {'text': True, 'stdout': -1, 'stderr': -1}
+
+    def run(*popenargs,
+            input=None, capture_output=False, timeout=None, check=False, **kwargs):
+        """Run command with arguments and return a CompletedProcess instance.
+    
+        The returned instance will have attributes args, returncode, stdout and
+        stderr. By default, stdout and stderr are not captured, and those attributes
+        will be None. Pass stdout=PIPE and/or stderr=PIPE in order to capture them,
+        or pass capture_output=True to capture both.
+    
+        If check is True and the exit code was non-zero, it raises a
+        CalledProcessError. The CalledProcessError object will have the return code
+        in the returncode attribute, and output & stderr attributes if those streams
+        were captured.
+    
+        If timeout (seconds) is given and the process takes too long,
+         a TimeoutExpired exception will be raised.
+    
+        There is an optional argument "input", allowing you to
+        pass bytes or a string to the subprocess's stdin.  If you use this argument
+        you may not also use the Popen constructor's "stdin" argument, as
+        it will be used internally.
+    
+        By default, all communication is in bytes, and therefore any "input" should
+        be bytes, and the stdout and stderr will be bytes. If in text mode, any
+        "input" should be a string, and stdout and stderr will be strings decoded
+        according to locale encoding, or by "encoding" if set. Text mode is
+        triggered by setting any of text, encoding, errors or universal_newlines.
+    
+        The other arguments are the same as for the Popen constructor.
+        """
+        if input is not None:
+            if kwargs.get('stdin') is not None:
+                raise ValueError('stdin and input arguments may not both be used.')
+            kwargs['stdin'] = PIPE
+    
+        if capture_output:
+            if kwargs.get('stdout') is not None or kwargs.get('stderr') is not None:
+                raise ValueError('stdout and stderr arguments may not be used '
+                                 'with capture_output.')
+            kwargs['stdout'] = PIPE
+            kwargs['stderr'] = PIPE
+    
+        with Popen(*popenargs, **kwargs) as process:
+            try:
+                stdout, stderr = process.communicate(input, timeout=timeout)
+            except TimeoutExpired as exc:
+                process.kill()
+                if _mswindows:
+                    # Windows accumulates the output in a single blocking
+                    # read() call run on child threads, with the timeout
+                    # being done in a join() on those threads.  communicate()
+                    # _after_ kill() is required to collect that and add it
+                    # to the exception.
+                    exc.stdout, exc.stderr = process.communicate()
+                else:
+                    # POSIX _communicate already populated the output so
+                    # far into the TimeoutExpired exception.
+                    process.wait()
+                raise
+            except:  # Including KeyboardInterrupt, communicate handled that.
+                process.kill()
+                # We don't call process.wait() as .__exit__ does that for us.
+                raise
+            retcode = process.poll()
+            if check and retcode:
+>               raise CalledProcessError(retcode, process.args,
+                                         output=stdout, stderr=stderr)
+E               subprocess.CalledProcessError: Command '('sudo', '-n', 'i2ctransfer', '-f', '-y', '3', 'w2@0x60', '0x3b', '0x8f', 'r1')' returned non-zero exit status 1.
+
+/usr/lib64/python3.14/subprocess.py:577: CalledProcessError
+
+The above exception was the direct cause of the following exception:
+
+graph = 'ov7251 3-0060', clean = None, fps = 30, exposure = 10
+
+    @pytest.mark.needs_patch("8")
+    @pytest.mark.parametrize("fps, exposure", [(fps, e) for fps, mid in ((30, 504), (60, 300), (90, 200))
+                                               for e in (10, mid, "max")])
+    def test_strobe_on_at_stream_start(graph, clean, fps, exposure):
+        assert ctrl_info(STROBE), MISSING
+        set_fps(fps)  # resets exposure to 504, so set it after
+        exposure = ctrl_info("exposure")["max"] if exposure == "max" else exposure
+        set_ctrl("exposure", exposure)
+        set_ctrl(STROBE, 1)
+        with streaming():
+>           reg5, pattern, span = strobe_state()
+                                  ^^^^^^^^^^^^^^
+
+tests/test_k11_strobe_registers.py:63: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_k11_strobe_registers.py:27: in strobe_state
+    return read_reg(SC_REG5), read_reg(STROBE_PATTERN), read_reg(STROBE_SPAN, 4)
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^
+tests/conftest.py:150: in read_reg
+    out = run("sudo", "-n", "i2ctransfer", "-f", "-y", bus, f"w2@0x{int(dev, 16):02x}", f"0x{a >> 8:02x}", f"0x{a & 0xff:02x}", "r1")
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+cmd = ('sudo', '-n', 'i2ctransfer', '-f', '-y', '3', ...), kw = {}
+
+    def run(*cmd, **kw) -> str:
+        try:
+            return subprocess.run(cmd, check=True, capture_output=True, text=True, **kw).stdout
+        except subprocess.CalledProcessError as e:
+>           raise RuntimeError(f"{' '.join(cmd)} failed ({e.returncode}): {e.stderr.strip()}") from e
+E           RuntimeError: sudo -n i2ctransfer -f -y 3 w2@0x60 0x3b 0x8f r1 failed (1): Error: Sending messages failed: Remote I/O error
+
+tests/conftest.py:60: RuntimeError
+
+During handling of the above exception, another exception occurred:
+
+graph = 'ov7251 3-0060', clean = None, fps = 30, exposure = 10
+
+    @pytest.mark.needs_patch("8")
+    @pytest.mark.parametrize("fps, exposure", [(fps, e) for fps, mid in ((30, 504), (60, 300), (90, 200))
+                                               for e in (10, mid, "max")])
+    def test_strobe_on_at_stream_start(graph, clean, fps, exposure):
+        assert ctrl_info(STROBE), MISSING
+        set_fps(fps)  # resets exposure to 504, so set it after
+        exposure = ctrl_info("exposure")["max"] if exposure == "max" else exposure
+        set_ctrl("exposure", exposure)
+        set_ctrl(STROBE, 1)
+>       with streaming():
+             ^^^^^^^^^^^
+
+tests/test_k11_strobe_registers.py:62: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/usr/lib64/python3.14/contextlib.py:162: in __exit__
+    self.gen.throw(value)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+seconds = 3
+
+    @contextmanager
+    def streaming(seconds: float = 3):
+        """Stream about `seconds` at the current frame rate in a background stream() (fixed frame count, so it always
+        ends), enter the block 1 s in, while the sensor is powered and streaming, and wait for the stream to end after it."""
+        with ThreadPoolExecutor(1) as ex:
+            done = ex.submit(stream, int(seconds * get_fps()), "/dev/null")
+            time.sleep(1)
+            try:
+                assert runtime_status() == "active", f"sensor {runtime_status()} 1 s into a stream"
+                yield
+            finally:
+>               assert runtime_status() == "active", \
+                    f"sensor {runtime_status()}: stream ended before the block finished, register reads after this point are not the driver's values"
+E               AssertionError: sensor suspended: stream ended before the block finished, register reads after this point are not the driver's values
+E               assert 'suspended' == 'active'
+E                 
+E                 - active
+E                 + suspended
+
+tests/conftest.py:166: AssertionError
+____________________ test_strobe_on_at_stream_start[30-504] ____________________
+
+cmd = ('sudo', '-n', 'i2ctransfer', '-f', '-y', '3', ...), kw = {}
+
+    def run(*cmd, **kw) -> str:
+        try:
+>           return subprocess.run(cmd, check=True, capture_output=True, text=True, **kw).stdout
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/conftest.py:58: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+input = None, capture_output = True, timeout = None, check = True
+popenargs = (('sudo', '-n', 'i2ctransfer', '-f', '-y', '3', ...),)
+kwargs = {'text': True, 'stdout': -1, 'stderr': -1}
+
+    def run(*popenargs,
+            input=None, capture_output=False, timeout=None, check=False, **kwargs):
+        """Run command with arguments and return a CompletedProcess instance.
+    
+        The returned instance will have attributes args, returncode, stdout and
+        stderr. By default, stdout and stderr are not captured, and those attributes
+        will be None. Pass stdout=PIPE and/or stderr=PIPE in order to capture them,
+        or pass capture_output=True to capture both.
+    
+        If check is True and the exit code was non-zero, it raises a
+        CalledProcessError. The CalledProcessError object will have the return code
+        in the returncode attribute, and output & stderr attributes if those streams
+        were captured.
+    
+        If timeout (seconds) is given and the process takes too long,
+         a TimeoutExpired exception will be raised.
+    
+        There is an optional argument "input", allowing you to
+        pass bytes or a string to the subprocess's stdin.  If you use this argument
+        you may not also use the Popen constructor's "stdin" argument, as
+        it will be used internally.
+    
+        By default, all communication is in bytes, and therefore any "input" should
+        be bytes, and the stdout and stderr will be bytes. If in text mode, any
+        "input" should be a string, and stdout and stderr will be strings decoded
+        according to locale encoding, or by "encoding" if set. Text mode is
+        triggered by setting any of text, encoding, errors or universal_newlines.
+    
+        The other arguments are the same as for the Popen constructor.
+        """
+        if input is not None:
+            if kwargs.get('stdin') is not None:
+                raise ValueError('stdin and input arguments may not both be used.')
+            kwargs['stdin'] = PIPE
+    
+        if capture_output:
+            if kwargs.get('stdout') is not None or kwargs.get('stderr') is not None:
+                raise ValueError('stdout and stderr arguments may not be used '
+                                 'with capture_output.')
+            kwargs['stdout'] = PIPE
+            kwargs['stderr'] = PIPE
+    
+        with Popen(*popenargs, **kwargs) as process:
+            try:
+                stdout, stderr = process.communicate(input, timeout=timeout)
+            except TimeoutExpired as exc:
+                process.kill()
+                if _mswindows:
+                    # Windows accumulates the output in a single blocking
+                    # read() call run on child threads, with the timeout
+                    # being done in a join() on those threads.  communicate()
+                    # _after_ kill() is required to collect that and add it
+                    # to the exception.
+                    exc.stdout, exc.stderr = process.communicate()
+                else:
+                    # POSIX _communicate already populated the output so
+                    # far into the TimeoutExpired exception.
+                    process.wait()
+                raise
+            except:  # Including KeyboardInterrupt, communicate handled that.
+                process.kill()
+                # We don't call process.wait() as .__exit__ does that for us.
+                raise
+            retcode = process.poll()
+            if check and retcode:
+>               raise CalledProcessError(retcode, process.args,
+                                         output=stdout, stderr=stderr)
+E               subprocess.CalledProcessError: Command '('sudo', '-n', 'i2ctransfer', '-f', '-y', '3', 'w2@0x60', '0x3b', '0x8f', 'r1')' returned non-zero exit status 1.
+
+/usr/lib64/python3.14/subprocess.py:577: CalledProcessError
+
+The above exception was the direct cause of the following exception:
+
+graph = 'ov7251 3-0060', clean = None, fps = 30, exposure = 504
+
+    @pytest.mark.needs_patch("8")
+    @pytest.mark.parametrize("fps, exposure", [(fps, e) for fps, mid in ((30, 504), (60, 300), (90, 200))
+                                               for e in (10, mid, "max")])
+    def test_strobe_on_at_stream_start(graph, clean, fps, exposure):
+        assert ctrl_info(STROBE), MISSING
+        set_fps(fps)  # resets exposure to 504, so set it after
+        exposure = ctrl_info("exposure")["max"] if exposure == "max" else exposure
+        set_ctrl("exposure", exposure)
+        set_ctrl(STROBE, 1)
+        with streaming():
+>           reg5, pattern, span = strobe_state()
+                                  ^^^^^^^^^^^^^^
+
+tests/test_k11_strobe_registers.py:63: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_k11_strobe_registers.py:27: in strobe_state
+    return read_reg(SC_REG5), read_reg(STROBE_PATTERN), read_reg(STROBE_SPAN, 4)
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^
+tests/conftest.py:150: in read_reg
+    out = run("sudo", "-n", "i2ctransfer", "-f", "-y", bus, f"w2@0x{int(dev, 16):02x}", f"0x{a >> 8:02x}", f"0x{a & 0xff:02x}", "r1")
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+cmd = ('sudo', '-n', 'i2ctransfer', '-f', '-y', '3', ...), kw = {}
+
+    def run(*cmd, **kw) -> str:
+        try:
+            return subprocess.run(cmd, check=True, capture_output=True, text=True, **kw).stdout
+        except subprocess.CalledProcessError as e:
+>           raise RuntimeError(f"{' '.join(cmd)} failed ({e.returncode}): {e.stderr.strip()}") from e
+E           RuntimeError: sudo -n i2ctransfer -f -y 3 w2@0x60 0x3b 0x8f r1 failed (1): Error: Sending messages failed: Remote I/O error
+
+tests/conftest.py:60: RuntimeError
+
+During handling of the above exception, another exception occurred:
+
+graph = 'ov7251 3-0060', clean = None, fps = 30, exposure = 504
+
+    @pytest.mark.needs_patch("8")
+    @pytest.mark.parametrize("fps, exposure", [(fps, e) for fps, mid in ((30, 504), (60, 300), (90, 200))
+                                               for e in (10, mid, "max")])
+    def test_strobe_on_at_stream_start(graph, clean, fps, exposure):
+        assert ctrl_info(STROBE), MISSING
+        set_fps(fps)  # resets exposure to 504, so set it after
+        exposure = ctrl_info("exposure")["max"] if exposure == "max" else exposure
+        set_ctrl("exposure", exposure)
+        set_ctrl(STROBE, 1)
+>       with streaming():
+             ^^^^^^^^^^^
+
+tests/test_k11_strobe_registers.py:62: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/usr/lib64/python3.14/contextlib.py:162: in __exit__
+    self.gen.throw(value)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+seconds = 3
+
+    @contextmanager
+    def streaming(seconds: float = 3):
+        """Stream about `seconds` at the current frame rate in a background stream() (fixed frame count, so it always
+        ends), enter the block 1 s in, while the sensor is powered and streaming, and wait for the stream to end after it."""
+        with ThreadPoolExecutor(1) as ex:
+            done = ex.submit(stream, int(seconds * get_fps()), "/dev/null")
+            time.sleep(1)
+            try:
+                assert runtime_status() == "active", f"sensor {runtime_status()} 1 s into a stream"
+                yield
+            finally:
+>               assert runtime_status() == "active", \
+                    f"sensor {runtime_status()}: stream ended before the block finished, register reads after this point are not the driver's values"
+E               AssertionError: sensor suspended: stream ended before the block finished, register reads after this point are not the driver's values
+E               assert 'suspended' == 'active'
+E                 
+E                 - active
+E                 + suspended
+
+tests/conftest.py:166: AssertionError
+____________________ test_strobe_on_at_stream_start[30-max] ____________________
+
+cmd = ('sudo', '-n', 'i2ctransfer', '-f', '-y', '3', ...), kw = {}
+
+    def run(*cmd, **kw) -> str:
+        try:
+>           return subprocess.run(cmd, check=True, capture_output=True, text=True, **kw).stdout
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/conftest.py:58: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+input = None, capture_output = True, timeout = None, check = True
+popenargs = (('sudo', '-n', 'i2ctransfer', '-f', '-y', '3', ...),)
+kwargs = {'text': True, 'stdout': -1, 'stderr': -1}
+
+    def run(*popenargs,
+            input=None, capture_output=False, timeout=None, check=False, **kwargs):
+        """Run command with arguments and return a CompletedProcess instance.
+    
+        The returned instance will have attributes args, returncode, stdout and
+        stderr. By default, stdout and stderr are not captured, and those attributes
+        will be None. Pass stdout=PIPE and/or stderr=PIPE in order to capture them,
+        or pass capture_output=True to capture both.
+    
+        If check is True and the exit code was non-zero, it raises a
+        CalledProcessError. The CalledProcessError object will have the return code
+        in the returncode attribute, and output & stderr attributes if those streams
+        were captured.
+    
+        If timeout (seconds) is given and the process takes too long,
+         a TimeoutExpired exception will be raised.
+    
+        There is an optional argument "input", allowing you to
+        pass bytes or a string to the subprocess's stdin.  If you use this argument
+        you may not also use the Popen constructor's "stdin" argument, as
+        it will be used internally.
+    
+        By default, all communication is in bytes, and therefore any "input" should
+        be bytes, and the stdout and stderr will be bytes. If in text mode, any
+        "input" should be a string, and stdout and stderr will be strings decoded
+        according to locale encoding, or by "encoding" if set. Text mode is
+        triggered by setting any of text, encoding, errors or universal_newlines.
+    
+        The other arguments are the same as for the Popen constructor.
+        """
+        if input is not None:
+            if kwargs.get('stdin') is not None:
+                raise ValueError('stdin and input arguments may not both be used.')
+            kwargs['stdin'] = PIPE
+    
+        if capture_output:
+            if kwargs.get('stdout') is not None or kwargs.get('stderr') is not None:
+                raise ValueError('stdout and stderr arguments may not be used '
+                                 'with capture_output.')
+            kwargs['stdout'] = PIPE
+            kwargs['stderr'] = PIPE
+    
+        with Popen(*popenargs, **kwargs) as process:
+            try:
+                stdout, stderr = process.communicate(input, timeout=timeout)
+            except TimeoutExpired as exc:
+                process.kill()
+                if _mswindows:
+                    # Windows accumulates the output in a single blocking
+                    # read() call run on child threads, with the timeout
+                    # being done in a join() on those threads.  communicate()
+                    # _after_ kill() is required to collect that and add it
+                    # to the exception.
+                    exc.stdout, exc.stderr = process.communicate()
+                else:
+                    # POSIX _communicate already populated the output so
+                    # far into the TimeoutExpired exception.
+                    process.wait()
+                raise
+            except:  # Including KeyboardInterrupt, communicate handled that.
+                process.kill()
+                # We don't call process.wait() as .__exit__ does that for us.
+                raise
+            retcode = process.poll()
+            if check and retcode:
+>               raise CalledProcessError(retcode, process.args,
+                                         output=stdout, stderr=stderr)
+E               subprocess.CalledProcessError: Command '('sudo', '-n', 'i2ctransfer', '-f', '-y', '3', 'w2@0x60', '0x3b', '0x8f', 'r1')' returned non-zero exit status 1.
+
+/usr/lib64/python3.14/subprocess.py:577: CalledProcessError
+
+The above exception was the direct cause of the following exception:
+
+graph = 'ov7251 3-0060', clean = None, fps = 30, exposure = 1704
+
+    @pytest.mark.needs_patch("8")
+    @pytest.mark.parametrize("fps, exposure", [(fps, e) for fps, mid in ((30, 504), (60, 300), (90, 200))
+                                               for e in (10, mid, "max")])
+    def test_strobe_on_at_stream_start(graph, clean, fps, exposure):
+        assert ctrl_info(STROBE), MISSING
+        set_fps(fps)  # resets exposure to 504, so set it after
+        exposure = ctrl_info("exposure")["max"] if exposure == "max" else exposure
+        set_ctrl("exposure", exposure)
+        set_ctrl(STROBE, 1)
+        with streaming():
+>           reg5, pattern, span = strobe_state()
+                                  ^^^^^^^^^^^^^^
+
+tests/test_k11_strobe_registers.py:63: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_k11_strobe_registers.py:27: in strobe_state
+    return read_reg(SC_REG5), read_reg(STROBE_PATTERN), read_reg(STROBE_SPAN, 4)
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^
+tests/conftest.py:150: in read_reg
+    out = run("sudo", "-n", "i2ctransfer", "-f", "-y", bus, f"w2@0x{int(dev, 16):02x}", f"0x{a >> 8:02x}", f"0x{a & 0xff:02x}", "r1")
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+cmd = ('sudo', '-n', 'i2ctransfer', '-f', '-y', '3', ...), kw = {}
+
+    def run(*cmd, **kw) -> str:
+        try:
+            return subprocess.run(cmd, check=True, capture_output=True, text=True, **kw).stdout
+        except subprocess.CalledProcessError as e:
+>           raise RuntimeError(f"{' '.join(cmd)} failed ({e.returncode}): {e.stderr.strip()}") from e
+E           RuntimeError: sudo -n i2ctransfer -f -y 3 w2@0x60 0x3b 0x8f r1 failed (1): Error: Sending messages failed: Remote I/O error
+
+tests/conftest.py:60: RuntimeError
+
+During handling of the above exception, another exception occurred:
+
+graph = 'ov7251 3-0060', clean = None, fps = 30, exposure = 1704
+
+    @pytest.mark.needs_patch("8")
+    @pytest.mark.parametrize("fps, exposure", [(fps, e) for fps, mid in ((30, 504), (60, 300), (90, 200))
+                                               for e in (10, mid, "max")])
+    def test_strobe_on_at_stream_start(graph, clean, fps, exposure):
+        assert ctrl_info(STROBE), MISSING
+        set_fps(fps)  # resets exposure to 504, so set it after
+        exposure = ctrl_info("exposure")["max"] if exposure == "max" else exposure
+        set_ctrl("exposure", exposure)
+        set_ctrl(STROBE, 1)
+>       with streaming():
+             ^^^^^^^^^^^
+
+tests/test_k11_strobe_registers.py:62: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/usr/lib64/python3.14/contextlib.py:162: in __exit__
+    self.gen.throw(value)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+seconds = 3
+
+    @contextmanager
+    def streaming(seconds: float = 3):
+        """Stream about `seconds` at the current frame rate in a background stream() (fixed frame count, so it always
+        ends), enter the block 1 s in, while the sensor is powered and streaming, and wait for the stream to end after it."""
+        with ThreadPoolExecutor(1) as ex:
+            done = ex.submit(stream, int(seconds * get_fps()), "/dev/null")
+            time.sleep(1)
+            try:
+                assert runtime_status() == "active", f"sensor {runtime_status()} 1 s into a stream"
+                yield
+            finally:
+>               assert runtime_status() == "active", \
+                    f"sensor {runtime_status()}: stream ended before the block finished, register reads after this point are not the driver's values"
+E               AssertionError: sensor suspended: stream ended before the block finished, register reads after this point are not the driver's values
+E               assert 'suspended' == 'active'
+E                 
+E                 - active
+E                 + suspended
+
+tests/conftest.py:166: AssertionError
+____________________ test_strobe_on_at_stream_start[60-10] _____________________
+
+cmd = ('sudo', '-n', 'i2ctransfer', '-f', '-y', '3', ...), kw = {}
+
+    def run(*cmd, **kw) -> str:
+        try:
+>           return subprocess.run(cmd, check=True, capture_output=True, text=True, **kw).stdout
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/conftest.py:58: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+input = None, capture_output = True, timeout = None, check = True
+popenargs = (('sudo', '-n', 'i2ctransfer', '-f', '-y', '3', ...),)
+kwargs = {'text': True, 'stdout': -1, 'stderr': -1}
+
+    def run(*popenargs,
+            input=None, capture_output=False, timeout=None, check=False, **kwargs):
+        """Run command with arguments and return a CompletedProcess instance.
+    
+        The returned instance will have attributes args, returncode, stdout and
+        stderr. By default, stdout and stderr are not captured, and those attributes
+        will be None. Pass stdout=PIPE and/or stderr=PIPE in order to capture them,
+        or pass capture_output=True to capture both.
+    
+        If check is True and the exit code was non-zero, it raises a
+        CalledProcessError. The CalledProcessError object will have the return code
+        in the returncode attribute, and output & stderr attributes if those streams
+        were captured.
+    
+        If timeout (seconds) is given and the process takes too long,
+         a TimeoutExpired exception will be raised.
+    
+        There is an optional argument "input", allowing you to
+        pass bytes or a string to the subprocess's stdin.  If you use this argument
+        you may not also use the Popen constructor's "stdin" argument, as
+        it will be used internally.
+    
+        By default, all communication is in bytes, and therefore any "input" should
+        be bytes, and the stdout and stderr will be bytes. If in text mode, any
+        "input" should be a string, and stdout and stderr will be strings decoded
+        according to locale encoding, or by "encoding" if set. Text mode is
+        triggered by setting any of text, encoding, errors or universal_newlines.
+    
+        The other arguments are the same as for the Popen constructor.
+        """
+        if input is not None:
+            if kwargs.get('stdin') is not None:
+                raise ValueError('stdin and input arguments may not both be used.')
+            kwargs['stdin'] = PIPE
+    
+        if capture_output:
+            if kwargs.get('stdout') is not None or kwargs.get('stderr') is not None:
+                raise ValueError('stdout and stderr arguments may not be used '
+                                 'with capture_output.')
+            kwargs['stdout'] = PIPE
+            kwargs['stderr'] = PIPE
+    
+        with Popen(*popenargs, **kwargs) as process:
+            try:
+                stdout, stderr = process.communicate(input, timeout=timeout)
+            except TimeoutExpired as exc:
+                process.kill()
+                if _mswindows:
+                    # Windows accumulates the output in a single blocking
+                    # read() call run on child threads, with the timeout
+                    # being done in a join() on those threads.  communicate()
+                    # _after_ kill() is required to collect that and add it
+                    # to the exception.
+                    exc.stdout, exc.stderr = process.communicate()
+                else:
+                    # POSIX _communicate already populated the output so
+                    # far into the TimeoutExpired exception.
+                    process.wait()
+                raise
+            except:  # Including KeyboardInterrupt, communicate handled that.
+                process.kill()
+                # We don't call process.wait() as .__exit__ does that for us.
+                raise
+            retcode = process.poll()
+            if check and retcode:
+>               raise CalledProcessError(retcode, process.args,
+                                         output=stdout, stderr=stderr)
+E               subprocess.CalledProcessError: Command '('sudo', '-n', 'i2ctransfer', '-f', '-y', '3', 'w2@0x60', '0x3b', '0x8e', 'r1')' returned non-zero exit status 1.
+
+/usr/lib64/python3.14/subprocess.py:577: CalledProcessError
+
+The above exception was the direct cause of the following exception:
+
+graph = 'ov7251 3-0060', clean = None, fps = 60, exposure = 10
+
+    @pytest.mark.needs_patch("8")
+    @pytest.mark.parametrize("fps, exposure", [(fps, e) for fps, mid in ((30, 504), (60, 300), (90, 200))
+                                               for e in (10, mid, "max")])
+    def test_strobe_on_at_stream_start(graph, clean, fps, exposure):
+        assert ctrl_info(STROBE), MISSING
+        set_fps(fps)  # resets exposure to 504, so set it after
+        exposure = ctrl_info("exposure")["max"] if exposure == "max" else exposure
+        set_ctrl("exposure", exposure)
+        set_ctrl(STROBE, 1)
+        with streaming():
+>           reg5, pattern, span = strobe_state()
+                                  ^^^^^^^^^^^^^^
+
+tests/test_k11_strobe_registers.py:63: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_k11_strobe_registers.py:27: in strobe_state
+    return read_reg(SC_REG5), read_reg(STROBE_PATTERN), read_reg(STROBE_SPAN, 4)
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^
+tests/conftest.py:150: in read_reg
+    out = run("sudo", "-n", "i2ctransfer", "-f", "-y", bus, f"w2@0x{int(dev, 16):02x}", f"0x{a >> 8:02x}", f"0x{a & 0xff:02x}", "r1")
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+cmd = ('sudo', '-n', 'i2ctransfer', '-f', '-y', '3', ...), kw = {}
+
+    def run(*cmd, **kw) -> str:
+        try:
+            return subprocess.run(cmd, check=True, capture_output=True, text=True, **kw).stdout
+        except subprocess.CalledProcessError as e:
+>           raise RuntimeError(f"{' '.join(cmd)} failed ({e.returncode}): {e.stderr.strip()}") from e
+E           RuntimeError: sudo -n i2ctransfer -f -y 3 w2@0x60 0x3b 0x8e r1 failed (1): Error: Sending messages failed: Remote I/O error
+
+tests/conftest.py:60: RuntimeError
+
+During handling of the above exception, another exception occurred:
+
+graph = 'ov7251 3-0060', clean = None, fps = 60, exposure = 10
+
+    @pytest.mark.needs_patch("8")
+    @pytest.mark.parametrize("fps, exposure", [(fps, e) for fps, mid in ((30, 504), (60, 300), (90, 200))
+                                               for e in (10, mid, "max")])
+    def test_strobe_on_at_stream_start(graph, clean, fps, exposure):
+        assert ctrl_info(STROBE), MISSING
+        set_fps(fps)  # resets exposure to 504, so set it after
+        exposure = ctrl_info("exposure")["max"] if exposure == "max" else exposure
+        set_ctrl("exposure", exposure)
+        set_ctrl(STROBE, 1)
+>       with streaming():
+             ^^^^^^^^^^^
+
+tests/test_k11_strobe_registers.py:62: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/usr/lib64/python3.14/contextlib.py:162: in __exit__
+    self.gen.throw(value)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+seconds = 3
+
+    @contextmanager
+    def streaming(seconds: float = 3):
+        """Stream about `seconds` at the current frame rate in a background stream() (fixed frame count, so it always
+        ends), enter the block 1 s in, while the sensor is powered and streaming, and wait for the stream to end after it."""
+        with ThreadPoolExecutor(1) as ex:
+            done = ex.submit(stream, int(seconds * get_fps()), "/dev/null")
+            time.sleep(1)
+            try:
+                assert runtime_status() == "active", f"sensor {runtime_status()} 1 s into a stream"
+                yield
+            finally:
+>               assert runtime_status() == "active", \
+                    f"sensor {runtime_status()}: stream ended before the block finished, register reads after this point are not the driver's values"
+E               AssertionError: sensor suspended: stream ended before the block finished, register reads after this point are not the driver's values
+E               assert 'suspended' == 'active'
+E                 
+E                 - active
+E                 + suspended
+
+tests/conftest.py:166: AssertionError
+____________________________ test_compliance[video] ____________________________
+
+graph = 'ov7251 3-0060', target = 'video'
+args = <function <lambda> at 0x7f6c194efe20>
+
+    @pytest.mark.parametrize("target, args", [
+        pytest.param("subdev", lambda: ["-u", sd()], marks=pytest.mark.needs_patch("5")),
+        pytest.param("media", lambda: ["-m", MEDIA], marks=pytest.mark.disruptive(reason=MEDIA_OOPS)),
+        ("video", lambda: ["-d", VIDEO, "-s", "30"]),
+    ], ids=["subdev", "media", "video"])
+    def test_compliance(graph, target, args):
+        before = parse_ctrls(run("v4l2-ctl", "-d", sd(), "-l"))
+        try:
+            p = subprocess.run(["v4l2-compliance", *args()], capture_output=True, text=True, timeout=300)
+        finally:  # v4l2-compliance leaves controls (e.g. test_pattern), formats and the frame interval changed
+            set_fps(30)
+            setup_graph()  # resets exposure and gain, so restore the controls after it
+            for name, c in before.items():
+                if "read-only" not in c["flags"] and ctrl_info(name)["value"] != c["value"]:
+                    set_ctrl(name, c["value"])
+        out = p.stdout + p.stderr
+        log = BASELINE / f"k1-{target}-{os.uname().release}.log"
+        if not log.exists():
+            log.parent.mkdir(exist_ok=True)
+            log.write_text(f"$ v4l2-compliance {' '.join(args())}\n# exit status {p.returncode}\n{out}")
+        assert p.returncode >= 0, f"v4l2-compliance {target} crashed (signal {-p.returncode}) before finishing, see {log.name}"
+        totals = TOTAL.findall(out)
+        assert totals, f"v4l2-compliance {target} printed no final Total line (exit status {p.returncode}, a negative one is a crash)"
+        failed = [l.strip() for l in out.splitlines() if "FAIL" in l or "fail:" in l]
+>       assert int(totals[-1][2]) == 0, f"v4l2-compliance {target}: {totals[-1]} (total, ok, failed, warn); failures: {failed}"
+E       AssertionError: v4l2-compliance video: ('58', '51', '7', '30') (total, ok, failed, warn); failures: ['fail: v4l2-test-buffers.cpp(901): q.create_bufs(node, 1, &fmt) != EINVAL', 'test VIDIOC_REQBUFS/CREATE_BUFS/QUERYBUF: FAIL', 'fail: v4l2-test-buffers.cpp(1667): buf.g_length(p) < fmt.g_sizeimage(p)', 'test MMAP (no poll, REQBUFS): FAIL', 'fail: v4l2-test-buffers.cpp(1667): buf.g_length(p) < fmt.g_sizeimage(p)', 'test MMAP (select, REQBUFS): FAIL', 'fail: v4l2-test-buffers.cpp(1667): buf.g_length(p) < fmt.g_sizeimage(p)', 'test MMAP (epoll, REQBUFS): FAIL', 'fail: v4l2-test-buffers.cpp(1667): buf.g_length(p) < fmt.g_sizeimage(p)', 'test MMAP (no poll, CREATE_BUFS): FAIL', 'fail: v4l2-test-buffers.cpp(1667): buf.g_length(p) < fmt.g_sizeimage(p)', 'test MMAP (select, CREATE_BUFS): FAIL', 'fail: v4l2-test-buffers.cpp(1667): buf.g_length(p) < fmt.g_sizeimage(p)', 'test MMAP (epoll, CREATE_BUFS): FAIL', 'fail: v4l2-test-buffers.cpp(2065): data at 8 bytes before start of the buffer was touched', 'fail: v4l2-test-buffers.cpp(2065): data at 4 bytes before start of the buffer was touched', 'fail: v4l2-test-buffers.cpp(2065): data at 8 bytes before start of the buffer was touched', 'fail: v4l2-test-buffers.cpp(2065): data at 4 bytes before start of the buffer was touched', 'fail: v4l2-test-buffers.cpp(2065): data at 8 bytes before start of the buffer was touched', 'fail: v4l2-test-buffers.cpp(2065): data at 4 bytes before start of the buffer was touched', 'fail: v4l2-test-buffers.cpp(2065): data at 8 bytes before start of the buffer was touched', 'fail: v4l2-test-buffers.cpp(2065): data at 4 bytes before start of the buffer was touched']
+E       assert 7 == 0
+E        +  where 7 = int('7')
+
+tests/test_k1_compliance.py:43: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_e2e.py::test_lit_60fps_capture - AssertionError: lit frames...
+FAILED tests/test_k11_strobe_registers.py::test_strobe_block_unchanged_with_strobe_off[30]
+FAILED tests/test_k11_strobe_registers.py::test_strobe_block_unchanged_with_strobe_off[60]
+FAILED tests/test_k11_strobe_registers.py::test_strobe_block_unchanged_with_strobe_off[90]
+FAILED tests/test_k11_strobe_registers.py::test_strobe_on_at_stream_start[30-10]
+FAILED tests/test_k11_strobe_registers.py::test_strobe_on_at_stream_start[30-504]
+FAILED tests/test_k11_strobe_registers.py::test_strobe_on_at_stream_start[30-max]
+FAILED tests/test_k11_strobe_registers.py::test_strobe_on_at_stream_start[60-10]
+FAILED tests/test_k1_compliance.py::test_compliance[video] - AssertionError: ...
+9 failed, 70 passed, 3 skipped in 144.55s (0:02:24)

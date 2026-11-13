@@ -1,0 +1,6 @@
+# Phase 3, 7.2: v3 module variant with the 60/90 fps clock values (0x3016 = 0x10, 0x3017/18/1a/1b/1c = 0x00) in the 30 fps table too
+
+Machine: esteban, Surface Book 2 13" (i7-8650U), OV7251 on ipu3-cio2. Kernel: 7.2.12-gcov. Date: 2026-10-30T12:03:15+0900. Module: the v3 code (same tree as the 11:34 run of tip 510fd5b90e23) plus the six-value change in ov7251_setting_vga_30fps (taint OE). Operator: Antoine.
+
+..................................                                       [100%]
+34 passed in 91.34s (0:01:31)

@@ -1,0 +1,145 @@
+{
+ "log": [
+  {
+   "t": 1.005,
+   "step": "default:a",
+   "r": 0
+  },
+  {
+   "t": 1.504,
+   "step": "default:b",
+   "r": 0
+  },
+  {
+   "t": 2.003,
+   "step": "write 0x4241=0x0f (frame on number 15)",
+   "r": 15
+  },
+  {
+   "t": 2.501,
+   "step": "on15:a",
+   "r": 0
+  },
+  {
+   "t": 3.5,
+   "step": "on15:b",
+   "r": 0
+  },
+  {
+   "t": 4.003,
+   "step": "write 0x4242=0x01 (frame off number 1)",
+   "r": 1
+  },
+  {
+   "t": 4.503,
+   "step": "on15off1:a",
+   "r": 0
+  },
+  {
+   "t": 5.504,
+   "step": "on15off1:b",
+   "r": 0
+  },
+  {
+   "t": 6.0,
+   "step": "write 0x4240=0x02 (fcnt_mask_dis)",
+   "r": 2
+  },
+  {
+   "t": 6.502,
+   "step": "maskdis:a",
+   "r": 2
+  },
+  {
+   "t": 7.503,
+   "step": "maskdis:b",
+   "r": 2
+  },
+  {
+   "t": 8.001,
+   "step": "write 0x4240=0x06 (+fcnt_eof_sel)",
+   "r": 6
+  },
+  {
+   "t": 8.504,
+   "step": "eofsel:a",
+   "r": 6
+  },
+  {
+   "t": 9.5,
+   "step": "eofsel:b",
+   "r": 6
+  },
+  {
+   "t": 10.002,
+   "step": "restore 0x4240-0x4242 = 0",
+   "r": [
+    0,
+    0,
+    0
+   ]
+  },
+  {
+   "t": 10.501,
+   "step": "restored:a",
+   "r": 0
+  },
+  {
+   "t": 11.502,
+   "step": "restored:b",
+   "r": 0
+  }
+ ],
+ "frames": 390,
+ "short": 0,
+ "err": 0,
+ "gaps": [],
+ "default": {
+  "counter": [
+   0,
+   0
+  ],
+  "delta_mod256": 0,
+  "frames_received": 15
+ },
+ "on15": {
+  "counter": [
+   0,
+   0
+  ],
+  "delta_mod256": 0,
+  "frames_received": 1
+ },
+ "on15off1": {
+  "counter": [
+   0,
+   0
+  ],
+  "delta_mod256": 0,
+  "frames_received": 28
+ },
+ "maskdis": {
+  "counter": [
+   2,
+   2
+  ],
+  "delta_mod256": 0,
+  "frames_received": 30
+ },
+ "eofsel": {
+  "counter": [
+   6,
+   6
+  ],
+  "delta_mod256": 0,
+  "frames_received": 30
+ },
+ "restored": {
+  "counter": [
+   0,
+   0
+  ],
+  "delta_mod256": 0,
+  "frames_received": 30
+ }
+}

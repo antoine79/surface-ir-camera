@@ -1,0 +1,38 @@
+--- /home/antoine/projects/surface-ir-camera/kernel/backport/ov7251.c	2026-10-30 11:01:26.205039130 +0900
++++ /tmp/claude-1000/-home-antoine-projects-surface/3ccf287b-d9c6-4190-a42c-0b614d1d1d83/scratchpad/cold/f0_end/ov7251.c	2026-10-30 23:13:28.131913741 +0900
+@@ -367,9 +367,6 @@
+ 	{ 0x4a4b, 0x30 },
+ 	{ 0x5000, 0x85 },
+ 	{ 0x5001, 0x80 },
+-};
+-
+-static const struct reg_value ov7251_setting_vga_30fps[] = {
+ 	{ 0x3016, 0xf0 },
+ 	{ 0x3017, 0xf0 },
+ 	{ 0x3018, 0xf0 },
+@@ -378,22 +375,13 @@
+ 	{ 0x301c, 0xf0 },
+ };
+ 
++static const struct reg_value ov7251_setting_vga_30fps[] = {
++};
++
+ static const struct reg_value ov7251_setting_vga_60fps[] = {
+-	{ 0x3016, 0x10 },
+-	{ 0x3017, 0x00 },
+-	{ 0x3018, 0x00 },
+-	{ 0x301a, 0x00 },
+-	{ 0x301b, 0x00 },
+-	{ 0x301c, 0x00 },
+ };
+ 
+ static const struct reg_value ov7251_setting_vga_90fps[] = {
+-	{ 0x3016, 0x10 },
+-	{ 0x3017, 0x00 },
+-	{ 0x3018, 0x00 },
+-	{ 0x301a, 0x00 },
+-	{ 0x301b, 0x00 },
+-	{ 0x301c, 0x00 },
+ };
+ 
+ static const unsigned long supported_xclk_rates[] = {

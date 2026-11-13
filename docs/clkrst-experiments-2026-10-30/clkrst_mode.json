@@ -1,0 +1,780 @@
+{
+ "lp_control": {
+  "log": [
+   {
+    "t": 0.5,
+    "step": "mode",
+    "r": "3c01=63"
+   },
+   {
+    "t": 1.505,
+    "step": "gates",
+    "r": []
+   },
+   {
+    "t": 2.502,
+    "step": "pattern on",
+    "r": null
+   },
+   {
+    "t": 3.505,
+    "step": "pattern off",
+    "r": null
+   },
+   {
+    "t": 4.001,
+    "step": "exposure 1",
+    "r": null
+   },
+   {
+    "t": 5.004,
+    "step": "gain 1023",
+    "r": null
+   },
+   {
+    "t": 6.004,
+    "step": "restore ctrls",
+    "r": [
+     null,
+     null
+    ]
+   },
+   {
+    "t": 6.5,
+    "step": "restore regs",
+    "r": [
+     "3016=f0",
+     "3017=f0",
+     "3018=f0",
+     "301a=f0",
+     "301b=f0",
+     "301c=f0",
+     "3c01=63"
+    ]
+   }
+  ],
+  "frames": 210,
+  "before": {
+   "n": 24,
+   "short": 0,
+   "err": 0,
+   "fps": 30.0,
+   "mean": 382.5,
+   "bars": "0/24"
+  },
+  "gated": {
+   "n": 24,
+   "short": 0,
+   "err": 0,
+   "fps": 30.0,
+   "mean": 382.8,
+   "bars": "0/24"
+  },
+  "bars": {
+   "n": 27,
+   "short": 0,
+   "err": 0,
+   "fps": 30.0,
+   "mean": 513.1,
+   "bars": "27/27"
+  },
+  "after_bars": {
+   "n": 12,
+   "short": 0,
+   "err": 0,
+   "fps": 30.0,
+   "mean": 383.5,
+   "bars": "0/12"
+  },
+  "black16": {
+   "n": 21,
+   "short": 0,
+   "err": 0,
+   "fps": 30.0,
+   "mean": 17.7,
+   "bars": "0/21"
+  },
+  "black1023": {
+   "n": 21,
+   "short": 0,
+   "err": 0,
+   "fps": 30.0,
+   "mean": 106.0,
+   "bars": "0/21"
+  },
+  "end": {
+   "n": 12,
+   "short": 0,
+   "err": 0,
+   "fps": 30.0,
+   "mean": 383.7,
+   "bars": "0/12"
+  },
+  "kern": {},
+  "gaps": [],
+  "last_frame_t": 7.094
+ },
+ "lp_3017_00": {
+  "log": [
+   {
+    "t": 0.501,
+    "step": "mode",
+    "r": "3c01=63"
+   },
+   {
+    "t": 1.505,
+    "step": "gates",
+    "r": [
+     "3017=00"
+    ]
+   },
+   {
+    "t": 2.501,
+    "step": "pattern on",
+    "r": null
+   },
+   {
+    "t": 3.501,
+    "step": "pattern off",
+    "r": null
+   },
+   {
+    "t": 4.004,
+    "step": "exposure 1",
+    "r": null
+   },
+   {
+    "t": 5.005,
+    "step": "gain 1023",
+    "r": null
+   },
+   {
+    "t": 6.001,
+    "step": "restore ctrls",
+    "r": [
+     null,
+     null
+    ]
+   },
+   {
+    "t": 6.5,
+    "step": "restore regs",
+    "r": [
+     "3016=f0",
+     "3017=f0",
+     "3018=f0",
+     "301a=f0",
+     "301b=f0",
+     "301c=f0",
+     "3c01=63"
+    ]
+   }
+  ],
+  "frames": 210,
+  "before": {
+   "n": 24,
+   "short": 0,
+   "err": 0,
+   "fps": 30.0,
+   "mean": 383.4,
+   "bars": "0/24"
+  },
+  "gated": {
+   "n": 24,
+   "short": 0,
+   "err": 0,
+   "fps": 30.0,
+   "mean": 383.5,
+   "bars": "0/24"
+  },
+  "bars": {
+   "n": 27,
+   "short": 0,
+   "err": 0,
+   "fps": 30.0,
+   "mean": 513.1,
+   "bars": "27/27"
+  },
+  "after_bars": {
+   "n": 12,
+   "short": 0,
+   "err": 0,
+   "fps": 30.1,
+   "mean": 383.6,
+   "bars": "0/12"
+  },
+  "black16": {
+   "n": 21,
+   "short": 0,
+   "err": 0,
+   "fps": 30.0,
+   "mean": 17.6,
+   "bars": "0/21"
+  },
+  "black1023": {
+   "n": 21,
+   "short": 0,
+   "err": 0,
+   "fps": 30.0,
+   "mean": 104.3,
+   "bars": "0/21"
+  },
+  "end": {
+   "n": 12,
+   "short": 0,
+   "err": 0,
+   "fps": 30.0,
+   "mean": 383.7,
+   "bars": "0/12"
+  },
+  "kern": {},
+  "gaps": [],
+  "last_frame_t": 7.078
+ },
+ "lp_3016_e0": {
+  "log": [
+   {
+    "t": 0.501,
+    "step": "mode",
+    "r": "3c01=63"
+   },
+   {
+    "t": 1.501,
+    "step": "gates",
+    "r": [
+     "3016=e0"
+    ]
+   },
+   {
+    "t": 2.502,
+    "step": "pattern on",
+    "r": null
+   },
+   {
+    "t": 3.505,
+    "step": "pattern off",
+    "r": null
+   },
+   {
+    "t": 4.001,
+    "step": "exposure 1",
+    "r": null
+   },
+   {
+    "t": 5.001,
+    "step": "gain 1023",
+    "r": null
+   },
+   {
+    "t": 6.0,
+    "step": "restore ctrls",
+    "r": [
+     null,
+     null
+    ]
+   },
+   {
+    "t": 6.501,
+    "step": "restore regs",
+    "r": [
+     "3016=f0",
+     "3017=f0",
+     "3018=f0",
+     "301a=f0",
+     "301b=f0",
+     "301c=f0",
+     "3c01=63"
+    ]
+   },
+   {
+    "t": 11.001,
+    "step": "killed"
+   }
+  ],
+  "frames": 177,
+  "before": {
+   "n": 24,
+   "short": 0,
+   "err": 0,
+   "fps": 30.0,
+   "mean": 383.8,
+   "bars": "0/24"
+  },
+  "gated": {
+   "n": 0
+  },
+  "bars": {
+   "n": 0
+  },
+  "after_bars": {
+   "n": 0
+  },
+  "black16": {
+   "n": 0
+  },
+  "black1023": {
+   "n": 0
+  },
+  "end": {
+   "n": 12,
+   "short": 0,
+   "err": 0,
+   "fps": 30.0,
+   "mean": 383.8,
+   "bars": "0/12"
+  },
+  "kern": {},
+  "gaps": [],
+  "last_frame_t": 10.994
+ },
+ "normal_control": {
+  "log": [
+   {
+    "t": 0.502,
+    "step": "mode",
+    "r": "3c01=ab"
+   },
+   {
+    "t": 1.5,
+    "step": "gates",
+    "r": []
+   },
+   {
+    "t": 2.501,
+    "step": "pattern on",
+    "r": null
+   },
+   {
+    "t": 3.501,
+    "step": "pattern off",
+    "r": null
+   },
+   {
+    "t": 4.0,
+    "step": "exposure 1",
+    "r": null
+   },
+   {
+    "t": 5.003,
+    "step": "gain 1023",
+    "r": null
+   },
+   {
+    "t": 6.002,
+    "step": "restore ctrls",
+    "r": [
+     null,
+     null
+    ]
+   },
+   {
+    "t": 6.502,
+    "step": "restore regs",
+    "r": [
+     "3016=f0",
+     "3017=f0",
+     "3018=f0",
+     "301a=f0",
+     "301b=f0",
+     "301c=f0",
+     "3c01=63"
+    ]
+   }
+  ],
+  "frames": 210,
+  "before": {
+   "n": 24,
+   "short": 0,
+   "err": 0,
+   "fps": 30.0,
+   "mean": 383.4,
+   "bars": "0/24"
+  },
+  "gated": {
+   "n": 24,
+   "short": 0,
+   "err": 0,
+   "fps": 30.0,
+   "mean": 383.9,
+   "bars": "0/24"
+  },
+  "bars": {
+   "n": 27,
+   "short": 0,
+   "err": 0,
+   "fps": 30.0,
+   "mean": 513.1,
+   "bars": "27/27"
+  },
+  "after_bars": {
+   "n": 12,
+   "short": 0,
+   "err": 0,
+   "fps": 30.0,
+   "mean": 384.1,
+   "bars": "0/12"
+  },
+  "black16": {
+   "n": 21,
+   "short": 0,
+   "err": 0,
+   "fps": 30.0,
+   "mean": 17.7,
+   "bars": "0/21"
+  },
+  "black1023": {
+   "n": 21,
+   "short": 0,
+   "err": 0,
+   "fps": 30.0,
+   "mean": 103.1,
+   "bars": "0/21"
+  },
+  "end": {
+   "n": 12,
+   "short": 0,
+   "err": 0,
+   "fps": 30.0,
+   "mean": 384.2,
+   "bars": "0/12"
+  },
+  "kern": {},
+  "gaps": [],
+  "last_frame_t": 7.093
+ },
+ "normal_3017_00": {
+  "log": [
+   {
+    "t": 0.504,
+    "step": "mode",
+    "r": "3c01=ab"
+   },
+   {
+    "t": 1.502,
+    "step": "gates",
+    "r": [
+     "3017=00"
+    ]
+   },
+   {
+    "t": 2.502,
+    "step": "pattern on",
+    "r": null
+   },
+   {
+    "t": 3.5,
+    "step": "pattern off",
+    "r": null
+   },
+   {
+    "t": 4.004,
+    "step": "exposure 1",
+    "r": null
+   },
+   {
+    "t": 5.0,
+    "step": "gain 1023",
+    "r": null
+   },
+   {
+    "t": 6.002,
+    "step": "restore ctrls",
+    "r": [
+     null,
+     null
+    ]
+   },
+   {
+    "t": 6.5,
+    "step": "restore regs",
+    "r": [
+     "3016=f0",
+     "3017=f0",
+     "3018=f0",
+     "301a=f0",
+     "301b=f0",
+     "301c=f0",
+     "3c01=63"
+    ]
+   }
+  ],
+  "frames": 210,
+  "before": {
+   "n": 24,
+   "short": 0,
+   "err": 0,
+   "fps": 30.0,
+   "mean": 383.6,
+   "bars": "0/24"
+  },
+  "gated": {
+   "n": 24,
+   "short": 0,
+   "err": 0,
+   "fps": 30.0,
+   "mean": 383.8,
+   "bars": "0/24"
+  },
+  "bars": {
+   "n": 27,
+   "short": 0,
+   "err": 0,
+   "fps": 30.0,
+   "mean": 513.1,
+   "bars": "27/27"
+  },
+  "after_bars": {
+   "n": 12,
+   "short": 0,
+   "err": 0,
+   "fps": 30.0,
+   "mean": 383.9,
+   "bars": "0/12"
+  },
+  "black16": {
+   "n": 21,
+   "short": 0,
+   "err": 0,
+   "fps": 30.0,
+   "mean": 17.4,
+   "bars": "0/21"
+  },
+  "black1023": {
+   "n": 21,
+   "short": 0,
+   "err": 0,
+   "fps": 30.0,
+   "mean": 102.7,
+   "bars": "0/21"
+  },
+  "end": {
+   "n": 12,
+   "short": 0,
+   "err": 0,
+   "fps": 30.1,
+   "mean": 384.1,
+   "bars": "0/12"
+  },
+  "kern": {},
+  "gaps": [],
+  "last_frame_t": 7.078
+ },
+ "normal_t60": {
+  "log": [
+   {
+    "t": 0.502,
+    "step": "mode",
+    "r": "3c01=ab"
+   },
+   {
+    "t": 1.503,
+    "step": "gates",
+    "r": [
+     "3016=10",
+     "3017=00",
+     "3018=00",
+     "301a=00",
+     "301b=00",
+     "301c=00"
+    ]
+   },
+   {
+    "t": 2.504,
+    "step": "pattern on",
+    "r": null
+   },
+   {
+    "t": 3.502,
+    "step": "pattern off",
+    "r": null
+   },
+   {
+    "t": 4.004,
+    "step": "exposure 1",
+    "r": null
+   },
+   {
+    "t": 5.001,
+    "step": "gain 1023",
+    "r": null
+   },
+   {
+    "t": 6.004,
+    "step": "restore ctrls",
+    "r": [
+     null,
+     null
+    ]
+   },
+   {
+    "t": 6.503,
+    "step": "restore regs",
+    "r": [
+     "3016=f0",
+     "3017=f0",
+     "3018=f0",
+     "301a=f0",
+     "301b=f0",
+     "301c=f0",
+     "3c01=63"
+    ]
+   }
+  ],
+  "frames": 210,
+  "before": {
+   "n": 24,
+   "short": 0,
+   "err": 0,
+   "fps": 30.0,
+   "mean": 383.3,
+   "bars": "0/24"
+  },
+  "gated": {
+   "n": 24,
+   "short": 0,
+   "err": 0,
+   "fps": 30.0,
+   "mean": 383.4,
+   "bars": "0/24"
+  },
+  "bars": {
+   "n": 27,
+   "short": 0,
+   "err": 0,
+   "fps": 30.0,
+   "mean": 513.1,
+   "bars": "27/27"
+  },
+  "after_bars": {
+   "n": 12,
+   "short": 0,
+   "err": 0,
+   "fps": 30.1,
+   "mean": 383.3,
+   "bars": "0/12"
+  },
+  "black16": {
+   "n": 21,
+   "short": 0,
+   "err": 0,
+   "fps": 30.0,
+   "mean": 17.4,
+   "bars": "0/21"
+  },
+  "black1023": {
+   "n": 21,
+   "short": 0,
+   "err": 0,
+   "fps": 30.0,
+   "mean": 105.6,
+   "bars": "0/21"
+  },
+  "end": {
+   "n": 12,
+   "short": 0,
+   "err": 0,
+   "fps": 30.0,
+   "mean": 383.3,
+   "bars": "0/12"
+  },
+  "kern": {},
+  "gaps": [],
+  "last_frame_t": 7.07
+ },
+ "normal_3016_e0": {
+  "log": [
+   {
+    "t": 0.503,
+    "step": "mode",
+    "r": "3c01=ab"
+   },
+   {
+    "t": 1.503,
+    "step": "gates",
+    "r": [
+     "3016=e0"
+    ]
+   },
+   {
+    "t": 2.505,
+    "step": "pattern on",
+    "r": null
+   },
+   {
+    "t": 3.502,
+    "step": "pattern off",
+    "r": null
+   },
+   {
+    "t": 4.004,
+    "step": "exposure 1",
+    "r": null
+   },
+   {
+    "t": 5.003,
+    "step": "gain 1023",
+    "r": null
+   },
+   {
+    "t": 6.004,
+    "step": "restore ctrls",
+    "r": [
+     null,
+     null
+    ]
+   },
+   {
+    "t": 6.5,
+    "step": "restore regs",
+    "r": [
+     "3016=f0",
+     "3017=f0",
+     "3018=f0",
+     "301a=f0",
+     "301b=f0",
+     "301c=f0",
+     "3c01=63"
+    ]
+   },
+   {
+    "t": 11.001,
+    "step": "killed"
+   }
+  ],
+  "frames": 177,
+  "before": {
+   "n": 24,
+   "short": 0,
+   "err": 0,
+   "fps": 30.0,
+   "mean": 383.2,
+   "bars": "0/24"
+  },
+  "gated": {
+   "n": 0
+  },
+  "bars": {
+   "n": 0
+  },
+  "after_bars": {
+   "n": 0
+  },
+  "black16": {
+   "n": 0
+  },
+  "black1023": {
+   "n": 0
+  },
+  "end": {
+   "n": 12,
+   "short": 0,
+   "err": 0,
+   "fps": 30.0,
+   "mean": 383.3,
+   "bars": "0/12"
+  },
+  "kern": {},
+  "gaps": [],
+  "last_frame_t": 10.976
+ }
+}

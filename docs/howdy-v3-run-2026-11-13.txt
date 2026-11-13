@@ -1,0 +1,16 @@
+Howdy face login through the IR bridge on the v3 module, 13 Nov 2026, 06:20 JST, dim room at dawn
+
+kernel 7.2.15-1.surface.fc45 with /lib/modules/7.2.15-1.surface.fc45.x86_64/updates/ov7251.ko (v3 series), stock ipu-bridge
+Howdy 3.0.0-7.20250623gitd3ab993.fc45 (COPR starfish/howdy-beta), python3-dlib 20.0, face model 0 enrolled 2026-10-25 (not re-enrolled)
+Howdy config: device_path /dev/video21, 480x640, dark_threshold 60, certainty 3.5, timeout 4, exposure -1 (not set), use_cnn false
+bridge: ir-camera-bridge.service = tools/ir-bridge.py --frames lit (installed copy identical to the repo), /dev/video21 GREY 480x640
+
+sensor while bridged (v4l2-ctl -d /dev/v4l-subdev7): exposure 504, analogue_gain 16, strobe_output_enable 1, 30.000 fps
+loopback output: 30 frames captured in 1.90 s (14.8 fps, the lit half of the 30 fps stream)
+  frames without a face: mean 29.2 to 29.3 (8-bit), 77.8 to 77.9 % of pixels below 32 (Howdy's darkness measure, before its CLAHE), p99 130
+
+sudo python3 /usr/lib/python3.15/site-packages/howdy/compare.py antoine
+  run 1: exit 0 (recognised), 5.25 s wall including the cold model load
+  run 2: exit 0 (recognised), 2.25 s wall
+
+after systemctl stop ir-camera-bridge.service (3 s later): strobe_output_enable 0, sensor runtime_status suspended

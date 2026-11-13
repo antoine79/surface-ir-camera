@@ -1,0 +1,190 @@
+{
+ "module": "v2",
+ "ctrls": {
+  "exposure": 504,
+  "analogue_gain": 16,
+  "vertical_blanking": 1244,
+  "vertical_flip": 0,
+  "strobe_output_enable": 0
+ },
+ "cold": {
+  "30": {
+   "clk": "f0f0f0f0f0f0",
+   "0x3019": "f0",
+   "vts": "06bc",
+   "hts": "03a0",
+   "0x3820": "00",
+   "0x3821": "00",
+   "0x3005": "00",
+   "0x3b81": "a5",
+   "span": "0000001a",
+   "pll1": "0a0100850405",
+   "0x3106": "da",
+   "0x3023": "05",
+   "0x0100": "01"
+  },
+  "60": {
+   "clk": "100000f00000",
+   "0x3019": "f0",
+   "vts": "035c",
+   "hts": "03a0",
+   "0x3820": "00",
+   "0x3821": "00",
+   "0x3005": "00",
+   "0x3b81": "a5",
+   "span": "0000001a",
+   "pll1": "0a0100850405",
+   "0x3106": "da",
+   "0x3023": "05",
+   "0x0100": "01"
+  },
+  "90": {
+   "clk": "100000f00000",
+   "0x3019": "f0",
+   "vts": "023c",
+   "hts": "03a0",
+   "0x3820": "00",
+   "0x3821": "00",
+   "0x3005": "00",
+   "0x3b81": "a5",
+   "span": "0000001a",
+   "pll1": "0a0100850405",
+   "0x3106": "da",
+   "0x3023": "05",
+   "0x0100": "01"
+  }
+ },
+ "black": {
+  "vflip0_gain16": {
+   "mean": 16.67,
+   "top8": 16.3,
+   "bottom8": 18.16,
+   "0x3820": "00",
+   "p99": 19.0
+  },
+  "vflip0_gain1023": {
+   "mean": 54.78,
+   "top8": 36.41,
+   "bottom8": 144.86,
+   "0x3820": "00",
+   "p99": 176.0
+  },
+  "vflip0_bars": true,
+  "vflip1_gain16": {
+   "mean": 16.57,
+   "top8": 16.92,
+   "bottom8": 16.4,
+   "0x3820": "04",
+   "p99": 19.0
+  },
+  "vflip1_gain1023": {
+   "mean": 53.23,
+   "top8": 77.55,
+   "bottom8": 46.82,
+   "0x3820": "04",
+   "p99": 175.0
+  },
+  "vflip1_bars": true
+ },
+ "bench_mean": 953.7,
+ "warm_restart": {
+  "status_pinned": "active",
+  "bars_first": true,
+  "bars_second": true,
+  "second_first_frame_ok": true,
+  "scene_means": [
+   953.8,
+   953.8
+  ],
+  "second_first_frames": [
+   953.8,
+   953.8,
+   953.8
+  ],
+  "regs_after_restart": {
+   "clk": "f0f0f0f0f0f0",
+   "0x3019": "f0",
+   "vts": "06bc",
+   "hts": "03a0",
+   "0x3820": "00",
+   "0x3821": "00",
+   "0x3005": "00",
+   "0x3b81": "a5",
+   "span": "0000001a",
+   "pll1": "0a0100850405",
+   "0x3106": "da",
+   "0x3023": "05",
+   "0x0100": "01"
+  },
+  "suspended_during": false
+ },
+ "warm_switch": {
+  "suspended_during": false,
+  "steps": [
+   {
+    "fps": 90,
+    "measured": 90.45,
+    "clk": "100000f00000",
+    "vts": "023c",
+    "pll1": "0a0100850405",
+    "bars": true
+   },
+   {
+    "fps": 60,
+    "measured": 60.15,
+    "clk": "100000f00000",
+    "vts": "035c",
+    "pll1": "0a0100850405",
+    "bars": true
+   },
+   {
+    "fps": 30,
+    "measured": 30.0,
+    "clk": "f0f0f0f0f0f0",
+    "vts": "06bc",
+    "pll1": "0a0100850405",
+    "bars": true
+   }
+  ]
+ },
+ "strobe_on": {
+  "warm": {
+   "clk": "f0f0f0f0f0f0",
+   "0x3019": "f0",
+   "vts": "06bc",
+   "hts": "03a0",
+   "0x3820": "00",
+   "0x3821": "00",
+   "0x3005": "08",
+   "0x3b81": "aa",
+   "span": "00000308",
+   "pll1": "0a0100850405",
+   "0x3106": "da",
+   "0x3023": "05",
+   "0x0100": "01"
+  },
+  "warm_suspended": false,
+  "cold": {
+   "clk": "f0f0f0f0f0f0",
+   "0x3019": "f0",
+   "vts": "06bc",
+   "hts": "03a0",
+   "0x3820": "00",
+   "0x3821": "00",
+   "0x3005": "08",
+   "0x3b81": "aa",
+   "span": "00000308",
+   "pll1": "0a0100850405",
+   "0x3106": "da",
+   "0x3023": "05",
+   "0x0100": "01"
+  }
+ },
+ "idle_status": "suspended",
+ "final_ctrls": {
+  "exposure": 1704,
+  "analogue_gain": 128,
+  "vertical_blanking": 1244,
+  "strobe_output_enable": 0
+ }
+}

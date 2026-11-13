@@ -1,0 +1,23 @@
+date: 2026-11-12
+kernel: 7.2.15-1.surface.fc45.x86_64
+module: OE
+link_frequency index: 1
+link_frequency Hz: 319200000
+pixel_rate Hz: 48000000
+fps measured at 30: 30.01
+fps measured at 60: 60.16
+fps measured at 90: 90.44
+v4l2-compliance -u sensor: Total for device /dev/v4l-subdev7: 46, Succeeded: 46, Failed: 0, Warnings: 1
+ov7251 orientation, rotation: ('Front', '0')
+ov5693 2-0036 orientation, rotation: ('Front', '180')
+ov8865 3-0010 orientation, rotation: ('Back', '180')
+span at 30 fps, exposure 504: 504
+span at 30 fps, exposure 1704: 776
+span at 90 fps, exposure 552: 258
+mean pixel value, strobe 0, exposure 504, gain 128: 18
+mean pixel value, strobe 0, exposure 1704, gain 128: 19
+mean pixel value, strobe 1, lit frames, exposure 504, gain 128: 517
+mean pixel value, strobe 1, dark frames, exposure 504, gain 128: 18
+mean pixel value, strobe 1, lit frames, exposure 1704, gain 128: 681
+mean pixel value, strobe 1, dark frames, exposure 1704, gain 128: 21
+sensor suspended after stream end within s: 1.3

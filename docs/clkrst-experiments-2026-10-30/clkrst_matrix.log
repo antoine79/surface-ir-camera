@@ -1,0 +1,225 @@
+live_30_none {"frames": 210, "fps_before": 29.99, "fps_after": 29.94, "fps_end": 30.02, "litdark_before": [155.3, 16.2], "litdark_after": [155.3, 28.8], "litdark_end": [156.0, 16.6], "black16": 16.1, "black1023": 28.0, "bars": "15/15", "gaps": 0, "short": 0, "errflags": 0, "dups": 28, "readback_ok": null, "kern": {}}
+Exception in thread Thread-2 (run):
+Traceback (most recent call last):
+  File "/home/antoine/.local/share/uv/python/cpython-3.13.12-linux-x86_64-gnu/lib/python3.13/threading.py", line 1044, in _bootstrap_inner
+    self.run()
+    ~~~~~~~~^^
+  File "/home/antoine/.local/share/uv/python/cpython-3.13.12-linux-x86_64-gnu/lib/python3.13/threading.py", line 995, in run
+    self._target(*self._args, **self._kwargs)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/claude-1000/-home-antoine-projects-surface/3ccf287b-d9c6-4190-a42c-0b614d1d1d83/scratchpad/v3/clkrst_matrix.py", line 77, in run
+    p = subprocess.run(["v4l2-ctl", "-d", VIDEO, "--stream-mmap", f"--stream-count={nframes}", "--stream-skip=0", f"--stream-to={path}", "--verbose"],
+                       capture_output=True, text=True, timeout=15 + nframes / 10)
+  File "/home/antoine/.local/share/uv/python/cpython-3.13.12-linux-x86_64-gnu/lib/python3.13/subprocess.py", line 556, in run
+    stdout, stderr = process.communicate(input, timeout=timeout)
+                     ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/antoine/.local/share/uv/python/cpython-3.13.12-linux-x86_64-gnu/lib/python3.13/subprocess.py", line 1222, in communicate
+    stdout, stderr = self._communicate(input, endtime, timeout)
+                     ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/antoine/.local/share/uv/python/cpython-3.13.12-linux-x86_64-gnu/lib/python3.13/subprocess.py", line 2155, in _communicate
+    self._check_timeout(endtime, orig_timeout, stdout, stderr)
+    ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/antoine/.local/share/uv/python/cpython-3.13.12-linux-x86_64-gnu/lib/python3.13/subprocess.py", line 1269, in _check_timeout
+    raise TimeoutExpired(
+    ...<2 lines>...
+            stderr=b''.join(stderr_seq) if stderr_seq else None)
+subprocess.TimeoutExpired: Command '['v4l2-ctl', '-d', '/dev/video12', '--stream-mmap', '--stream-count=210', '--stream-skip=0', '--stream-to=/tmp/tmpyowxzsv9/f.raw', '--verbose']' timed out after 36.0 seconds
+live_30_zero {"frames": 0, "fps_before": null, "fps_after": null, "fps_end": null, "litdark_before": [null, null], "litdark_after": [null, null], "litdark_end": [null, null], "black16": null, "black1023": null, "bars": "0/0", "gaps": 0, "short": 0, "errflags": 0, "dups": 0, "readback_ok": true, "kern": {}}
+live_30_t60 {"frames": 210, "fps_before": 29.99, "fps_after": 30.03, "fps_end": 29.99, "litdark_before": [155.5, 16.2], "litdark_after": [155.5, 28.8], "litdark_end": [155.5, 16.4], "black16": 16.1, "black1023": 27.7, "bars": "15/15", "gaps": 0, "short": 0, "errflags": 0, "dups": 29, "readback_ok": true, "kern": {}}
+live_30_gates {"frames": 210, "fps_before": 29.99, "fps_after": 29.99, "fps_end": 30.02, "litdark_before": [155.4, 16.5], "litdark_after": [155.7, 29.1], "litdark_end": [161.4, 16.5], "black16": 16.4, "black1023": 30.4, "bars": "15/15", "gaps": 0, "short": 0, "errflags": 0, "dups": 29, "readback_ok": true, "kern": {}}
+live_30_f0 {"frames": 210, "fps_before": 30.03, "fps_after": 29.99, "fps_end": 30.02, "litdark_before": [162.1, 16.3], "litdark_after": [157.2, 16.3], "litdark_end": [156.3, 26.0], "black16": 16.2, "black1023": 28.3, "bars": "15/15", "gaps": 0, "short": 0, "errflags": 0, "dups": 29, "readback_ok": true, "kern": {}}
+live_30_default {"frames": 210, "fps_before": 30.03, "fps_after": 29.99, "fps_end": 30.02, "litdark_before": [156.5, 16.4], "litdark_after": [156.3, 29.1], "litdark_end": [156.6, 16.3], "black16": 16.3, "black1023": 26.8, "bars": "15/15", "gaps": 0, "short": 0, "errflags": 0, "dups": 29, "readback_ok": true, "kern": {}}
+live_60_none {"frames": 420, "fps_before": 60.18, "fps_after": 60.17, "fps_end": 60.16, "litdark_before": [124.5, 16.5], "litdark_after": [124.5, 16.5], "litdark_end": [124.3, 16.2], "black16": 16.3, "black1023": 28.0, "bars": "30/30", "gaps": 0, "short": 0, "errflags": 0, "dups": 59, "readback_ok": null, "kern": {}}
+Exception in thread Thread-8 (run):
+Traceback (most recent call last):
+  File "/home/antoine/.local/share/uv/python/cpython-3.13.12-linux-x86_64-gnu/lib/python3.13/threading.py", line 1044, in _bootstrap_inner
+    self.run()
+    ~~~~~~~~^^
+  File "/home/antoine/.local/share/uv/python/cpython-3.13.12-linux-x86_64-gnu/lib/python3.13/threading.py", line 995, in run
+    self._target(*self._args, **self._kwargs)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/claude-1000/-home-antoine-projects-surface/3ccf287b-d9c6-4190-a42c-0b614d1d1d83/scratchpad/v3/clkrst_matrix.py", line 77, in run
+    p = subprocess.run(["v4l2-ctl", "-d", VIDEO, "--stream-mmap", f"--stream-count={nframes}", "--stream-skip=0", f"--stream-to={path}", "--verbose"],
+                       capture_output=True, text=True, timeout=15 + nframes / 10)
+  File "/home/antoine/.local/share/uv/python/cpython-3.13.12-linux-x86_64-gnu/lib/python3.13/subprocess.py", line 556, in run
+    stdout, stderr = process.communicate(input, timeout=timeout)
+                     ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/antoine/.local/share/uv/python/cpython-3.13.12-linux-x86_64-gnu/lib/python3.13/subprocess.py", line 1222, in communicate
+    stdout, stderr = self._communicate(input, endtime, timeout)
+                     ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/antoine/.local/share/uv/python/cpython-3.13.12-linux-x86_64-gnu/lib/python3.13/subprocess.py", line 2155, in _communicate
+    self._check_timeout(endtime, orig_timeout, stdout, stderr)
+    ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/antoine/.local/share/uv/python/cpython-3.13.12-linux-x86_64-gnu/lib/python3.13/subprocess.py", line 1269, in _check_timeout
+    raise TimeoutExpired(
+    ...<2 lines>...
+            stderr=b''.join(stderr_seq) if stderr_seq else None)
+subprocess.TimeoutExpired: Command '['v4l2-ctl', '-d', '/dev/video12', '--stream-mmap', '--stream-count=420', '--stream-skip=0', '--stream-to=/tmp/tmp6a2a9ovf/f.raw', '--verbose']' timed out after 57.0 seconds
+live_60_zero {"frames": 0, "fps_before": null, "fps_after": null, "fps_end": null, "litdark_before": [null, null], "litdark_after": [null, null], "litdark_end": [null, null], "black16": null, "black1023": null, "bars": "0/0", "gaps": 0, "short": 0, "errflags": 0, "dups": 0, "readback_ok": true, "kern": {}}
+live_60_t60 {"frames": 420, "fps_before": 60.1, "fps_after": 60.09, "fps_end": 60.16, "litdark_before": [127.7, 16.4], "litdark_after": [128.0, 21.5], "litdark_end": [126.1, 16.4], "black16": 16.2, "black1023": 29.1, "bars": "30/30", "gaps": 0, "short": 0, "errflags": 0, "dups": 59, "readback_ok": true, "kern": {}}
+live_60_gates {"frames": 420, "fps_before": 60.1, "fps_after": 60.12, "fps_end": 60.16, "litdark_before": [125.9, 16.5], "litdark_after": [125.5, 16.5], "litdark_end": [125.9, 16.5], "black16": 16.4, "black1023": 28.5, "bars": "30/30", "gaps": 0, "short": 0, "errflags": 0, "dups": 58, "readback_ok": true, "kern": {}}
+live_60_f0 {"frames": 420, "fps_before": 60.1, "fps_after": 60.17, "fps_end": 60.16, "litdark_before": [124.6, 16.5], "litdark_after": [124.9, 16.5], "litdark_end": [124.8, 16.5], "black16": 16.3, "black1023": 28.3, "bars": "30/30", "gaps": 0, "short": 0, "errflags": 0, "dups": 59, "readback_ok": true, "kern": {}}
+live_60_default {"frames": 420, "fps_before": 60.18, "fps_after": 60.17, "fps_end": 60.16, "litdark_before": [124.3, 16.2], "litdark_after": [124.7, 16.2], "litdark_end": [124.7, 16.4], "black16": 16.1, "black1023": 27.5, "bars": "30/30", "gaps": 0, "short": 0, "errflags": 0, "dups": 59, "readback_ok": true, "kern": {}}
+live_90_none {"frames": 630, "fps_before": 90.45, "fps_after": 90.39, "fps_end": 90.4, "litdark_before": [88.0, 16.6], "litdark_after": [88.1, 16.6], "litdark_end": [88.3, 18.4], "black16": 16.2, "black1023": 26.3, "bars": "45/45", "gaps": 0, "short": 0, "errflags": 0, "dups": 89, "readback_ok": null, "kern": {}}
+Exception in thread Thread-14 (run):
+Traceback (most recent call last):
+  File "/home/antoine/.local/share/uv/python/cpython-3.13.12-linux-x86_64-gnu/lib/python3.13/threading.py", line 1044, in _bootstrap_inner
+    self.run()
+    ~~~~~~~~^^
+  File "/home/antoine/.local/share/uv/python/cpython-3.13.12-linux-x86_64-gnu/lib/python3.13/threading.py", line 995, in run
+    self._target(*self._args, **self._kwargs)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/claude-1000/-home-antoine-projects-surface/3ccf287b-d9c6-4190-a42c-0b614d1d1d83/scratchpad/v3/clkrst_matrix.py", line 77, in run
+    p = subprocess.run(["v4l2-ctl", "-d", VIDEO, "--stream-mmap", f"--stream-count={nframes}", "--stream-skip=0", f"--stream-to={path}", "--verbose"],
+                       capture_output=True, text=True, timeout=15 + nframes / 10)
+  File "/home/antoine/.local/share/uv/python/cpython-3.13.12-linux-x86_64-gnu/lib/python3.13/subprocess.py", line 556, in run
+    stdout, stderr = process.communicate(input, timeout=timeout)
+                     ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/antoine/.local/share/uv/python/cpython-3.13.12-linux-x86_64-gnu/lib/python3.13/subprocess.py", line 1222, in communicate
+    stdout, stderr = self._communicate(input, endtime, timeout)
+                     ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/antoine/.local/share/uv/python/cpython-3.13.12-linux-x86_64-gnu/lib/python3.13/subprocess.py", line 2155, in _communicate
+    self._check_timeout(endtime, orig_timeout, stdout, stderr)
+    ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/antoine/.local/share/uv/python/cpython-3.13.12-linux-x86_64-gnu/lib/python3.13/subprocess.py", line 1269, in _check_timeout
+    raise TimeoutExpired(
+    ...<2 lines>...
+            stderr=b''.join(stderr_seq) if stderr_seq else None)
+subprocess.TimeoutExpired: Command '['v4l2-ctl', '-d', '/dev/video12', '--stream-mmap', '--stream-count=630', '--stream-skip=0', '--stream-to=/tmp/tmpcx4jatmj/f.raw', '--verbose']' timed out after 78.0 seconds
+live_90_zero {"frames": 0, "fps_before": null, "fps_after": null, "fps_end": null, "litdark_before": [null, null], "litdark_after": [null, null], "litdark_end": [null, null], "black16": null, "black1023": null, "bars": "0/0", "gaps": 0, "short": 0, "errflags": 0, "dups": 0, "readback_ok": true, "kern": {}}
+live_90_t60 {"frames": 630, "fps_before": 90.33, "fps_after": 90.38, "fps_end": 90.5, "litdark_before": [89.8, 16.5], "litdark_after": [89.7, 18.7], "litdark_end": [92.2, 16.7], "black16": 16.1, "black1023": 27.8, "bars": "45/45", "gaps": 0, "short": 0, "errflags": 0, "dups": 89, "readback_ok": true, "kern": {}}
+live_90_gates {"frames": 630, "fps_before": 90.33, "fps_after": 90.52, "fps_end": 90.5, "litdark_before": [91.3, 16.6], "litdark_after": [90.6, 16.6], "litdark_end": [91.5, 16.6], "black16": 16.2, "black1023": 28.7, "bars": "45/45", "gaps": 0, "short": 0, "errflags": 0, "dups": 88, "readback_ok": true, "kern": {}}
+live_90_f0 {"frames": 630, "fps_before": 90.45, "fps_after": 90.38, "fps_end": 90.4, "litdark_before": [91.3, 16.5], "litdark_after": [91.4, 18.9], "litdark_end": [91.5, 16.7], "black16": 16.1, "black1023": 29.6, "bars": "46/46", "gaps": 0, "short": 0, "errflags": 0, "dups": 89, "readback_ok": true, "kern": {}}
+live_90_default {"frames": 630, "fps_before": 90.45, "fps_after": 90.39, "fps_end": 90.4, "litdark_before": [91.2, 16.5], "litdark_after": [91.2, 16.5], "litdark_end": [91.0, 16.7], "black16": 16.1, "black1023": 27.2, "bars": "45/45", "gaps": 0, "short": 0, "errflags": 0, "dups": 87, "readback_ok": true, "kern": {}}
+standby_30_none {"frames": 210, "fps_before": 30.03, "fps_after": 29.99, "fps_end": 29.99, "litdark_before": [162.1, 16.3], "litdark_after": [162.3, 16.3], "litdark_end": [162.2, 26.6], "black16": 16.3, "black1023": 26.9, "bars": "15/15", "gaps": 0, "short": 0, "errflags": 0, "dups": 28, "readback_ok": null, "kern": {}}
+Exception in thread Thread-20 (run):
+Traceback (most recent call last):
+  File "/home/antoine/.local/share/uv/python/cpython-3.13.12-linux-x86_64-gnu/lib/python3.13/threading.py", line 1044, in _bootstrap_inner
+    self.run()
+    ~~~~~~~~^^
+  File "/home/antoine/.local/share/uv/python/cpython-3.13.12-linux-x86_64-gnu/lib/python3.13/threading.py", line 995, in run
+    self._target(*self._args, **self._kwargs)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/claude-1000/-home-antoine-projects-surface/3ccf287b-d9c6-4190-a42c-0b614d1d1d83/scratchpad/v3/clkrst_matrix.py", line 77, in run
+    p = subprocess.run(["v4l2-ctl", "-d", VIDEO, "--stream-mmap", f"--stream-count={nframes}", "--stream-skip=0", f"--stream-to={path}", "--verbose"],
+                       capture_output=True, text=True, timeout=15 + nframes / 10)
+  File "/home/antoine/.local/share/uv/python/cpython-3.13.12-linux-x86_64-gnu/lib/python3.13/subprocess.py", line 556, in run
+    stdout, stderr = process.communicate(input, timeout=timeout)
+                     ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/antoine/.local/share/uv/python/cpython-3.13.12-linux-x86_64-gnu/lib/python3.13/subprocess.py", line 1222, in communicate
+    stdout, stderr = self._communicate(input, endtime, timeout)
+                     ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/antoine/.local/share/uv/python/cpython-3.13.12-linux-x86_64-gnu/lib/python3.13/subprocess.py", line 2155, in _communicate
+    self._check_timeout(endtime, orig_timeout, stdout, stderr)
+    ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/antoine/.local/share/uv/python/cpython-3.13.12-linux-x86_64-gnu/lib/python3.13/subprocess.py", line 1269, in _check_timeout
+    raise TimeoutExpired(
+    ...<2 lines>...
+            stderr=b''.join(stderr_seq) if stderr_seq else None)
+subprocess.TimeoutExpired: Command '['v4l2-ctl', '-d', '/dev/video12', '--stream-mmap', '--stream-count=210', '--stream-skip=0', '--stream-to=/tmp/tmpbwjpj75w/f.raw', '--verbose']' timed out after 36.0 seconds
+standby_30_zero {"frames": 0, "fps_before": null, "fps_after": null, "fps_end": null, "litdark_before": [null, null], "litdark_after": [null, null], "litdark_end": [null, null], "black16": null, "black1023": null, "bars": "0/0", "gaps": 0, "short": 0, "errflags": 0, "dups": 0, "readback_ok": true, "kern": {}}
+standby_30_t60 {"frames": 210, "fps_before": 30.03, "fps_after": 29.99, "fps_end": 30.02, "litdark_before": [163.1, 16.2], "litdark_after": [160.9, 29.5], "litdark_end": [160.5, 16.4], "black16": 16.3, "black1023": 29.3, "bars": "15/15", "gaps": 0, "short": 0, "errflags": 0, "dups": 28, "readback_ok": true, "kern": {}}
+standby_30_gates {"frames": 210, "fps_before": 29.99, "fps_after": 30.03, "fps_end": 30.02, "litdark_before": [160.5, 16.5], "litdark_after": [160.5, 29.5], "litdark_end": [160.5, 16.2], "black16": 16.3, "black1023": 29.4, "bars": "15/15", "gaps": 0, "short": 0, "errflags": 0, "dups": 29, "readback_ok": true, "kern": {}}
+standby_30_f0 {"frames": 210, "fps_before": 29.99, "fps_after": 30.03, "fps_end": 29.99, "litdark_before": [160.2, 16.2], "litdark_after": [160.5, 29.3], "litdark_end": [160.6, 16.3], "black16": 16.1, "black1023": 27.9, "bars": "15/15", "gaps": 0, "short": 0, "errflags": 0, "dups": 28, "readback_ok": true, "kern": {}}
+standby_30_default {"frames": 210, "fps_before": 29.99, "fps_after": 29.99, "fps_end": 29.99, "litdark_before": [160.5, 16.5], "litdark_after": [160.4, 29.4], "litdark_end": [160.8, 16.3], "black16": 16.2, "black1023": 27.5, "bars": "15/15", "gaps": 0, "short": 0, "errflags": 0, "dups": 29, "readback_ok": true, "kern": {}}
+standby_60_none {"frames": 420, "fps_before": 60.18, "fps_after": 60.12, "fps_end": 60.16, "litdark_before": [127.9, 16.5], "litdark_after": [127.8, 16.5], "litdark_end": [128.2, 16.3], "black16": 16.4, "black1023": 28.7, "bars": "30/30", "gaps": 0, "short": 0, "errflags": 0, "dups": 59, "readback_ok": null, "kern": {}}
+Exception in thread Thread-26 (run):
+Traceback (most recent call last):
+  File "/home/antoine/.local/share/uv/python/cpython-3.13.12-linux-x86_64-gnu/lib/python3.13/threading.py", line 1044, in _bootstrap_inner
+    self.run()
+    ~~~~~~~~^^
+  File "/home/antoine/.local/share/uv/python/cpython-3.13.12-linux-x86_64-gnu/lib/python3.13/threading.py", line 995, in run
+    self._target(*self._args, **self._kwargs)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/claude-1000/-home-antoine-projects-surface/3ccf287b-d9c6-4190-a42c-0b614d1d1d83/scratchpad/v3/clkrst_matrix.py", line 77, in run
+    p = subprocess.run(["v4l2-ctl", "-d", VIDEO, "--stream-mmap", f"--stream-count={nframes}", "--stream-skip=0", f"--stream-to={path}", "--verbose"],
+                       capture_output=True, text=True, timeout=15 + nframes / 10)
+  File "/home/antoine/.local/share/uv/python/cpython-3.13.12-linux-x86_64-gnu/lib/python3.13/subprocess.py", line 556, in run
+    stdout, stderr = process.communicate(input, timeout=timeout)
+                     ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/antoine/.local/share/uv/python/cpython-3.13.12-linux-x86_64-gnu/lib/python3.13/subprocess.py", line 1222, in communicate
+    stdout, stderr = self._communicate(input, endtime, timeout)
+                     ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/antoine/.local/share/uv/python/cpython-3.13.12-linux-x86_64-gnu/lib/python3.13/subprocess.py", line 2155, in _communicate
+    self._check_timeout(endtime, orig_timeout, stdout, stderr)
+    ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/antoine/.local/share/uv/python/cpython-3.13.12-linux-x86_64-gnu/lib/python3.13/subprocess.py", line 1269, in _check_timeout
+    raise TimeoutExpired(
+    ...<2 lines>...
+            stderr=b''.join(stderr_seq) if stderr_seq else None)
+subprocess.TimeoutExpired: Command '['v4l2-ctl', '-d', '/dev/video12', '--stream-mmap', '--stream-count=420', '--stream-skip=0', '--stream-to=/tmp/tmpcqqji9yy/f.raw', '--verbose']' timed out after 57.0 seconds
+standby_60_zero {"frames": 0, "fps_before": null, "fps_after": null, "fps_end": null, "litdark_before": [null, null], "litdark_after": [null, null], "litdark_end": [null, null], "black16": null, "black1023": null, "bars": "0/0", "gaps": 0, "short": 0, "errflags": 0, "dups": 0, "readback_ok": true, "kern": {}}
+standby_60_t60 {"frames": 420, "fps_before": 60.18, "fps_after": 60.74, "fps_end": 60.09, "litdark_before": [128.0, 16.3], "litdark_after": [128.0, 21.6], "litdark_end": [128.3, 16.5], "black16": 16.2, "black1023": 28.6, "bars": "30/30", "gaps": 0, "short": 0, "errflags": 0, "dups": 58, "readback_ok": true, "kern": {"payload length is N, received N": 1, "CSI-N receiver port N: incomplete long packet detected": 1, "CSI-N receiver port N: frame sync error": 1}}
+standby_60_gates {"frames": 420, "fps_before": 60.1, "fps_after": 60.74, "fps_end": 60.13, "litdark_before": [127.9, 16.4], "litdark_after": [127.8, 16.3], "litdark_end": [128.1, 16.4], "black16": 16.1, "black1023": 29.0, "bars": "30/30", "gaps": 0, "short": 0, "errflags": 0, "dups": 59, "readback_ok": true, "kern": {"payload length is N, received N": 1, "CSI-N receiver port N: incomplete long packet detected": 1, "CSI-N receiver port N: frame sync error": 1}}
+standby_60_f0 {"frames": 420, "fps_before": 60.1, "fps_after": 60.78, "fps_end": 60.2, "litdark_before": [128.0, 16.5], "litdark_after": [127.8, 21.4], "litdark_end": [127.9, 20.2], "black16": 16.2, "black1023": 29.7, "bars": "30/30", "gaps": 0, "short": 0, "errflags": 0, "dups": 58, "readback_ok": true, "kern": {"payload length is N, received N": 1}}
+standby_60_default {"frames": 420, "fps_before": 60.18, "fps_after": 60.15, "fps_end": 60.16, "litdark_before": [127.9, 16.4], "litdark_after": [127.9, 21.7], "litdark_end": [128.1, 16.5], "black16": 16.2, "black1023": 29.6, "bars": "30/30", "gaps": 0, "short": 0, "errflags": 0, "dups": 59, "readback_ok": true, "kern": {}}
+standby_90_none {"frames": 630, "fps_before": 90.45, "fps_after": 90.38, "fps_end": 90.5, "litdark_before": [90.0, 18.4], "litdark_after": [90.3, 16.7], "litdark_end": [90.3, 18.4], "black16": 16.4, "black1023": 28.3, "bars": "45/45", "gaps": 0, "short": 0, "errflags": 0, "dups": 88, "readback_ok": null, "kern": {"payload length is N, received N": 1}}
+Exception in thread Thread-32 (run):
+Traceback (most recent call last):
+  File "/home/antoine/.local/share/uv/python/cpython-3.13.12-linux-x86_64-gnu/lib/python3.13/threading.py", line 1044, in _bootstrap_inner
+    self.run()
+    ~~~~~~~~^^
+  File "/home/antoine/.local/share/uv/python/cpython-3.13.12-linux-x86_64-gnu/lib/python3.13/threading.py", line 995, in run
+    self._target(*self._args, **self._kwargs)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/claude-1000/-home-antoine-projects-surface/3ccf287b-d9c6-4190-a42c-0b614d1d1d83/scratchpad/v3/clkrst_matrix.py", line 77, in run
+    p = subprocess.run(["v4l2-ctl", "-d", VIDEO, "--stream-mmap", f"--stream-count={nframes}", "--stream-skip=0", f"--stream-to={path}", "--verbose"],
+                       capture_output=True, text=True, timeout=15 + nframes / 10)
+  File "/home/antoine/.local/share/uv/python/cpython-3.13.12-linux-x86_64-gnu/lib/python3.13/subprocess.py", line 556, in run
+    stdout, stderr = process.communicate(input, timeout=timeout)
+                     ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/antoine/.local/share/uv/python/cpython-3.13.12-linux-x86_64-gnu/lib/python3.13/subprocess.py", line 1222, in communicate
+    stdout, stderr = self._communicate(input, endtime, timeout)
+                     ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/antoine/.local/share/uv/python/cpython-3.13.12-linux-x86_64-gnu/lib/python3.13/subprocess.py", line 2155, in _communicate
+    self._check_timeout(endtime, orig_timeout, stdout, stderr)
+    ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/antoine/.local/share/uv/python/cpython-3.13.12-linux-x86_64-gnu/lib/python3.13/subprocess.py", line 1269, in _check_timeout
+    raise TimeoutExpired(
+    ...<2 lines>...
+            stderr=b''.join(stderr_seq) if stderr_seq else None)
+subprocess.TimeoutExpired: Command '['v4l2-ctl', '-d', '/dev/video12', '--stream-mmap', '--stream-count=630', '--stream-skip=0', '--stream-to=/tmp/tmpkeivrlde/f.raw', '--verbose']' timed out after 78.0 seconds
+standby_90_zero {"frames": 0, "fps_before": null, "fps_after": null, "fps_end": null, "litdark_before": [null, null], "litdark_after": [null, null], "litdark_end": [null, null], "black16": null, "black1023": null, "bars": "0/0", "gaps": 0, "short": 0, "errflags": 0, "dups": 0, "readback_ok": true, "kern": {}}
+standby_90_t60 {"frames": 630, "fps_before": 90.45, "fps_after": 90.63, "fps_end": 90.5, "litdark_before": [90.7, 16.7], "litdark_after": [92.2, 19.2], "litdark_end": [90.9, 16.6], "black16": 16.5, "black1023": 28.7, "bars": "45/45", "gaps": 0, "short": 0, "errflags": 0, "dups": 88, "readback_ok": true, "kern": {"payload length is N, received N": 1, "CSI-N receiver port N: incomplete long packet detected": 1, "CSI-N receiver port N: frame sync error": 1}}
+standby_90_gates {"frames": 630, "fps_before": 90.56, "fps_after": 90.64, "fps_end": 90.4, "litdark_before": [90.5, 16.6], "litdark_after": [90.7, 16.7], "litdark_end": [90.7, 16.7], "black16": 16.4, "black1023": 26.4, "bars": "45/45", "gaps": 0, "short": 0, "errflags": 0, "dups": 88, "readback_ok": true, "kern": {"payload length is N, received N": 1}}
+standby_90_f0 {"frames": 630, "fps_before": 90.45, "fps_after": 90.64, "fps_end": 90.5, "litdark_before": [90.3, 16.6], "litdark_after": [90.5, 16.7], "litdark_end": [89.1, 16.6], "black16": 16.3, "black1023": 28.5, "bars": "45/45", "gaps": 0, "short": 0, "errflags": 0, "dups": 88, "readback_ok": true, "kern": {"payload length is N, received N": 1, "CSI-N receiver port N: frame sync error": 1}}
+standby_90_default {"frames": 630, "fps_before": 90.45, "fps_after": 90.64, "fps_end": 90.4, "litdark_before": [88.5, 16.5], "litdark_after": [88.0, 16.5], "litdark_end": [88.5, 16.5], "black16": 16.1, "black1023": 28.0, "bars": "45/45", "gaps": 0, "short": 0, "errflags": 0, "dups": 87, "readback_ok": true, "kern": {"payload length is N, received N": 1, "CSI-N receiver port N: incomplete long packet detected": 1, "CSI-N receiver port N: frame sync error": 1}}
+
+run                     fps  lit/dark after  blk16 blk1023   bars gap err dup    rb kern
+live_30_none          29.94   155.3/28.8      16.1    28.0  15/15   0   0  28  None 0 
+live_30_zero           None    None/None      None    None    0/0   0   0   0  True 0 
+live_30_t60           30.03   155.5/28.8      16.1    27.7  15/15   0   0  29  True 0 
+live_30_gates         29.99   155.7/29.1      16.4    30.4  15/15   0   0  29  True 0 
+live_30_f0            29.99   157.2/16.3      16.2    28.3  15/15   0   0  29  True 0 
+live_30_default       29.99   156.3/29.1      16.3    26.8  15/15   0   0  29  True 0 
+live_60_none          60.17   124.5/16.5      16.3    28.0  30/30   0   0  59  None 0 
+live_60_zero           None    None/None      None    None    0/0   0   0   0  True 0 
+live_60_t60           60.09   128.0/21.5      16.2    29.1  30/30   0   0  59  True 0 
+live_60_gates         60.12   125.5/16.5      16.4    28.5  30/30   0   0  58  True 0 
+live_60_f0            60.17   124.9/16.5      16.3    28.3  30/30   0   0  59  True 0 
+live_60_default       60.17   124.7/16.2      16.1    27.5  30/30   0   0  59  True 0 
+live_90_none          90.39    88.1/16.6      16.2    26.3  45/45   0   0  89  None 0 
+live_90_zero           None    None/None      None    None    0/0   0   0   0  True 0 
+live_90_t60           90.38    89.7/18.7      16.1    27.8  45/45   0   0  89  True 0 
+live_90_gates         90.52    90.6/16.6      16.2    28.7  45/45   0   0  88  True 0 
+live_90_f0            90.38    91.4/18.9      16.1    29.6  46/46   0   0  89  True 0 
+live_90_default       90.39    91.2/16.5      16.1    27.2  45/45   0   0  87  True 0 
+standby_30_none       29.99   162.3/16.3      16.3    26.9  15/15   0   0  28  None 0 
+standby_30_zero        None    None/None      None    None    0/0   0   0   0  True 0 
+standby_30_t60        29.99   160.9/29.5      16.3    29.3  15/15   0   0  28  True 0 
+standby_30_gates      30.03   160.5/29.5      16.3    29.4  15/15   0   0  29  True 0 
+standby_30_f0         30.03   160.5/29.3      16.1    27.9  15/15   0   0  28  True 0 
+standby_30_default    29.99   160.4/29.4      16.2    27.5  15/15   0   0  29  True 0 
+standby_60_none       60.12   127.8/16.5      16.4    28.7  30/30   0   0  59  None 0 
+standby_60_zero        None    None/None      None    None    0/0   0   0   0  True 0 
+standby_60_t60        60.74   128.0/21.6      16.2    28.6  30/30   0   0  58  True 3 
+standby_60_gates      60.74   127.8/16.3      16.1    29.0  30/30   0   0  59  True 3 
+standby_60_f0         60.78   127.8/21.4      16.2    29.7  30/30   0   0  58  True 1 
+standby_60_default    60.15   127.9/21.7      16.2    29.6  30/30   0   0  59  True 0 
+standby_90_none       90.38    90.3/16.7      16.4    28.3  45/45   0   0  88  None 1 
+standby_90_zero        None    None/None      None    None    0/0   0   0   0  True 0 
+standby_90_t60        90.63    92.2/19.2      16.5    28.7  45/45   0   0  88  True 3 
+standby_90_gates      90.64    90.7/16.7      16.4    26.4  45/45   0   0  88  True 1 
+standby_90_f0         90.64    90.5/16.7      16.3    28.5  45/45   0   0  88  True 2 
+standby_90_default    90.64    88.0/16.5      16.1    28.0  45/45   0   0  87  True 3 
+done: /tmp/claude-1000/-home-antoine-projects-surface/3ccf287b-d9c6-4190-a42c-0b614d1d1d83/scratchpad/v3/clkrst_matrix.json

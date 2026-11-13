@@ -1,0 +1,20 @@
+# link-stress.py on the v3 module, kernel 7.2.15-1.surface.fc45, 12 Nov 2026 22:38 JST, 3 runs x 155 frames at 30 and 90 fps
+# link-stress 30 fps
+  0x30b4=0x04 0x30b3=0x85 0x30b1=0x01 0x30b0=0x0a 0x30b5=0x05 0x4837=0x19 0x3098=0x04 0x3099=0x32 0x309a=0x05 0x309b=0x04 0x309d=0x00
+  link_frequency: 1 (319200000 0x13069b00)  pixel_rate: 48000000
+
+| label | run | requested | received | dropped | fps | error lines | mean |
+|---|---|---|---|---|---|---|---|
+| V3-7.2.15 | 1 | 155 | 155 | 0 | 30.01 | 0 | 16.3 |
+| V3-7.2.15 | 2 | 155 | 155 | 0 | 30.01 | 0 | 16.3 |
+| V3-7.2.15 | 3 | 155 | 155 | 0 | 30.0 | 0 | 16.1 |
+# link-stress 90 fps
+  0x30b4=0x04 0x30b3=0x85 0x30b1=0x01 0x30b0=0x0a 0x30b5=0x05 0x4837=0x19 0x3098=0x04 0x3099=0x32 0x309a=0x05 0x309b=0x04 0x309d=0x00
+  link_frequency: 1 (319200000 0x13069b00)  pixel_rate: 48000000
+
+| label | run | requested | received | dropped | fps | error lines | mean |
+|---|---|---|---|---|---|---|---|
+| V3-7.2.15 | 1 | 155 | 155 | 0 | 90.45 | 0 | 16.2 |
+| V3-7.2.15 | 2 | 155 | 155 | 0 | 90.45 | 0 | 16.4 |
+| V3-7.2.15 | 3 | 155 | 155 | 0 | 90.46 | 0 | 16.3 |
+# done 22:38:41
