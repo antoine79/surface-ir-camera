@@ -6,9 +6,25 @@ The bridge script (`tools/ir-bridge.py`) is written for the Intel IPU3 camera in
 
 ## Read this first
 
-- **Howdy accepts a photo of your face.** Treat it as a convenience, not as a lock. Your password keeps working as before.
+- **This is not as secure as Windows Hello.** Howdy accepts recorded infrared frames of your face, and other programs can feed it some: treat it as a convenience on the lock screen, never as a lock on anything that grants root. [How it compares with Windows Hello](#how-it-compares-with-windows-hello) explains why. Your password keeps working.
 - **The emitter is lit while the bridge runs.** For a login the bridge starts when your face is asked for and stops, which turns the emitter off, as soon as Howdy has finished, and after 15 seconds at the latest. For enrolment you run it by hand until you stop it.
 - Every step below has its undo.
+
+## How it compares with Windows Hello
+
+Howdy only asks "does this picture look like the enrolled person?". Windows Hello also checks where the picture came from and protects what it compares against.
+
+- **No liveness check.** Windows Hello accepts only an infrared camera, its camera driver tells it which frames the emitter lit, and it has an enhanced anti-spoofing mode; without that mode, a printed infrared photo fooled it ([SySS, 2017](https://www.syss.de/fileadmin/dokumente/Publikationen/2018/Biometricks_-_Bypassing_an_Enterprise-Grade_Biometric_Face_Authentication_System_-_PHDays_8.pdf)). Howdy has no such check. On the test machine it accepted a still frame of the face, the same still moved slightly from frame to frame, and a recorded video, each written into the virtual camera (`tests/spoof_replay.py`). It rejected frames that were too dark, a flat grey picture and a frame from the colour camera. Removing the emitter's light from the frames changed the match score only a little (`tests/spoof_emitter.py`), so the infrared light by itself gives Howdy no protection. A printed photo has not been tried.
+- **No trusted camera.** Since 2021 Windows takes face sign-in only from cameras it trusts, after CyberArk unlocked it with a fake USB camera replaying infrared frames ([CVE-2021-34466](https://www.cyberark.com/resources/threat-research-blog/bypassing-windows-hello-without-masks-or-plastic-surgery)). Here the frames reach Howdy through a virtual camera that programs running as you can write to, as the replays above did. Do not add Howdy to sudo, su or anything else that grants root.
+- **Unprotected face data.** With Enhanced Sign-in Security ([Microsoft](https://learn.microsoft.com/windows-hardware/design/device-experiences/windows-hello-enhanced-sign-in-security)), Windows stores and matches the face template in memory isolated from the rest of the system. That needs newer hardware, very likely not the Surface Book 2 (not checked). Howdy stores the face model in `/etc/howdy/models/<user>.dat`, readable by every account on the machine as installed, and compares in an ordinary Python process.
+- **No measured error rate.** Microsoft sets false-acceptance limits for Windows Hello face hardware ([requirements](https://learn.microsoft.com/windows-hardware/design/device-experiences/windows-hello-biometric-requirements)). No false-acceptance rate has been measured for Howdy on this camera.
+
+What would close the gap:
+
+1. A liveness check using the lit and dark frames together: the emitter's reflection in the pupils and how its light falls off across a real face, or agreement with the colour camera. `tests/liveness_spike.py` is a first experiment; it rejects the replays above, but a printed photo lit by the emitter would likely pass.
+2. A camera path no other program can write to: Howdy reading the sensor itself, through libcamera once it supports this sensor, instead of a virtual camera.
+3. Face models readable by root only: `sudo chmod 600 /etc/howdy/models/*.dat` after each enrolment.
+4. A measured false-acceptance rate.
 
 ## 1. The patched sensor module
 
@@ -92,7 +108,7 @@ Undo: `sudo dnf remove howdy && sudo dnf copr remove starfish/howdy-beta`.
 
 ## 5. Login and lock screen
 
-Add two lines at the top of the `auth` section of the screen you want face login on: `/etc/pam.d/xfce4-screensaver` for the Xfce lock screen, `/etc/pam.d/gdm-password` for the GNOME login and lock screen, `/etc/pam.d/sudo` for sudo.
+Add two lines at the top of the `auth` section of the screen you want face login on: `/etc/pam.d/xfce4-screensaver` for the Xfce lock screen, `/etc/pam.d/gdm-password` for the GNOME login and lock screen. Not sudo or su: see [How it compares with Windows Hello](#how-it-compares-with-windows-hello).
 
 ```
 auth  optional    pam_exec.so quiet /usr/local/lib/ir-camera-bridge/ir-camera-on-demand
@@ -103,4 +119,4 @@ The first line starts the bridge, the second tries your face. If Howdy does not 
 
 ## Tested so far
 
-On the Surface Book 2 13 inch with linux-surface 7.3.4, 25 Nov 2026: steps 1, 3, 4 and 5 with the Xfce lock screen; the kernel hook run by hand for the installed kernel (not yet through a real kernel update). The unlock prompt started the bridge, Howdy approved the face 2.6 seconds later, and the bridge stopped 0.2 seconds after the approval, which turned the emitter off; when Howdy did not recognise the face, the password prompt followed. Not tested: the single-device v4l2loopback line of step 2 (the test machine uses the two-device line), the GNOME and sudo PAM files, and any login screen.
+On the Surface Book 2 13 inch with linux-surface 7.3.4, 25 Nov 2026: steps 1, 3, 4 and 5 with the Xfce lock screen; the kernel hook run by hand for the installed kernel (not yet through a real kernel update). The unlock prompt started the bridge, Howdy approved the face 2.6 seconds later, and the bridge stopped 0.2 seconds after the approval, which turned the emitter off; when Howdy did not recognise the face, the password prompt followed. Not tested: the single-device v4l2loopback line of step 2 (the test machine uses the two-device line), the GNOME PAM file, and any login screen.

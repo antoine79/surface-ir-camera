@@ -8,7 +8,7 @@ The emitter is wired to the sensor's STROBE pin, not to any LED or GPIO the firm
 
 - Kernel series of nine patches, v3 posted to linux-media on 13 Nov 2026 and awaiting review (`kernel/patches/v3-posted/`, cover letter included). Tested on this Surface Book 2 and on two Surface Pro 7+ (Tested-by on v1 and on v3); a first-generation Surface Laptop owner confirmed the emitter with a backport of v3.
 - The patched sensor driver builds out of tree from `kernel/backport/` and runs on linux-surface 7.3.4.
-- Howdy face login works on the Xfce lock screen through a bridge (`tools/ir-bridge.py`) that exposes upright, lit frames on a v4l2loopback virtual webcam. The bridge starts when the lock screen asks for a face and stops as soon as Howdy has finished, 15 seconds at the latest. Setup: [`docs/howdy.md`](docs/howdy.md). Howdy still accepts a photo of the face: a liveness check using both cameras is being designed.
+- Howdy face login works on the Xfce lock screen through a bridge (`tools/ir-bridge.py`) that exposes upright, lit frames on a v4l2loopback virtual webcam. The bridge starts when the lock screen asks for a face and stops once Howdy has finished, 15 seconds at the latest. Setup: [`docs/howdy.md`](docs/howdy.md). It is not as secure as Windows Hello: Howdy has no liveness check, trusts a virtual camera other programs can write to, and keeps the face model unprotected ([details](docs/howdy.md#how-it-compares-with-windows-hello)).
 - libcamera support is not started; the bridge is the stopgap until it exists.
 
 ## What the patches do
