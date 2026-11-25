@@ -2,7 +2,7 @@
 
 This page sets up Howdy, the Linux face login, on the infrared camera of the Surface Book 2 13 inch. It is written for that model, on Fedora 45 with the linux-surface kernel 7.3.4; "Tested so far" at the end says which steps have been run. The commands are Fedora's; other distributions have the same pieces under similar package names.
 
-The bridge script (`tools/ir-bridge.py`) is written for the Intel IPU3 camera interface of the Book 2. The Surface Pro 7+ and Book 3 have newer camera interfaces and need a different bridge; the kernel patches themselves are not specific to the Book 2.
+The bridge script (`tools/ir-bridge.py`) is written for the Intel IPU3 camera interface of the Book 2. The Surface Pro 7+ and Book 3 have newer camera interfaces. Everything in the bridge that depends on the camera interface sits in one small class, and the `Template` class in `tools/ir-bridge.py` lists what to fill in for another one (`--platform`, `--rotate` and `--no-emitter` select the rest). The kernel patches themselves are not specific to the Book 2.
 
 ## Read this first
 
