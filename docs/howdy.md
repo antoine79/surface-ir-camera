@@ -23,7 +23,7 @@ What would close the gap:
 
 1. A liveness check using the lit and dark frames together: the emitter's reflection in the pupils and how its light falls off across a real face, or agreement with the colour camera. `tests/liveness_spike.py` is a first experiment; it rejects the replays above, but a printed photo lit by the emitter would likely pass.
 2. A camera path no other program can write to: Howdy reading the sensor itself, through libcamera once it supports this sensor, instead of a virtual camera.
-3. Face models readable by root only: `sudo chmod 600 /etc/howdy/models/*.dat` after each enrolment.
+3. Face models that other accounts cannot read. Lock screens run Howdy as you, so give the file to its owner rather than to root: `sudo chown $USER:root /etc/howdy/models/$USER.dat && sudo chmod 600 /etc/howdy/models/$USER.dat` after each enrolment (tested on the Xfce lock screen setup: Howdy still recognises you, another account is refused).
 4. A measured false-acceptance rate.
 
 ## 1. The patched sensor module
