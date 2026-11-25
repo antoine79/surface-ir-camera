@@ -4,11 +4,11 @@ Linux support for the infrared camera of the Microsoft Surface Book 2 (13 inch, 
 
 The emitter is wired to the sensor's STROBE pin, not to any LED or GPIO the firmware describes, so lighting it is a sensor-driver change. This repository holds the kernel patches that add it, the tests that prove them on the hardware, and the user-space pieces that make the camera usable today.
 
-## Status (October 2026)
+## Status (November 2026)
 
-- Kernel series of nine patches. v2 was posted to linux-media on 28 Oct 2026 (`kernel/patches/v2-posted/`, cover letter included); v3 is in preparation in `kernel/patches/`, with the table merge from Dave Stevenson as patch 7 and no cover letter written yet. All tested on the machine with the modules built out of tree against linux-surface 7.2.
-- A bridge (`tools/ir-bridge.py`) that streams the camera with the emitter on and exposes upright 8-bit frames on a v4l2loopback device, so any webcam application sees it. Installed as a confined systemd service.
-- Howdy face login works through the bridge. It recognises a face in about 3 s, but accepts a photo of it: a liveness check using both cameras is being designed.
+- Kernel series of nine patches, v3 posted to linux-media on 13 Nov 2026 and awaiting review (`kernel/patches/v3-posted/`, cover letter included). Tested on this Surface Book 2 and on two Surface Pro 7+ (Tested-by on v1 and on v3); a first-generation Surface Laptop owner confirmed the emitter with a backport of v3.
+- The patched sensor driver builds out of tree from `kernel/backport/` and runs on linux-surface 7.3.4.
+- Howdy face login works on the Xfce lock screen through a bridge (`tools/ir-bridge.py`) that exposes upright, lit frames on a v4l2loopback virtual webcam. The bridge starts when the lock screen asks for a face and stops as soon as Howdy has finished, 15 seconds at the latest. Setup: [`docs/howdy.md`](docs/howdy.md). Howdy still accepts a photo of the face: a liveness check using both cameras is being designed.
 - libcamera support is not started; the bridge is the stopgap until it exists.
 
 ## What the patches do
@@ -27,9 +27,9 @@ The emitter is wired to the sensor's STROBE pin, not to any LED or GPIO the firm
 
 ## Layout
 
-- `kernel/patches/`: the v3 series as `git format-patch` output, the posted v1 and v2 under `v1-posted/` and `v2-posted/`. `kernel/build/`: out-of-tree build of the patched modules. `kernel/backport/`: the patched sources for the linux-surface 7.2 kernel.
+- `kernel/patches/`: the posted series as `git format-patch` output, under `v1-posted/`, `v2-posted/` and `v3-posted/`. `kernel/build/`: out-of-tree build of the patched modules. `kernel/backport/`: the patched sources for the linux-surface 7.2 kernel.
 - `tests/`: acceptance tests (pytest + numpy, shelling out to `media-ctl`, `v4l2-ctl`, `v4l2-compliance`). `tests/README.md` has the test matrix and how to run it, plus the bridge installation and undo steps.
-- `tools/`: bench script that proved the emitter mechanism, the bridge, the phone glow comparison, cover letter number extraction, print props for spoof tests.
+- `tools/`: bench script that proved the emitter mechanism, the bridge with its on-demand service, the phone glow comparison, cover letter number extraction, print props for spoof tests.
 - `docs/`: test logs attached to the submission, measurements, Windows driver notes, line coverage of the driver under test.
 - `libcamera/`: reserved, empty.
 
@@ -43,7 +43,7 @@ sudo sh -c 'echo i2c-INT347E:00 > /sys/bus/i2c/drivers/ov7251/unbind; rmmod ov72
 pytest -q tests/
 ```
 
-The emitter only shows in a dim room: daylight carries enough near-infrared to swamp it, and the tests say so when they skip.
+For face login, follow [`docs/howdy.md`](docs/howdy.md) instead. The emitter only shows in a dim room: daylight carries enough near-infrared to swamp it, and the tests say so when they skip.
 
 ## Licence
 

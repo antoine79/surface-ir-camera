@@ -2,8 +2,8 @@
 Description=Infrared camera bridge: OV7251 ip3y frames to the "Intel IR Camera" v4l2loopback device (shortcut until libcamera supports the sensor)
 After=modprobe@v4l2loopback.service
 Wants=modprobe@v4l2loopback.service
-StartLimitIntervalSec=60
-StartLimitBurst=5
+# Started on demand by tools/ir-camera-on-demand (PAM, before Howdy), never at boot.
+StartLimitIntervalSec=0
 
 [Service]
 Type=simple
@@ -13,8 +13,9 @@ Type=simple
 DynamicUser=yes
 SupplementaryGroups=video
 ExecStart=/usr/bin/python3 /usr/local/lib/ir-camera-bridge/ir-bridge.py --frames lit
-Restart=on-failure
-RestartSec=5
+# Stops itself, which turns the emitter off: the bridge starts in under a second and Howdy's timeout fits well inside.
+RuntimeMaxSec=15
+Restart=no
 # Confinement: no network, read-only system, only the camera device classes, no privileges.
 NoNewPrivileges=yes
 CapabilityBoundingSet=
@@ -42,5 +43,3 @@ SystemCallArchitectures=native
 SystemCallFilter=@system-service
 UMask=0077
 
-[Install]
-WantedBy=multi-user.target

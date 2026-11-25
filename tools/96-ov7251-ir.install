@@ -1,0 +1,27 @@
+#!/bin/sh
+# kernel-install hook: rebuild the patched ov7251 sensor driver (emitter control) for every newly installed kernel,
+# so face login keeps working across kernel updates. Install as /etc/kernel/install.d/96-ov7251-ir.install, with the
+# source copied to /usr/local/src/ov7251-ir/ov7251.c (root-owned; from kernel/backport/ov7251.c).
+# Never fails the kernel install: without the module the stock driver loads and Howdy falls back to the password.
+COMMAND=$1
+KVER=$2
+SRC=/usr/local/src/ov7251-ir/ov7251.c
+DST=/lib/modules/$KVER/updates/ov7251.ko
+log() { echo "ov7251-ir: $*" >&2; }
+
+case "$COMMAND" in
+add)
+	[ -f "$SRC" ] || { log "no $SRC, skipped"; exit 0; }
+	[ -d "/lib/modules/$KVER/build" ] || { log "no headers for $KVER (kernel-surface-devel), skipped"; exit 0; }
+	W=$(mktemp -d) || exit 0
+	cp "$SRC" "$W/" && echo 'obj-m := ov7251.o' > "$W/Kbuild" &&
+		make -s -C "/lib/modules/$KVER/build" M="$W" modules >"$W/build.log" 2>&1 &&
+		install -D -m644 "$W/ov7251.ko" "$DST" && depmod -a "$KVER" &&
+		log "built and installed $DST" || log "build failed for $KVER, see $W/build.log"
+	[ -f "$DST" ] && rm -rf "$W"
+	;;
+remove)
+	rm -f "$DST"
+	;;
+esac
+exit 0

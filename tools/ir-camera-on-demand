@@ -1,0 +1,40 @@
+#!/bin/sh
+# Run by PAM (pam_exec) just before pam_howdy: (re)start the infrared bridge and wait until it writes to its virtual
+# camera, since Howdy fails on a loopback device that has no writer yet. A detached watcher then stops the bridge,
+# which turns the emitter off, once Howdy has opened and closed the camera (or after 8 s if it never opens it);
+# the unit's RuntimeMaxSec is the backstop. Exits 1 if the bridge is not writing within 8 s; PAM loads it as
+# optional, so a failure only means Howdy finds no camera and the password prompt follows.
+UNIT=ir-camera-bridge.service
+DEV=/dev/video21
+
+if [ "$1" = --watch ]; then
+	# Only ever stop the bridge run this watcher was started for.
+	run=$(/usr/bin/systemctl show -p InvocationID --value "$UNIT")
+	main=$(/usr/bin/systemctl show -p MainPID --value "$UNIT")
+	start=$(/usr/bin/date +%s)
+	seen=0
+	while now=$(/usr/bin/date +%s); [ $((now - start)) -lt 15 ]; do
+		# Readers = processes holding the device other than the bridge itself (as a user, the bridge is invisible).
+		readers=$(for p in $(/usr/bin/fuser "$DEV" 2>/dev/null); do [ "$p" = "$main" ] || echo "$p"; done)
+		if [ -n "$readers" ]; then
+			seen=1
+		elif [ "$seen" = 1 ] || [ $((now - start)) -ge 8 ]; then
+			break
+		fi
+		/usr/bin/sleep 0.1
+	done
+	[ "$(/usr/bin/systemctl show -p InvocationID --value "$UNIT")" = "$run" ] || exit 0
+	exec /usr/bin/systemctl --no-ask-password stop "$UNIT"
+fi
+
+/usr/bin/systemctl --no-ask-password restart "$UNIT" || exit 1
+i=0
+while [ "$i" -lt 80 ]; do
+	if /usr/bin/v4l2-ctl -d "$DEV" -D 2>/dev/null | /usr/bin/grep -q 'Video Capture'; then
+		/usr/bin/setsid "$0" --watch </dev/null >/dev/null 2>&1 &
+		exit 0
+	fi
+	/usr/bin/sleep 0.1
+	i=$((i + 1))
+done
+exit 1

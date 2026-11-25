@@ -1,0 +1,9 @@
+// Let the person at the console restart and stop the infrared bridge: a lock screen runs PAM, and so
+// tools/ir-camera-on-demand, as that user, not as root. Install as /etc/polkit-1/rules.d/50-ir-camera-bridge.rules.
+polkit.addRule(function (action, subject) {
+	if (action.id == "org.freedesktop.systemd1.manage-units" &&
+	    action.lookup("unit") == "ir-camera-bridge.service" &&
+	    (action.lookup("verb") == "restart" || action.lookup("verb") == "stop") &&
+	    subject.local && subject.active)
+		return polkit.Result.YES;
+});
